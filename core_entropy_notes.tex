@@ -191,7 +191,8 @@ differs from $w$ in the first $n$ symbols.
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{fig_laps}
-  \caption{Laps at $\lambda=3.7$.  (a)~$g_\lambda$, with its two laps shaded alternately.
+  \caption{Laps at $\lambda=3.7$.  (a)~$g_\lambda$, with its two laps shaded alternately and
+  the critical point marked by the red dashed line.
   (b)~the sixth iterate $g_\lambda^6$, drawn on a grid of $3000$ points: its $38$ laps are
   the oscillations of the graph.  (c)~the sixth iterate of the tent map of \S\ref{sec:model},
   of slope $e^{h(\lambda)}=1.4648$, which has the same $38$.}
@@ -274,7 +275,8 @@ continuous there, and $D(0)=1$.
   \centering
   \includegraphics[width=0.94\textwidth]{fig_kneading}
   \caption{The kneading data.  (a)--(c)~at $\lambda=3.7$: the cobweb of the critical
-  orbit; the same orbit against time with the symbol of each point written above it; and
+  orbit, with the dotted diagonal $y=x$ and the dotted level $\tfrac12$; the same orbit
+  against time with the symbol of each point written above it; and
   the itinerary $\nu$ together with the partial products $\eps_k$.  (d)~at the period-3
   centre $\lambda=3.8319$, where the critical point returns to $\tfrac12$ and both
   sequences are periodic: $(1,0,*)$ repeated, with $*$ read as~$1$.  In panel~(b) the
@@ -448,7 +450,8 @@ $1.0\times10^{-14}$ and $2.2\times10^{-16}$.
   \caption{The three objects at $\lambda=3.7$.  (a)~$g_\lambda$, with the cobweb of the
   critical orbit.  (b)~the tent map $f_s$ of slope $s=e^{h(\lambda)}=1.4648$, with its own
   cobweb.  (c)~the map $A$ of Theorem~\ref{thm:model}, on which the iterates of the critical
-  orbit of $f_s$ (abscissae) sit at the corresponding iterates of $g_\lambda$ (ordinates).}
+  orbit of $f_s$ (abscissae) sit at the corresponding iterates of $g_\lambda$ (ordinates).
+  The dotted diagonal is $y=x$ in all three panels.}
   \label{fig:model}
 \end{figure}
 
@@ -629,8 +632,9 @@ series, with no information about the orbit beyond the coefficients:
   \centering
   \includegraphics[width=\textwidth]{fig_determinant}
   \caption{The zero and the truncation error.  (a)~$D_N(t)$ for $\lambda=3.7$ and
-  $N=800$; its smallest zero is $t_0=e^{-h}$, and beyond $t=1-\rho/N$ (shaded) the
-  truncation is no longer controlled.  (b)~$|h_N-h|$ against $hN$ for four parameters:
+  $N=800$; its smallest zero is $t_0=e^{-h}$, the grey horizontal line is $D=0$, and
+  beyond $t=1-\rho/N$ (shaded) the truncation is no longer controlled.  (b)~$|h_N-h|$
+  against $hN$ for four parameters:
   the curves collapse, which is the empirical content of \eqref{eq:tail}; the dashed line
   is the acceptance threshold $hN=25$.}
   \label{fig:determinant}
@@ -790,7 +794,8 @@ $t^4-t^3-t^2-t+1$ of $D$.  The growth number stays fixed across the cascade.
   \caption{Three period-doubling cascades: the period-$3$ window (a), the period-$5$
   window (b) and the period-$4$ window (c), each against its bifurcation diagram.  In
   every panel $h$ is flat across the whole cascade --- at $\log\tau$, $\log s_5$ and
-  $\log s_4$ --- and rises only when the window's structure ends.  The dotted lines mark
+  $\log s_4$ --- and rises only when the window's structure ends.  The horizontal dashed
+  line is the plateau level; the dotted lines mark
   the saddle-node and the first period doubling, the dash-dotted line the accumulation of
   the cascade.}
   \label{fig:plateau}
