@@ -497,10 +497,7 @@ def fig_plateau():
         a.axhline(h0, color=GREY, lw=0.6, ls="--")
         for x in (sn, pd):
             a.axvline(x, color="0.4", lw=0.6, ls=":")
-        a.axvline(acc, color="0.25", lw=0.8, ls="-.")
-        a.text(acc, yhi - 0.01*(yhi - ylo), r"$\infty$", fontsize=6.5, color="0.25",
-               ha="center", va="top",
-               bbox=dict(boxstyle="round,pad=0.08", fc="white", ec="none", alpha=0.85))
+        a.axvline(acc, color="0.35", lw=0.5, ls="-.")
         a.spines[["top"]].set_visible(False)
         if k == 0:
             a.set_ylabel(r"$h(\lambda)$", fontsize=8)
