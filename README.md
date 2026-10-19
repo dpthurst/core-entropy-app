@@ -82,8 +82,9 @@ the period-3 copy of the Mandelbrot set — and only then rises again. At `λ = 
 kneading determinant is exactly `(1 − t − t²)·Q(t)/(1 − t¹²)` with `Q` of degree 9, so the
 entropy is exactly `log τ`; a 60-digit evaluation confirms `D(1/τ) = 0` at `λ = 3.85,
 3.855, 3.8565` as well.  The same flat step appears at the period-5 window,
-`λ ≈ 3.9056–3.9068`, where `h = log 1.72208`, and at the period-4 window,
-`λ ≈ 3.9601–3.9616`, where `h = log 1.83929`.
+`λ ≈ 3.9056–3.9068`, where `h = log s₅` with `s₅⁴ − s₅³ − s₅² − s₅ + 1 = 0`
+(`s₅ = 1.7220838…`), and at the period-4 window, `λ ≈ 3.9601–3.9616`, where
+`h = log s₄` with `s₄³ − s₄² − s₄ − 1 = 0` (`s₄ = 1.8392868…`, the tribonacci constant).
 
 ## How h is computed
 

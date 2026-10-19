@@ -345,8 +345,9 @@ supports no exponential complexity.
 \end{example}
 
 \begin{example}[the period-3 centre]\label{ex:p3}
-Let $c_3=-1.7548776662\ldots$ be the centre of the period-$3$ component and
-$\lambda_3=1+\sqrt{1-4c_3}$.  The critical orbit has period $3$ with itinerary $(1,0,*)$,
+Let $c_3$ be the real root of $c^3+2c^2+c+1=0$ (so $c_3=-1.7548776662\ldots$), the centre
+of the period-$3$ component, and $\lambda_3=1+\sqrt{1-4c_3}$.  The critical orbit has
+period $3$ with itinerary $(1,0,*)$,
 so $s=(-1,+1,-1)$ repeated and $\eps$ has period $3$ with $\eps=(1,-1,-1)$.  Hence
 \[
   D(t)=\frac{1-t-t^2}{1-t^3},
@@ -526,12 +527,13 @@ g_\lambda^j(\tfrac12)$.  Both alternatives contradict (iii).
 
 Table~\ref{tab:conj} collects the examples.  At $\lambda=4$ the semi-conjugacy is
 $A(x)=\tfrac2\pi\arcsin\sqrt x$, a homeomorphism.  At
-$\lambda=3.6785735104\ldots$ the critical orbit is
+$\lambda=3.6785735104\ldots$ --- the real root of $\lambda^3-2\lambda^2-4\lambda-8=0$ ---
+the critical orbit is
 \[
   \tfrac12\longmapsto0.9196433776\longmapsto0.2718445063\longmapsto0.7281554937,
 \]
 with $0.7281554937$ a repelling fixed point, while the critical orbit of $f_{\sqrt2}$ is
-$\tfrac12\mapsto0.7071068\mapsto0.4142136\mapsto0.5857864$ and lands on its own fixed point;
+$\tfrac12\mapsto\tfrac{\sqrt2}{2}\mapsto\sqrt2-1\mapsto2-\sqrt2$ and lands on its own fixed point;
 the two patterns agree, there is no homterval, and $A$ is a conjugacy.  At $\lambda=3.85$ the
 plateau of $A$ has width $0.10$, against $0.08$ at $\lambda=3.84$: on $[0.45,0.55]$ the lap
 number of $g_\lambda^n$ is $37$ at $n=16$, while $\tau^{16}\approx2207$, so the interval is
@@ -759,40 +761,40 @@ from the roundoff floor; where they agree, the two computations of $h$ agree.
 
 \subsection{Exact plateaus}
 
-The most conspicuous feature of the graph is the step at $h=\log\tau$, and it is not a
-numerical accident.  At $\lambda=3.845$ the computed sign sequence is exactly
+The most conspicuous feature of the graph is the step at $h=\log\tau$, and it is exact.
+At $\lambda=3.845$ the computed sign sequence is exactly
 $12$-periodic, so $D=P(t)/(1-t^{12})$ with $P$ of degree $11$ and integer coefficients;
 $P$ is divisible by $t^2+t-1$, hence $D(1/\tau)=0$ exactly and, since no smaller zero
 exists, $h=\log\tau$.  At $\lambda=3.85$, $3.855$ and $3.8565$ a $60$-digit evaluation
-of the truncated series gives $|D(1/\tau)|<10^{-60}$, that is, zero to the precision of
-$\tau$ itself.  The step runs from the saddle-node $\lambda=1+\sqrt8=3.8284271$ to
-$\lambda\approx3.8568$, the real extent of the period-$3$ copy of the Mandelbrot set,
-before $h$ rises again.
+gives $|D(1/\tau)|<10^{-60}$.  The step runs from the saddle-node
+$\lambda=1+\sqrt8=3.8284271$ to $\lambda\approx3.8568$, the real extent of the period-$3$
+copy of the Mandelbrot set, before $h$ rises again.
 
 The same happens at the other windows.  The period-$5$ window, at
-$\lambda\approx3.9056$--$3.9068$, has $h=\log1.72208=0.543535$ throughout, and the
-period-$4$ window, at $\lambda\approx3.9601$--$3.9616$, has
-$h=\log1.83929=0.609378$; in each case the value is the logarithm of the growth number of
-the window's kneading sequence, and it stays fixed across the whole period-doubling
-cascade.
+$\lambda\approx3.9056$--$3.9068$, has $h=\log s_5=0.543535$ throughout, and the
+period-$4$ window, at $\lambda\approx3.9601$--$3.9616$, has $h=\log s_4=0.609378$, where
+$s_3=\tau$, $s_4=1.839286755\ldots$ and $s_5=1.722083806\ldots$ satisfy
+\[
+  s_3^2-s_3-1=0,\qquad s_4^3-s_4^2-s_4-1=0,\qquad s_5^4-s_5^3-s_5^2-s_5+1=0 ;
+\]
+the equations come from the numerators $t^2+t-1$, $t^3+t^2+t-1$ and
+$t^4-t^3-t^2-t+1$ of $D$.  The growth number stays fixed across the cascade.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{fig_plateau}
   \caption{Three period-doubling cascades: the period-$3$ window (a), the period-$5$
   window (b) and the period-$4$ window (c), each against its bifurcation diagram.  In
-  every panel $h$ is flat across the whole cascade --- at $\log\tau$, $\log1.72208$ and
-  $\log1.83929$ respectively --- and rises only when the window's structure ends.  The
+  every panel $h$ is flat across the whole cascade --- at $\log\tau$, $\log s_5$ and
+  $\log s_4$ --- and rises only when the window's structure ends.  The
   dotted lines mark the saddle-node and the first period doubling.}
   \label{fig:plateau}
 \end{figure}
 
-Figure~\ref{fig:plateau} places the step against the bifurcation diagram.  The plateau in
-$h$ coincides with the period-$3$ window, and it ends only where the window's own structure
-ends, at $\lambda\approx3.8568$; between the two the entropy does not move at all, even
-though the attracting cycle doubles repeatedly along the way.  Panels~(b) and~(c) show that
-this is not special to period $3$: the period-$5$ and period-$4$ windows have the same flat
-step, at their own heights.
+The plateau in Figure~\ref{fig:plateau} coincides with the period-$3$ window and ends where
+the window's structure ends, at $\lambda\approx3.8568$; between the two the entropy does not
+move, even though the attracting cycle doubles repeatedly.  Panels~(b) and~(c) show that this
+is not special to period $3$.
 
 \section{Concluding remarks}
 
