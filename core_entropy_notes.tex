@@ -1,0 +1,614 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.15cm]{geometry}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\graphicspath{{figs/}}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{1.3ex plus .2ex}{0.7ex}
+\titlespacing*{\subsection}{0pt}{1.1ex plus .2ex}{0.5ex}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\htop}{h_{\mathrm{top}}}
+\setlist{itemsep=2pt,topsep=3pt,leftmargin=1.5em}
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+\setlength{\abovedisplayshortskip}{3pt}
+\setlength{\belowdisplayshortskip}{4pt}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries Computing the core entropy of real quadratic polynomials}\\[3pt]
+  {\small notes accompanying the code in \texttt{src/CoreEntropy.jl}}
+\end{center}
+\vspace{2pt}
+
+\section{Introduction}
+
+For $\lambda\in[2,4]$ let
+\begin{equation}\label{eq:g}
+  g_\lambda(x)=\lambda x(1-x),\qquad x\in[0,1].
+\end{equation}
+The map $g_\lambda$ is unimodal: it increases from $0$ to the critical value $\lambda/4$ on
+$[0,\tfrac12]$ and decreases back to $0$ on $[\tfrac12,1]$.  Its \emph{core entropy}
+$h(\lambda)$ is the topological entropy of $g_\lambda$ restricted to its Hubbard tree, the
+smallest invariant interval carrying the critical point and its orbit.  Equivalently ---
+and this is how it will be computed --- it is the exponential growth rate of the number of
+laps of the iterates $g_\lambda^n$.
+
+As $\lambda$ runs from $2$ to $4$ the parameter crosses the real slice of the quadratic
+family and $h$ rises from $0$ to $\log2$, but not smoothly.  It is constant on every
+hyperbolic component, that is, on every interval of parameters for which an attracting
+cycle exists, and it changes only on the complement of their union.  The graph is
+therefore a devil's staircase, with a plateau for each attracting cycle and a Cantor-like
+set of parameters on which the increase takes place.  Tiozzo \cite{Tiozzo} proved that $h$
+is nevertheless continuous in the parameter, and related its values to the dimensions of
+sections of the Mandelbrot set.
+
+The purpose of this note is to record the algorithm by which the staircase is computed,
+the conventions it uses and the control it keeps over the truncation error.
+Section~\ref{sec:core} fixes the object, \S\ref{sec:kneading} recalls the kneading theory
+that turns the entropy into a root of a power series, \S\ref{sec:algo}
+and~\ref{sec:error} describe and analyse the numerical scheme, and
+\S\ref{sec:validation} collects the evidence that the implementation is correct.  The code,
+\texttt{src/CoreEntropy.jl}, follows the same order; the two front ends contain no
+mathematics of their own.
+
+\section{The core entropy of a real quadratic polynomial}\label{sec:core}
+
+Everything below is stated for the logistic family, but the object it computes is usually
+defined for the quadratic family $f_c(z)=z^2+c$, and the two are the same thing:
+
+\begin{lemma}\label{lem:conj}
+Let $\psi_\lambda(x)=\tfrac{\lambda}{2}-\lambda x$.  Then
+$\psi_\lambda\circ g_\lambda=f_c\circ\psi_\lambda$, where
+\begin{equation}\label{eq:c}
+  c=\frac{\lambda}{2}-\frac{\lambda^2}{4}=\frac{\lambda(2-\lambda)}{4}.
+\end{equation}
+The map $\lambda\mapsto c$ decreases from $c=0$ at $\lambda=2$ to $c=-2$ at $\lambda=4$,
+with inverse $\lambda=1+\sqrt{1-4c}$ on this range.
+\end{lemma}
+
+\begin{proof}
+Substituting $x=\tfrac12-z/\lambda$ gives $x(1-x)=\tfrac14-z^2/\lambda^2$, hence
+$\psi_\lambda(g_\lambda(x))=\tfrac{\lambda}{2}-\lambda^2\bigl(\tfrac14-z^2/\lambda^2\bigr)
+=\tfrac{\lambda}{2}-\tfrac{\lambda^2}{4}+z^2$.  The derivative of \eqref{eq:c} is
+$\tfrac12-\tfrac{\lambda}{2}$, which is negative for $\lambda>1$, so $c$ decreases; the
+inverse is the positive root of $\lambda^2-2\lambda+4c=0$.
+\end{proof}
+
+Thus $g_\lambda$ on $[0,1]$ is the quadratic family on a real interval, conjugated by an
+orientation-reversing affine map, and the parameter range $\lambda\in[2,4]$ corresponds to
+$c\in[-2,0]$.
+
+\begin{definition}\label{def:core}
+Let $c$ lie in the Mandelbrot set, $K_c$ the filled Julia set of $f_c$ and
+$P_c=\overline{\{f_c^n(0):n\ge0\}}$ the postcritical set.  The \emph{Hubbard tree}
+$T_c\subset K_c$ is the smallest connected closed set containing $P_c$, and the
+\emph{core entropy} is $h(c)=\htop(f_c|_{T_c})$.
+\end{definition}
+
+The Hubbard tree is the part of the Julia set that carries the postcritical dynamics: the
+Julia set itself may be a dendrite or worse, while $T_c$ is a finite tree on which $f_c$
+acts as a Markov map.  For real parameters the tree degenerates to an interval, and the
+whole theory becomes one-dimensional.  Indeed, for $c\in[-2,\tfrac14]$ the set $K_c\cap\R$
+is an interval, so $T_c=[\min P_c,\max P_c]$ is a real interval; since $f_c$ maps $P_c$ to
+itself and is continuous, $f_c(T_c)\subset T_c$.  For $c\in[-2,0]$ the critical point $0$
+belongs to $T_c$ and is its only turning point --- a minimum, because $f_c'=2z$ is negative
+to the left of $0$ and positive to the right.  Passing back through the orientation
+reversing conjugacy of Lemma~\ref{lem:conj}, the core becomes the convex hull of
+$\{\tfrac12\}\cup\{g_\lambda^n(\tfrac12)\}$, on which $g_\lambda$ is unimodal with a
+\emph{maximum} at $\tfrac12$.  The theory below is formulated for this map; we write
+$h(\lambda)=h(c(\lambda))$.
+
+Since the core is the smallest invariant interval, every orbit outside it eventually falls
+into it, so the entropy of $g_\lambda$ on all of $[0,1]$ agrees with $h(\lambda)$; for a
+unimodal map the entropy is in any case determined by the itinerary of the critical point,
+which the core contains.  Four values anchor the computation and serve as tests: $h(2)=0$,
+because the critical point is fixed ($c=0$) and the map is conjugate to $z\mapsto z^2$ on
+an interval; $h(1+\sqrt5)=0$, the centre of the basilica component ($c=-1$), where the
+critical point has period $2$; $h=0$ on the whole period-doubling cascade up to the
+Feigenbaum parameter $\lambda_\infty\approx3.5699457$, where an attracting cycle always
+captures the critical orbit; and $h(4)=\log2$, the Chebyshev case $c=-2$, where $g_4$ is
+conjugate to the full tent map.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_output}
+  \caption{The core entropy of $g_\lambda$ on $[2,4]$, as computed by the code described
+  here on $28\,696$ parameters.  (a)~The whole range: $h$ vanishes identically up to the
+  Feigenbaum parameter $\lambda_\infty$ and reaches $\log2$ at $\lambda=4$.  (b)~The
+  staircase on $[3.55,4]$; the dashed lines are $\log\varphi$ and $\log2$.}
+  \label{fig:output}
+\end{figure}
+
+Figure~\ref{fig:output} is the output of the code on $28\,696$ parameters of $[2,4]$.
+Panel~(a) is the whole range: $h$ vanishes identically up to the Feigenbaum parameter
+$\lambda_\infty$, where the period-doubling cascade accumulates, and then climbs to
+$\log2$.  Panel~(b) resolves the climb.  It is not a curve but a staircase --- a flat step
+for every hyperbolic component, joined by steep pieces on which the parameter passes
+through the queer set --- and the widest of the steps is the one at $\log\varphi$, whose
+length is explained in \S\ref{sec:validation}.
+
+\section{Kneading theory}\label{sec:kneading}
+
+\subsection{Itineraries, laps and entropy}
+
+The combinatorial type of an orbit is recorded by the sequence of sides of the critical
+point it visits.  Since $g_\lambda$ is monotone on each side, this sequence determines
+everything that monotonicity can see, and in particular it determines the entropy.
+
+\begin{definition}
+For $x\in[0,1]$ the \emph{itinerary} $\iota(x)=(\iota_0(x),\iota_1(x),\dots)$ is given by
+$\iota_k(x)=0$ if $g_\lambda^k(x)<\tfrac12$ (left of the critical point),
+$\iota_k(x)=1$ if $g_\lambda^k(x)>\tfrac12$ (right), and $\iota_k(x)=*$ if
+$g_\lambda^k(x)=\tfrac12$.  A \emph{lap} of a continuous interval map
+$F$ is a maximal interval on which $F$ is monotone, and $\ell_n$ denotes the number of laps
+of $g_\lambda^n$.
+\end{definition}
+
+\begin{lemma}\label{lem:laps}
+For every $n\ge1$ the laps of $g_\lambda^n$ are exactly the nonempty sets
+\[
+  I_w=\{x\in[0,1]:\iota_0(x)\cdots\iota_{n-1}(x)=w\},\qquad w\in\{0,1\}^n,
+\]
+and $g_\lambda^n$ is monotone on each of them.  Hence $\ell_n$ equals the number of
+\emph{admissible} words of length $n$, the words that occur as itineraries.
+\end{lemma}
+
+\begin{proof}
+For $n=1$ this is the definition of the two laps $[0,\tfrac12]$ and $[\tfrac12,1]$.
+Suppose the assertion holds for $n$ and let $I_w$ be a lap of $g^n$; on it $g^n$ is
+monotone, so $g^{n+1}$ is monotone exactly on the two pieces where $g^n(x)<\tfrac12$ and
+$g^n(x)>\tfrac12$, namely $I_{w0}$ and $I_{w1}$.  These are intervals because $g^n$ is
+monotone on $I_w$, and every lap of $g^{n+1}$ arises from exactly one lap of $g^n$ in this
+way.  A nonempty $I_w$ is maximal, since enlarging it would add points whose itinerary
+differs from $w$ in the first $n$ symbols.
+\end{proof}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_laps}
+  \caption{Laps at $\lambda=3.7$.  The graphs of $g_\lambda$, $g_\lambda^2$ and
+  $g_\lambda^3$ with the laps shaded alternately and the turning points dashed:
+  $\ell_1=2$, $\ell_2=4$, $\ell_3=8$ (and $\ell_4=14$).}
+  \label{fig:laps}
+\end{figure}
+
+Figure~\ref{fig:laps} illustrates the lemma at $\lambda=3.7$.  The graphs of $g_\lambda$,
+$g_\lambda^2$ and $g_\lambda^3$ are drawn with the laps shaded alternately and the turning
+points dashed: $\ell_1=2$, $\ell_2=4$, $\ell_3=8$, and $\ell_4=14$.  The first values look
+like $2^n$, and to begin with they are, since every lap of $g^n$ can have at most two
+preimage-laps under $g$; the count falls away from $2^n$ only once the preimage tree is
+pruned, which happens because a point $y>\lambda/4$, the maximum of $g_\lambda$, has no
+real preimage at all.  The true growth rate at $\lambda=3.7$ is
+$e^{h}=e^{0.3817}\approx1.46$, far below $2$: the interval is not folded everywhere.
+
+The lemma turns a dynamical quantity into a combinatorial one, and the entropy is the
+exponential growth rate of the count:
+
+\begin{theorem}[Misiurewicz--Szlenk \cite{MS}]\label{thm:MS}
+For a piecewise monotone interval map, $\displaystyle h=\lim_{n\to\infty}\frac1n\log\ell_n$.
+\end{theorem}
+
+The limit exists because $\ell_{m+n}\le\ell_m\ell_n$ --- cutting a lap of $g^{m+n}$ by
+$g^m$ gives at most $\ell_m$ pieces, each monotone for $g^n$ --- so $\log\ell_n$ is
+subadditive and the limit equals the infimum.  Since $g_\lambda$ has two laps, $\ell_n\le2^n$
+and therefore
+\begin{equation}\label{eq:bound}
+  0\le h(\lambda)\le\log2 .
+\end{equation}
+
+For the entropy one only needs the growth rate, but $\ell_n$ itself grows like $e^{hn}$, so
+enumerating laps is exponentially expensive and useless beyond small $n$.  The kneading
+determinant computes the growth rate from a single sequence of signs.
+
+\subsection{The kneading sequence and the determinant}
+
+\begin{definition}\label{def:kneading}
+Let $x_k=g_\lambda^k(\tfrac12)$.  The \emph{kneading sequence} $\nu=\nu_1\nu_2\cdots$ is
+the itinerary of the critical value: $\nu_k$ is the symbol of $x_k$.  If $x_k=\tfrac12$ for
+some $k\ge1$, that is, if the critical point is periodic of period $k$, then $\nu_k=*$ and
+the sequence is declared periodic of period $k$, with $*$ read as $1$ in all later
+positions.
+\end{definition}
+
+The sequence $\nu$ is the complete combinatorial invariant of the critical orbit, and by
+the results of \cite{MT} it determines the entropy.  When the critical point is periodic
+the itinerary is undefined at the return, and the symbol has to be given a value.  We read
+$*$ as $1$, so that $s_k=-1$ there.  This is one of the two one-sided limits of the
+kneading sequence as the parameter approaches such a value, and since $h$ is continuous in
+the parameter \cite{Tiozzo}, both limits give the same entropy; the choice only fixes which
+of the two descriptions is written down.
+
+\begin{definition}\label{def:eps}
+The \emph{sign sequence} is $s_k=\sgn g_\lambda'(x_k)$.  Since
+$g_\lambda'=\lambda(1-2x)$, one has $s_k=+1$ when $x_k<\tfrac12$ and $s_k=-1$ when
+$x_k>\tfrac12$; at a critical hit $x_k=\tfrac12$ we set $s_k=-1$, which is exactly the
+rule ``read $*$ as $1$'', the symbol of the decreasing branch.  With $\eps_0=1$ put
+\begin{equation}\label{eq:eps}
+  \eps_k=s_1s_2\cdots s_k\qquad(k\ge1).
+\end{equation}
+\end{definition}
+
+The sign $s_k$ records which branch of $g_\lambda$ the orbit is on at time $k$, and the
+product $\eps_k$ records the orientation of $g_\lambda^k$ on the lap whose itinerary is the
+first $k$ symbols of $\nu$: the map is increasing there when $\eps_k=+1$ and decreasing
+when $\eps_k=-1$.
+
+\begin{definition}\label{def:D}
+The \emph{kneading determinant} of $\nu$ is the power series
+\begin{equation}\label{eq:D}
+  D(t)=\sum_{k\ge0}\eps_k t^k .
+\end{equation}
+Since $|\eps_k|=1$ for every $k$, $D$ converges absolutely on the disc $|t|<1$, is
+continuous there, and $D(0)=1$.
+\end{definition}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\textwidth]{fig_kneading}
+  \caption{The kneading data.  (a)--(c)~at $\lambda=3.7$: the cobweb of the critical
+  orbit; the same orbit against time with the symbol of each point written above it; and
+  the itinerary $\nu$ together with the partial products $\eps_k$.  (d)~at the period-3
+  centre $\lambda=3.8319$, where the critical point returns to $\tfrac12$ and both
+  sequences are periodic: $(1,0,*)$ repeated, with $*$ read as~$1$.  In panel~(b) the
+  letters are the symbols: L is $0$, R is $1$.}
+  \label{fig:kneading}
+\end{figure}
+
+Figure~\ref{fig:kneading} shows what the data look like for one parameter.  Panel~(a) is
+the cobweb of the critical orbit on the graph of $g_\lambda$: from $x_0=\tfrac12$ the orbit
+jumps to the critical value and then wanders.  Panel~(b) plots the same numbers against
+time and records above each point the symbol of the side it lies on; that string is the
+itinerary $\nu$.  Panel~(c) displays it as a strip of cells together with the partial
+products $\eps_k$.  Each is a sequence of signs and nothing more, and the content of
+\S\ref{sec:kneading} is that these signs determine the entropy.  Panel~(d) repeats the
+exercise at the period-3 centre, where the critical point returns to $\tfrac12$ after three
+steps: the string is then periodic, $(1,0,*)$ repeated with $*$ read as $1$, and this
+periodicity of the data is exactly what makes the determinant rational in
+\S\ref{sec:pcf}.
+
+\subsection{The zero of the determinant is the growth rate}
+
+\begin{theorem}[Milnor--Thurston \cite{MT}; see also \cite{dMvS}, Ch.~II]\label{thm:MT}
+Let $h$ be the topological entropy of $g_\lambda$.  If $h>0$ then $D(e^{-h})=0$ and
+$D(t)>0$ for $0<t<e^{-h}$.  If $h=0$ then $D(t)>0$ for all $t\in(0,1)$.
+\end{theorem}
+
+Consequently $e^{-h}$ is the smallest zero of $D$ in $(0,1)$, and
+\begin{equation}\label{eq:h}
+  h(\lambda)=\log\frac{1}{t_0},\qquad t_0=\min\{t\in(0,1):D(t)=0\},
+\end{equation}
+with the convention that no such $t_0$ exists exactly when $h=0$.  By \eqref{eq:bound},
+$t_0\ge\tfrac12$ whenever $h>0$.  This is the identity on which the whole computation
+rests: it replaces a limit of lap counts by the root of a series with coefficients
+$\pm1$.  Figure~\ref{fig:determinant}(a) shows such a zero.
+
+\begin{remark}[why a zero of $D$ is a growth rate]
+The reciprocal $1/D$ is the kneading zeta function of the map: its coefficients count
+periodic orbits with signs determined by their itineraries \cite{MT}.  For a piecewise
+monotone map the number of periodic orbits grows like $e^{hn}$, so $1/D$ has radius of
+convergence $e^{-h}$.  By Pringsheim's theorem a series with nonnegative
+coefficients is singular on the positive axis; here $1/D$ is singular at $t=e^{-h}$, so $D$
+vanishes there.  The second half
+of the theorem, the absence of zeros below $e^{-h}$, says that this is the \emph{first}
+singularity and is what makes the smallest zero the correct one to take.  We use the
+theorem as a black box and test it in \S\ref{sec:validation}.
+\end{remark}
+
+\subsection{The postcritically finite case, exactly}\label{sec:pcf}
+
+When the critical orbit is periodic of period $k$ the sign sequence is $k$-periodic, so
+$\eps$ is periodic with period $k$ or $2k$ and $D$ is a rational function
+$D=P(t)/(1-t^{p})$ whose numerator $P$ has degree $p-1$ and integer coefficients.  The
+zeros of $D$ are then the zeros of $P$, and $t_0$ is the smallest of them in
+$(0,\tfrac12)$: an algebraic number that can be computed exactly, with no truncation at
+all.  Three such parameters serve as tests.
+
+\begin{example}[$\lambda=4$, the Chebyshev case]\label{ex:lambda4}
+Here $x_1=1$ and $x_k=0$ for $k\ge2$, so $s=(-1,+1,+1,\dots)$ and $\eps_k=-1$ for every
+$k\ge1$.  Summing the geometric tail,
+\[
+  D(t)=1-\frac{t}{1-t}=\frac{1-2t}{1-t},
+\]
+whose smallest positive zero is $t_0=\tfrac12$; hence $h=\log2$, as it must be for a map
+conjugate to the tent map.
+\end{example}
+
+\begin{example}[$\lambda=1+\sqrt5$, the basilica]\label{ex:basilica}
+The critical orbit is $\tfrac12\mapsto\tfrac{\lambda}{4}\mapsto\tfrac12$, so $\nu=1*$ and
+every $s_k=-1$.  Then $D(t)=\frac{1}{1+t}$, which has no zero in $(0,1)$, and the theorem
+correctly reports $h=0$: the critical orbit is attracted to a $2$-cycle and the core
+supports no exponential complexity.
+\end{example}
+
+\begin{example}[the period-3 centre]\label{ex:p3}
+Let $c_3=-1.7548776662\ldots$ be the centre of the period-$3$ component and
+$\lambda_3=1+\sqrt{1-4c_3}$.  The critical orbit has period $3$ with itinerary $(1,0,*)$,
+so $s=(-1,+1,-1)$ repeated and $\eps$ has period $3$ with $\eps=(1,-1,-1)$.  Hence
+\[
+  D(t)=\frac{1-t-t^2}{1-t^3},
+\]
+whose smallest zero in $(0,1)$ is $t_0=1/\varphi$ with $\varphi=\tfrac{1+\sqrt5}{2}$, so
+$h(\lambda_3)=\log\varphi=0.481211825\ldots$.
+\end{example}
+
+In both cases the entropy is settled by a polynomial rather than a series: the determinant
+is rational and its smallest zero can be read off exactly, with no truncation at all.
+
+\section{The algorithm}\label{sec:algo}
+
+The program takes a parameter $\lambda\in[2,4]$ and returns $h(\lambda)$ by locating the
+smallest zero of the truncated determinant.  Three constants govern the truncation: the
+initial order $N_0=800$, the maximal order $N_{\max}=51200$, and the tolerance $\rho=25$
+whose role is explained in \S\ref{sec:error}.  For an order $N$ the series \eqref{eq:D} is
+truncated to
+$D_N(t)=\sum_{k\le N}\eps_k t^k$.
+
+\paragraph{Step 1: the orbit and its signs.}
+Starting from $x=\tfrac12$, for $k=1,\dots,N$ one computes
+\[
+  x\longleftarrow\lambda x(1-x),\qquad
+  s_k\longleftarrow\begin{cases}+1,&x<\tfrac12,\\ -1,&x\ge\tfrac12,\end{cases}
+  \qquad\eps_k\longleftarrow\eps_{k-1}s_k .
+\]
+The comparison is the sign of $g_\lambda'(x_k)$, and the rule $s_k=-1$ at $x=\tfrac12$
+implements Definition~\ref{def:kneading}.  The rule is self-consistent: if $x_k=\tfrac12$
+then $x_{k+1}=\lambda/4=x_1$, so the orbit repeats from the beginning and the computed sign
+sequence is periodic from that point on, exactly as the convention requires.
+
+\paragraph{Step 2: evaluation.}
+The truncated determinant is evaluated by Horner's rule,
+\[
+  D_N(t)=\eps_0+t\bigl(\eps_1+t(\eps_2+\cdots+t\eps_N)\cdots\bigr),
+\]
+which costs $N$ multiplications and additions, in one pass over the $\eps_k$ and without
+forming the powers $t^k$ separately.
+
+\paragraph{Step 3: the smallest zero.}
+$D_N$ is continuous on $[0,1]$ with $D_N(0)=1$, and by \eqref{eq:bound} the zero of
+interest lies in $[\tfrac12,1]$; the search is confined to $[0.45,\,t_{\max}]$ with
+$t_{\max}=1-\rho/N$, the lower end for safety and the upper end because the truncation is
+unreliable as $t\to1$ (\S\ref{sec:error}).  A bracket is found in one of two ways.  If the
+previous parameter had a zero $t_{\mathrm{prev}}$, one tries
+$[t_{\mathrm{prev}}-\delta,t_{\mathrm{prev}}+\delta]$ with $\delta=10^{-4}$, multiplying
+$\delta$ by $4$ (up to fourteen times) until $D_N>0$ at the left end and $D_N<0$ at the
+right end; since the zero moves continuously with the parameter, this almost always
+succeeds and costs a handful of evaluations.  If it fails, $80$ equally spaced points of
+$[0.45,t_{\max}]$ are evaluated and the first sign change from $+$ to $-$ is taken.  The
+bracket is then refined by bisection until the interval stops shrinking at machine
+precision.
+
+\paragraph{Step 4: acceptance, doubling, and the case of zero entropy.}
+With $t_0$ in hand, $h=-\log t_0$.  The zero is accepted if $hN\ge\rho=25$ and $N$ is
+doubled otherwise, up to $N_{\max}$; if no sign change exists at all, $h$ is reported as
+$0$ after one precautionary increase of $N$, from $800$ to $3200$.  Both rules exist to
+keep the truncation error under control, and both are justified in \S\ref{sec:error}.
+
+It may help to follow one parameter through the four steps.  For $\lambda=3.7$ the
+critical orbit begins $0.5,\,0.925,\,0.2567,\,0.7061,\dots$; its signs are those of
+Figure~\ref{fig:kneading}(b) and its partial products those of panel~(c).  With $N=800$
+the search runs over $[0.45,0.9688]$, the first sign change is at $t_0=0.6827$, and
+$h=-\log t_0=0.38172$ --- the value listed for this parameter in the data set.
+
+A Horner evaluation costs $O(N)$ and a parameter needs of order fifteen of them once the
+bracket is inherited, so the sweep of $28\,696$ parameters used for the published data
+takes about $1.5$\,s on a single core, the largest order reached being $N=3200$.
+
+\section{Error control}\label{sec:error}
+
+\subsection{Truncation}
+
+Because $|\eps_k|=1$ for every $k$, the tail of \eqref{eq:D} is dominated by a geometric
+series, with no information about the orbit beyond the coefficients:
+\begin{equation}\label{eq:tail}
+  \bigl|D(t)-D_N(t)\bigr|\le\sum_{k>N}t^k=\frac{t^{N+1}}{1-t},\qquad 0<t<1 .
+\end{equation}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_determinant}
+  \caption{The zero and the truncation error.  (a)~$D_N(t)$ for $\lambda=3.7$ and
+  $N=800$; its smallest zero is $t_0=e^{-h}$, and beyond $t=1-\rho/N$ (shaded) the
+  truncation is no longer controlled.  (b)~$|h_N-h|$ against $hN$ for four parameters:
+  the curves collapse, which is the empirical content of \eqref{eq:tail}; the dashed line
+  is the acceptance threshold $hN=25$.}
+  \label{fig:determinant}
+\end{figure}
+
+This is the only a priori error in the method, and the thresholds of \S\ref{sec:algo} are
+chosen to control it.
+
+Figure~\ref{fig:determinant} tests both halves of the analysis.  Panel~(a) shows $D_N$ for
+$\lambda=3.7$ with its zero marked, and shades the region $t>1-\rho/N$ in which nothing is
+trusted.  Panel~(b) plots the distance between $h_N$ and its limit against $hN$ for four
+parameters.  The four curves collapse onto one: the error is governed by
+$t_0^{N}=e^{-hN}$ and by nothing else.  The dashed line at $hN=25$ is the acceptance
+threshold: by then the error has fallen to about $10^{-10}$, and a few more units of $hN$
+would only push it into the roundoff floor.  That is why the value $25$ was chosen rather
+than, say, $10$ or $100$.  It is worth stressing that \eqref{eq:tail} holds whatever the
+computed signs are, so it also covers the case in which the orbit itself is inaccurate
+(see \S\ref{sec:float}).
+
+\subsection{The acceptance criterion}
+
+Let $t_0=e^{-h}$ be the zero of $D$ and suppose $hN\ge\rho$.  Since $1-e^{-h}\ge h/2$ for
+$0<h\le1$, the error of the truncated determinant at the true zero is at most
+\[
+  \bigl|D_N(t_0)\bigr|=\bigl|D(t_0)-D_N(t_0)\bigr|
+  \le\frac{e^{-h(N+1)}}{1-e^{-h}}\le\frac{2e^{-25}}{h},
+\]
+which is at most $3\cdot10^{-9}$ when $h\ge10^{-2}$, and far smaller for larger $h$.  If
+$D'(t_0)\ne0$, the zero of $D_N$ differs from $t_0$ by at most this quantity divided by
+$|D'(t_0)|$.  The code does not estimate $D'$, so what is rigorously controlled is $D$
+rather than $h$ itself; in practice the zeros are simple with $|D'|$ of order one, and the
+exact tests of \S\ref{sec:validation} show errors at the level of roundoff.
+
+\subsection{The resolution floor}
+
+If there is no sign change in $[0.45,1-\rho/N]$, then either $h=0$ or $0<h<\rho/N$, and the
+two alternatives cannot be separated at order $N$.  After raising $N$ to $3200$ the code
+reports $0$, so a zero entropy is certified only down to $25/3200\approx0.008$.  The effect
+on the data is confined to the foot of the staircase: of the $28\,696$ parameters, exactly
+one ($\lambda=3.5699733$, a few $10^{-5}$ above $\lambda_\infty$) is reported as $0$ while
+its entropy is $0.0075$.  Recomputing the whole sweep with $N_0=6400$ changes no other
+value by more than $10^{-8}$, which is the sense in which the floor is the only limitation
+of the default settings.
+
+\subsection{The floating-point orbit}\label{sec:float}
+
+The signs are read off a double-precision orbit, whose error grows like $e^{\Lambda k}$
+with $\Lambda$ the Lyapunov exponent, so the itinerary is reliable only up to
+$k\approx16\log10/\Lambda$.  Two mechanisms keep this harmless.  On a hyperbolic component
+the critical orbit converges to the attracting cycle and, in floating point, reaches it
+exactly after finitely many steps; the computed sign sequence is then the true itinerary
+forever, and this covers every plateau of $h$.  And when $h$ is small the parameter is
+close to a parabolic or Feigenbaum value, $\Lambda$ is small, the horizon is far, and the
+criterion $hN\ge\rho$ asks for precisely the large $N$ that this accuracy permits.  Beyond
+the horizon the tail bound \eqref{eq:tail} makes the unknown terms harmless, since their
+total weight is at most $t^N/(1-t)$.
+
+\subsection{Degenerate zeros}
+
+The scan looks for a change of sign, so a smallest zero of even order would be passed over
+and a larger value of $h$ reported.  No such case occurred in any test, and in the
+postcritically finite case $D$ is a rational function whose zeros are generically simple.
+This is the one structural assumption of the search; it is recorded for completeness.
+
+\section{Validation}\label{sec:validation}
+
+\subsection{Parameters with known entropy}
+
+Table~\ref{tab:exact} compares the output with the exact values derived in
+\S\ref{sec:kneading}.  The first three are the cases of vanishing entropy, in which
+Theorem~\ref{thm:MT}(ii) applies; the last two are Examples~\ref{ex:lambda4}
+and~\ref{ex:p3}.  The agreement is at the level of roundoff.
+
+\begin{table}[h]
+\centering\small
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{lllll}
+\toprule
+$\lambda$ & $c$ & $h(\lambda)$ expected & computed & $|$error$|$ \\
+\midrule
+$2$ & $0$ & $0$ (critical point fixed) & $0.000000000000$ & $0$ \\
+$3$ & $-3/4$ & $0$ (parabolic fixed point) & $0.000000000000$ & $0$ \\
+$1+\sqrt5$ & $-1$ & $0$ (basilica centre) & $0.000000000000$ & $0$ \\
+$3.8318740553$ & $-1.7548777$ & $\log\varphi$ & $0.481211825060$ & $5.6\cdot10^{-17}$ \\
+$4$ & $-2$ & $\log2$ & $0.693147180560$ & $2.2\cdot10^{-16}$ \\
+\bottomrule
+\end{tabular}
+\caption{Exact tests.}
+\label{tab:exact}
+\end{table}
+
+\subsection{An independent count of laps}
+
+Theorem~\ref{thm:MS} can be tested without any kneading theory.  Iterating the inverse
+branches of $g_\lambda$ counts the solutions of $g_\lambda^n(x)=\tfrac12$, a number that
+grows at the same exponential rate as $\ell_n$; comparing its finite-$n$ growth rate with
+the value produced by the determinant checks the whole chain of \S\ref{sec:kneading}
+independently.  Table~\ref{tab:laps} shows the outcome, and Figure~\ref{fig:lapgrowth}
+the same thing graphically.  The discrepancy decreases with $n$
+and is largest where $h$ is small, because the subexponential corrections to the growth are
+then relatively more important.
+
+\begin{table}[h]
+\centering\small
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{lrrrr}
+\toprule
+$\lambda$ & $n$ & number of solutions & growth rate over $4$ steps & $h(\lambda)$ \\
+\midrule
+$3.62$ & $26$ & $3\,068$ & $0.234676$ & $0.234370$ \\
+$3.72$ & $26$ & $67\,872$ & $0.399328$ & $0.399570$ \\
+$3.83$ & $26$ & $392\,612$ & $0.481104$ & $0.481212$ \\
+$3.95$ & $25$ & $4\,265\,466$ & $0.600110$ & $0.600143$ \\
+$4.00$ & $22$ & $4\,194\,244$ & $0.693144$ & $0.693147$ \\
+\bottomrule
+\end{tabular}
+\caption{Independent check by counting solutions of $g^n(x)=\tfrac12$.}
+\label{tab:laps}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_lapgrowth}
+  \caption{The independent check of Theorem~\ref{thm:MS}: the logarithm of the number of
+  solutions of $g_\lambda^n(x)=\tfrac12$ against $n$, for five parameters.  The superposed
+  straight lines have slope $h(\lambda)$ as computed from the determinant.}
+  \label{fig:lapgrowth}
+\end{figure}
+
+The slopes in the figure are read off over the range in which the counts are still far
+from the roundoff floor; where they agree, the two computations of $h$ agree.
+
+\subsection{An exact plateau}
+
+The most conspicuous feature of the graph is the step at $h=\log\varphi$, and it is not a
+numerical accident.  At $\lambda=3.845$ the computed sign sequence is exactly
+$12$-periodic, so $D=P(t)/(1-t^{12})$ with $P$ of degree $11$ and integer coefficients;
+$P$ is divisible by $t^2+t-1$, hence $D(1/\varphi)=0$ exactly and, since no smaller zero
+exists, $h=\log\varphi$.  At $\lambda=3.85$, $3.855$ and $3.8565$ a $60$-digit evaluation
+of the truncated series gives $|D(1/\varphi)|<10^{-60}$, that is, zero to the precision of
+$\varphi$ itself.  The step runs from the saddle-node $\lambda=1+\sqrt8=3.8284271$ to
+$\lambda\approx3.8568$, the real extent of the period-$3$ copy of the Mandelbrot set,
+before $h$ rises again.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_plateau}
+  \caption{The plateau at $\log\varphi$ against the bifurcation diagram of the same
+  parameters.  The step in $h$ coincides with the period-3 window and is exactly flat from
+  the saddle-node at $3.8284$ out to $\lambda\approx3.8568$.}
+  \label{fig:plateau}
+\end{figure}
+
+Figure~\ref{fig:plateau} places the step against the bifurcation diagram.  The plateau in
+$h$ coincides with the period-3 window, and it ends only where the window's own structure
+ends, at $\lambda\approx3.8568$; between the two the entropy does not move at all, even
+though the attracting cycle doubles repeatedly along the way.
+
+\section{Concluding remarks}
+
+Two things are proved along the way and one is assumed.  The reduction of the entropy to
+the growth rate of lap numbers is a theorem of Misiurewicz and Szlenk, and the identification
+of that growth rate with the reciprocal of the smallest zero of the kneading determinant is
+a theorem of Milnor and Thurston; the truncation bound \eqref{eq:tail} is elementary and is
+what makes the scheme trustworthy, since it converts a series that cannot be summed into a
+criterion that can be checked at every parameter.  What is assumed is that the smallest zero
+of the truncated determinant is simple, so that the search for a sign change finds it; the
+assumption is stated in \S\ref{sec:error} and never failed.  Nothing in the method is
+special to the logistic family except the bound $h\le\log2$ that places the zero above
+$\tfrac12$: any unimodal family with a computable kneading sequence can be treated the same
+way, once the orbit and its signs are supplied.
+
+\begin{thebibliography}{9}\footnotesize\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+\bibitem{dMvS} W.~de Melo and S.~van Strien, \emph{One-dimensional dynamics},
+Ergebnisse der Mathematik 25, Springer, 1993.
+\bibitem{MT} J.~Milnor and W.~Thurston, On iterated maps of the interval, in
+\emph{Dynamical Systems} (College Park, 1986--87), Lecture Notes in Math. 1342,
+Springer, 1988, 465--563.
+\bibitem{MS} M.~Misiurewicz and W.~Szlenk, Entropy of piecewise monotone mappings,
+\emph{Studia Math.} 67 (1980), 45--63.
+\bibitem{Tiozzo} G.~Tiozzo, Topological entropy of quadratic polynomials and dimension of
+sections of the Mandelbrot set, \emph{Adv. Math.} 273 (2015), 651--715.
+\end{thebibliography}
+
+\end{document}
