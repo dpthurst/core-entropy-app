@@ -72,15 +72,15 @@ it is zero on the whole period-doubling cascade, i.e. for `2 ≤ λ ≤ λ∞ �
 | 3 | −3/4 | 0 (parabolic fixed point) |
 | 1+√5 ≈ 3.2360679 | −1 | 0 (basilica centre) |
 | λ∞ ≈ 3.5699457 | ≈ −1.4011552 | 0 (Feigenbaum accumulation) |
-| ≈ 3.8318741 | ≈ −1.7548777 | log φ ≈ 0.4812118 (period-3 centre) |
+| ≈ 3.8318741 | ≈ −1.7548777 | log τ ≈ 0.4812118 (period-3 centre) |
 | 4 | −2 | log 2 ≈ 0.6931472 (Chebyshev map) |
 
-The step at `h = log φ` is unusually wide. The period-3 hyperbolic component itself is
+The step at `h = log τ` is unusually wide. The period-3 hyperbolic component itself is
 `[3.8284, 3.8415]` (saddle-node at `1+√8`, period doubling at `3.8414990`), but `h` stays
-exactly `log φ` out to `λ ≈ 3.8568`, i.e. over `c ∈ [−1.789, −1.75]` — the real extent of
+exactly `log τ` out to `λ ≈ 3.8568`, i.e. over `c ∈ [−1.789, −1.75]` — the real extent of
 the period-3 copy of the Mandelbrot set — and only then rises again. At `λ = 3.845` the
 kneading determinant is exactly `(1 − t − t²)·Q(t)/(1 − t¹²)` with `Q` of degree 9, so the
-entropy is exactly `log φ`; a 60-digit evaluation confirms `D(1/φ) = 0` at `λ = 3.85,
+entropy is exactly `log τ`; a 60-digit evaluation confirms `D(1/τ) = 0` at `λ = 3.85,
 3.855, 3.8565` as well.
 
 ## How h is computed
@@ -152,16 +152,16 @@ the download fails the HTML falls back to a CDN `<script>` tag.
 h(2)          = 0                        exact, critical point fixed
 h(3)          = 0                        exact, parabolic fixed point
 h(1+√5)       = 0                        exact, basilica centre
-h(3.8318741)  = 0.481211825060 = log φ   |err| < 1e-16
+h(3.8318741)  = 0.481211825060 = log τ   |err| < 1e-16
 h(4)          = 0.693147180560 = log 2   |err| < 1e-16
 ```
 
 plus an independent check that the number of laps of `g^n` (preimages of the critical
 point, computed from the dynamics alone) grows like `e^{hn}`, and monotonicity of `h` on
-a 4001-point sweep. The `log φ` plateau was checked separately: at `λ = 3.845` the sign
+a 4001-point sweep. The `log τ` plateau was checked separately: at `λ = 3.845` the sign
 sequence is exactly 12-periodic and the numerator of `D` is exactly divisible by
-`t² + t − 1`, so the zero is exactly `1/φ`; at `λ = 3.85, 3.855, 3.8565` a 60-digit
-evaluation gives `D(1/φ) = 0` to the precision of `φ` itself.
+`t² + t − 1`, so the zero is exactly `1/τ`; at `λ = 3.85, 3.855, 3.8565` a 60-digit
+evaluation gives `D(1/τ) = 0` to the precision of `τ` itself.
 
 ## The integrated page
 

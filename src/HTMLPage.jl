@@ -131,7 +131,7 @@ const PAGE = raw"""<!DOCTYPE html>
       <a href="#" data-lam="3.5699456718">λ∞ ≈ 3.5699457</a>, c ≈ −1.4011552 — Feigenbaum
       accumulation of period doublings, h = 0<br>
       <a href="#" data-lam="3.8318740553">λ ≈ 3.8318741</a>, c ≈ −1.7548777 — period-3 centre,
-      h = log φ ≈ 0.4812118<br>
+      h = log τ ≈ 0.4812118<br>
       <a href="#" data-lam="4">λ = 4</a>, c = −2 — Chebyshev map, h = log 2 ≈ 0.6931472
     </div>
     <div class="note">

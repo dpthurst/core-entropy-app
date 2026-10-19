@@ -77,7 +77,7 @@ def fig_output():
     a2.axhline(L2, color=GREY, lw=0.6, ls="--")
     a2.axhline(LP, color=GREY, lw=0.6, ls="--")
     a2.text(3.56, L2 + 0.02, r"$\log 2$", color=GREY, fontsize=7)
-    a2.text(3.56, LP + 0.02, r"$\log\varphi$", color=GREY, fontsize=7)
+    a2.text(3.56, LP + 0.02, r"$\log\tau$", color=GREY, fontsize=7)
     for x in (LAM_INF, LAM_P3):
         a2.axvline(x, color=GREY, lw=0.6, ls=":")
     a2.annotate(r"$\lambda_\infty$", xy=(LAM_INF, 0.05), xytext=(3.60, 0.20), fontsize=7,
@@ -458,7 +458,7 @@ def fig_plateau():
     a.set_xlabel(r"$\lambda$"); a.set_ylabel(r"$h(\lambda)$")
     a.grid(alpha=0.12, lw=0.5, zorder=0)
     a.axhline(LP, color=GREY, lw=0.6, ls="--")
-    a.text(lo + 0.002, LP + 0.012, r"$\log\varphi$", color=GREY, fontsize=7)
+    a.text(lo + 0.002, LP + 0.012, r"$\log\tau$", color=GREY, fontsize=7)
     for x, lab in ((3.8284271, "saddle-node"), (3.8414990, "period doubling")):
         a.axvline(x, color="0.4", lw=0.6, ls=":")
     a.annotate("period doubling", xy=(3.8415, 0.30), xytext=(3.8435, 0.42), fontsize=6.5,

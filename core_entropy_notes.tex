@@ -136,7 +136,7 @@ conjugate to the full tent map.
   \caption{The core entropy of $g_\lambda$ on $[2,4]$, as computed by the code described
   here on $28\,696$ parameters.  (a)~The whole range: $h$ vanishes identically up to the
   Feigenbaum parameter $\lambda_\infty$ and reaches $\log2$ at $\lambda=4$.  (b)~The
-  staircase on $[3.55,4]$; the dashed lines are $\log\varphi$ and $\log2$.}
+  staircase on $[3.55,4]$; the dashed lines are $\log\tau$ and $\log2$.}
   \label{fig:output}
 \end{figure}
 
@@ -145,7 +145,7 @@ Panel~(a) is the whole range: $h$ vanishes identically up to the Feigenbaum para
 $\lambda_\infty$, where the period-doubling cascade accumulates, and then climbs to
 $\log2$.  Panel~(b) resolves the climb.  It is not a curve but a staircase --- a flat step
 for every hyperbolic component, joined by steep pieces on which the parameter passes
-through the queer set --- and the widest of the steps is the one at $\log\varphi$, whose
+through the queer set --- and the widest of the steps is the one at $\log\tau$, whose
 length is explained in \S\ref{sec:validation}.
 
 \section{Kneading theory}\label{sec:kneading}
@@ -351,8 +351,8 @@ so $s=(-1,+1,-1)$ repeated and $\eps$ has period $3$ with $\eps=(1,-1,-1)$.  Hen
 \[
   D(t)=\frac{1-t-t^2}{1-t^3},
 \]
-whose smallest zero in $(0,1)$ is $t_0=1/\varphi$ with $\varphi=\tfrac{1+\sqrt5}{2}$, so
-$h(\lambda_3)=\log\varphi=0.481211825\ldots$.
+whose smallest zero in $(0,1)$ is $t_0=1/\tau$ with $\tau=\tfrac{1+\sqrt5}{2}$, so
+$h(\lambda_3)=\log\tau=0.481211825\ldots$.
 \end{example}
 
 In both cases the entropy is settled by a polynomial rather than a series: the determinant
@@ -513,13 +513,13 @@ g_\lambda^j(\tfrac12)$.  Both alternatives contradict (iii).
     \midrule
     $4$ & $\log2$ & $c\mapsto1\mapsto0\mapsto0$ & conjugacy \\
     $3.6785735\ldots$ & $\log\sqrt2$ & $c\mapsto$ repelling fixed point & conjugacy \\
-    $3.84$ & $\log\varphi$ & attracting $3$-cycle & collapses its basin \\
-    $3.85$ & $\log\varphi$ & chaotic, $g^3(c)=0.4605$ & collapses $[0.45,0.55]$ \\
+    $3.84$ & $\log\tau$ & attracting $3$-cycle & collapses its basin \\
+    $3.85$ & $\log\tau$ & chaotic, $g^3(c)=0.4605$ & collapses $[0.45,0.55]$ \\
     \bottomrule
   \end{tabular}
   \caption{Four parameters illustrating Proposition~\ref{prop:conj}.  The first two are
   conjugacies, the last two are not: at $\lambda=3.84$ the obstruction is the attracting
-  cycle, at $\lambda=3.85$ it is the coincidence $f_\varphi^3(\tfrac12)=\tfrac12$ in the
+  cycle, at $\lambda=3.85$ it is the coincidence $f_\tau^3(\tfrac12)=\tfrac12$ in the
   model while $g_\lambda^3(\tfrac12)\ne\tfrac12$.}
   \label{tab:conj}
 \end{table}
@@ -534,12 +534,12 @@ with $0.7281554937$ a repelling fixed point, while the critical orbit of $f_{\sq
 $\tfrac12\mapsto0.7071068\mapsto0.4142136\mapsto0.5857864$ and lands on its own fixed point;
 the two patterns agree, there is no homterval, and $A$ is a conjugacy.  At $\lambda=3.85$ the
 plateau of $A$ has width $0.10$, against $0.08$ at $\lambda=3.84$: on $[0.45,0.55]$ the lap
-number of $g_\lambda^n$ is $37$ at $n=16$, while $\varphi^{16}\approx2207$, so the interval is
+number of $g_\lambda^n$ is $37$ at $n=16$, while $\tau^{16}\approx2207$, so the interval is
 genuinely collapsed.
 
 So ``no attracting cycle'' is not the same as ``$A$ is a conjugacy''.  The extra obstructions
 come from the critical orbit of the model, and they occur on the level sets of $h$ that meet
-the growth numbers of periodic and preperiodic kneading sequences; the $h=\log\varphi$
+the growth numbers of periodic and preperiodic kneading sequences; the $h=\log\tau$
 plateau is the first and largest of them.
 
 \begin{remark}[Uniqueness]\label{rem:unique}
@@ -708,7 +708,7 @@ $\lambda$ & $c$ & $h(\lambda)$ expected & computed & $|$error$|$ \\
 $2$ & $0$ & $0$ (critical point fixed) & $0.000000000000$ & $0$ \\
 $3$ & $-3/4$ & $0$ (parabolic fixed point) & $0.000000000000$ & $0$ \\
 $1+\sqrt5$ & $-1$ & $0$ (basilica centre) & $0.000000000000$ & $0$ \\
-$3.8318740553$ & $-1.7548777$ & $\log\varphi$ & $0.481211825060$ & $5.6\cdot10^{-17}$ \\
+$3.8318740553$ & $-1.7548777$ & $\log\tau$ & $0.481211825060$ & $5.6\cdot10^{-17}$ \\
 $4$ & $-2$ & $\log2$ & $0.693147180560$ & $2.2\cdot10^{-16}$ \\
 \bottomrule
 \end{tabular}
@@ -759,20 +759,20 @@ from the roundoff floor; where they agree, the two computations of $h$ agree.
 
 \subsection{An exact plateau}
 
-The most conspicuous feature of the graph is the step at $h=\log\varphi$, and it is not a
+The most conspicuous feature of the graph is the step at $h=\log\tau$, and it is not a
 numerical accident.  At $\lambda=3.845$ the computed sign sequence is exactly
 $12$-periodic, so $D=P(t)/(1-t^{12})$ with $P$ of degree $11$ and integer coefficients;
-$P$ is divisible by $t^2+t-1$, hence $D(1/\varphi)=0$ exactly and, since no smaller zero
-exists, $h=\log\varphi$.  At $\lambda=3.85$, $3.855$ and $3.8565$ a $60$-digit evaluation
-of the truncated series gives $|D(1/\varphi)|<10^{-60}$, that is, zero to the precision of
-$\varphi$ itself.  The step runs from the saddle-node $\lambda=1+\sqrt8=3.8284271$ to
+$P$ is divisible by $t^2+t-1$, hence $D(1/\tau)=0$ exactly and, since no smaller zero
+exists, $h=\log\tau$.  At $\lambda=3.85$, $3.855$ and $3.8565$ a $60$-digit evaluation
+of the truncated series gives $|D(1/\tau)|<10^{-60}$, that is, zero to the precision of
+$\tau$ itself.  The step runs from the saddle-node $\lambda=1+\sqrt8=3.8284271$ to
 $\lambda\approx3.8568$, the real extent of the period-$3$ copy of the Mandelbrot set,
 before $h$ rises again.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{fig_plateau}
-  \caption{The plateau at $\log\varphi$ against the bifurcation diagram of the same
+  \caption{The plateau at $\log\tau$ against the bifurcation diagram of the same
   parameters.  The step in $h$ coincides with the period-3 window and is exactly flat from
   the saddle-node at $3.8284$ out to $\lambda\approx3.8568$.}
   \label{fig:plateau}

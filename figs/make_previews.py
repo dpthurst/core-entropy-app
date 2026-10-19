@@ -144,7 +144,7 @@ def preview_entropy():
     a2.axhline(L2, color="0.85", lw=.8)
     a2.axhline(LP, color="0.85", lw=.8)
     a2.text(3.555, L2 + 0.008, r"$\log 2$", fontsize=8, color="0.45")
-    a2.text(3.555, LP + 0.008, r"$\log\varphi$", fontsize=8, color="0.45")
+    a2.text(3.555, LP + 0.008, r"$\log\tau$", fontsize=8, color="0.45")
     a2.axvline(INF, color="0.72", lw=.9, ls=":")
     a2.annotate("period-3 plateau", xy=(3.845, LP), xytext=(3.79, 0.60), fontsize=8,
                 color="0.35", ha="center",
@@ -184,7 +184,7 @@ def preview_bifurcation():
     a2.axhline(L2, color="0.8", lw=.8)
     a2.axhline(LP, color="0.8", lw=.8)
     a2.text(3.725, L2 - 0.045, r"$\log 2$", fontsize=8, color="0.4")
-    a2.text(3.725, LP + 0.008, r"$\log\varphi$", fontsize=8, color="0.4")
+    a2.text(3.725, LP + 0.008, r"$\log\tau$", fontsize=8, color="0.4")
     plt.tight_layout()
     plt.savefig("preview_bifurcation.png", dpi=100, facecolor="white", bbox_inches="tight")
     plt.close(fig)

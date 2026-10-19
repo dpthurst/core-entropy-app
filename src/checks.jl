@@ -43,7 +43,7 @@ function run_checks()
         (2.0,           0.0,      "critical point fixed (c = 0)"),
         (3.0,           0.0,      "parabolic fixed point (c = -3/4)"),
         (1 + sqrt(5.0), 0.0,      "basilica centre (c = -1)"),
-        (lam3,          log(PHI), "period-3 centre (c = $(round(c3, digits = 7))): log φ"),
+        (lam3,          log(PHI), "period-3 centre (c = $(round(c3, digits = 7))): log τ"),
         (4.0,           LOG2,     "Chebyshev map (c = -2): log 2"),
     ]
     for (λ, want, name) in tests
