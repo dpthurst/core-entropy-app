@@ -9,25 +9,40 @@ g_λ(x) = λ x (1 − x),   2 ≤ λ ≤ 4,   x ∈ [0,1]
 computed by a small dependency-free Julia module and drawn by two front ends:
 an interactive HTML page and a Makie window.
 
-Files:
+Files.  The generated ones are marked *built*: they are not in the repository, and `make`
+produces them from the sources.
 
 | file | what |
 |---|---|
-| `core_entropy.jl` | front end: runs the sweep, writes the CSV and the HTML |
 | `src/CoreEntropy.jl` | the computational core — kneading theory, entropy solver, grid, CSV, shared helpers |
 | `src/checks.jl` | the validation suite (`--check`) |
 | `src/HTMLPage.jl` | the Plotly page |
+| `core_entropy.jl` | front end: runs the sweep, writes the CSV and the HTML |
+| `core_entropy.py` | the same sweep in Python (numpy); agrees with the Julia one to 5e-11 |
+| `tent_map.py` | Python front end: entropy, bifurcation diagram and tent map on one page |
 | `core_entropy_makie.jl` | front end: the Makie window |
-| `core_entropy.html` | the interactive plot (plotly.js embedded, works offline, ~5 MB) |
-| `core_entropy_data.csv` | `lambda,c,h` — 28 696 rows, 12 decimals |
-| `preview.png` | static preview |
-| `preview_bifurcation.png` | static preview with the bifurcation overlay |
-| `preview_tent.png` | static preview of the tent-map page |
-| `core_entropy_notes.pdf` | ten-page write-up of the mathematics and the algorithm, with seven figures (source: `core_entropy_notes.tex`) |
-| `figs/` | the seven figures of the write-up (`make_figures.py` rebuilds them from the CSV) |
-| `core_entropy.py` | Python port of the entropy sweep (kneading determinant); writes the CSV |
-| `tent_map.py` | writes `tent_map.html`: entropy, bifurcation diagram and the tent map on one page |
-| `tent_map.html` | that page (self-contained, ~5 MB) |
+| `core_entropy_notes.tex` | the write-up |
+| `figs/make_figures.py`, `figs/make_previews.py` | the figure and preview sources |
+| `Makefile` | builds everything below |
+| `core_entropy_data.csv` | *built* — `lambda,c,h`, 28 696 rows, 12 decimals |
+| `core_entropy.html` | *built* — the interactive entropy page (plotly.js embedded, ~5 MB) |
+| `tent_map.html` | *built* — the integrated page (~5 MB) |
+| `figs/fig_*.pdf` | *built* — the seven figures of the write-up |
+| `core_entropy_notes.pdf` | *built* — the ten-page write-up |
+| `preview*.png` | *built* — static previews |
+
+## Building
+
+```sh
+make            # everything (about 15 s)
+make note       # just the write-up, from the figures and the .tex
+make check      # validation of the Julia and the Python implementations
+make clean      # remove every generated file
+```
+
+`make` needs Julia (`core_entropy.jl`), Python 3 with numpy and matplotlib, `latexmk` with
+the usual TeX packages, and `pdftoppm` from poppler for one preview; `JULIA=`, `PYTHON=` and
+`LATEXMK=` override the tools.
 
 Both front ends compute with the same `src/CoreEntropy.jl`; neither of them contains any
 mathematics of its own.
