@@ -23,7 +23,7 @@ Files:
 | `preview.png` | static preview |
 | `preview_bifurcation.png` | static preview with the bifurcation overlay |
 | `preview_tent.png` | static preview of the tent-map page |
-| `core_entropy_notes.pdf` | eleven-page write-up of the mathematics and the algorithm, with seven figures (source: `core_entropy_notes.tex`) |
+| `core_entropy_notes.pdf` | ten-page write-up of the mathematics and the algorithm, with seven figures (source: `core_entropy_notes.tex`) |
 | `figs/` | the seven figures of the write-up (`make_figures.py` rebuilds them from the CSV) |
 | `core_entropy.py` | Python port of the entropy sweep (kneading determinant); writes the CSV |
 | `tent_map.py` | writes `tent_map.html`: entropy, bifurcation diagram and the tent map on one page |

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.10.2)  19 OCT 2026 19:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.10.2)  19 OCT 2026 19:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -642,12 +642,12 @@ File: figs/fig_plateau.pdf Graphic file (type pdf)
 Package pdftex.def Info: figs/fig_plateau.pdf  used on input line 580.
 (pdftex.def)             Requested size: 475.16138pt x 202.30669pt.
  [9 <./figs/fig_lapgrowth.pdf> <./figs/fig_plateau.pdf>]
-<figs/fig_model.pdf, id=568, 418.74442pt x 173.32655pt>
+<figs/fig_model.pdf, id=567, 418.74442pt x 173.32655pt>
 File: figs/fig_model.pdf Graphic file (type pdf)
 <use figs/fig_model.pdf>
-Package pdftex.def Info: figs/fig_model.pdf  used on input line 644.
-(pdftex.def)             Requested size: 475.16138pt x 196.68979pt.
- [10 <./figs/fig_model.pdf>] [11]
+Package pdftex.def Info: figs/fig_model.pdf  used on input line 642.
+(pdftex.def)             Requested size: 427.64233pt x 177.01817pt.
+ [10 <./figs/fig_model.pdf>]
 (./core_entropy_notes.aux)
  ***********
 LaTeX2e <2025-11-01>
@@ -657,13 +657,13 @@ Package rerunfilecheck Info: File `core_entropy_notes.out' has not changed.
 (rerunfilecheck)             Checksum: A06EDF8122CE58F3BD18C140A7806510;3567.
  ) 
 Here is how much of TeX's memory you used:
- 14119 strings out of 469438
- 220565 string characters out of 5468410
+ 14116 strings out of 469438
+ 220538 string characters out of 5468410
  686224 words of memory out of 5000000
  42348 multiletter control sequences out of 15000+600000
- 695830 words of font info for 173 fonts, out of 8000000 for 9000
+ 695747 words of font info for 172 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 75i,10n,79p,1015b,624s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,1015b,604s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/ty
 pe1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></u
 sr/share/texmf/fonts/type1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/p
@@ -676,10 +676,10 @@ nts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr9.pfb><
 hare/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public
 /lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/te
 xlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on core_entropy_notes.pdf (11 pages, 599236 bytes).
+Output written on core_entropy_notes.pdf (10 pages, 598732 bytes).
 PDF statistics:
- 730 PDF objects out of 1000 (max. 8388607)
- 380 compressed objects within 4 object streams
- 66 named destinations out of 1000 (max. 500000)
+ 725 PDF objects out of 1000 (max. 8388607)
+ 376 compressed objects within 4 object streams
+ 65 named destinations out of 1000 (max. 500000)
  36036 words of extra memory for PDF output out of 42996 (max. 10000000)
 

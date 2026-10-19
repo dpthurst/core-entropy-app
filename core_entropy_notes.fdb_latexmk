@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1792439310.82759 "core_entropy_notes.tex" "core_entropy_notes.pdf" "core_entropy_notes" 1792439311.07241 0
+["pdflatex"] 1792439340.69026 "core_entropy_notes.tex" "core_entropy_notes.pdf" "core_entropy_notes" 1792439340.93309 0
   "/etc/texmf/web2c/texmf.cnf" 1790929846.72353 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1246382020 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -130,9 +130,9 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1769369718 41603 27f93b3067076450172040dcd57ca8b3 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1790929883 165211 6b08d096f3d0fe5ff6b266061a2b45e0 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1790929910 2265763 bd2606bdcf6f0c5d6acabd97da4da8de ""
-  "core_entropy_notes.aux" 1792439311.02919 11254 c4ee16825ab3f6a479d5d3dec84aa55b "pdflatex"
-  "core_entropy_notes.out" 1792439311.02919 3567 a06edf8122ce58f3bd18c140a7806510 "pdflatex"
-  "core_entropy_notes.tex" 1792439310.48332 35195 28346c53a900163b6ba0293dc803b934 ""
+  "core_entropy_notes.aux" 1792439340.89021 11254 3b10034eff4d04b9c07fcf9490eaf2f7 "pdflatex"
+  "core_entropy_notes.out" 1792439340.89021 3567 a06edf8122ce58f3bd18c140a7806510 "pdflatex"
+  "core_entropy_notes.tex" 1792439340.35311 34946 6d5d8eadb3b9ab91ede28455e2369a2e ""
   "figs/fig_determinant.pdf" 1792439174.14409 28148 baf19cc4eaaacf2d55a64ab156b072b6 ""
   "figs/fig_kneading.pdf" 1792439171.67009 34757 56da63f5ca83737f1c73f145c9896b93 ""
   "figs/fig_lapgrowth.pdf" 1792439177.6521 28090 cdca34f42f2cdc7b7b22c28320867ded ""

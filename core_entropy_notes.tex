@@ -623,25 +623,23 @@ where $f_s(y)=sy$ for $y\le\tfrac12$ and $f_s(y)=s(1-y)$ for $y\ge\tfrac12$.
 
 The map supplied by \cite[Theorem 7.4]{MT} is piecewise linear with slope $\pm s$; since
 $g_\lambda$ has two laps the model has at most two, and since $s>1$ it cannot have fewer, so
-it is $f_s$.  That is the only point of the quoted statement that has to be checked to read
-it in the notation of this paper.
+it is $f_s$.
 
-The map $A$ is not a conjugacy.  It may collapse intervals to points --- in particular the
-basin of an attracting cycle of $g_\lambda$ goes to a cycle of $f_s$ --- and the arrow does
-not reverse: a tent map has no attracting cycle, while $g_\lambda$ may have one.
-Figure~\ref{fig:model} shows the three objects at $\lambda=3.7$.  Panel~(c) is computed by
-following the itinerary of $x$ and pulling a seed back through the branches of $f_s$, which
-contracts at rate $s^{-n}$.
+The map $A$ is not a conjugacy: it may collapse intervals to points, and in particular the
+basin of an attracting cycle of $g_\lambda$ goes to a cycle of $f_s$.  The arrow does not
+reverse --- a tent map has no attracting cycle, while $g_\lambda$ may have one.
+Figure~\ref{fig:model} shows the three objects at $\lambda=3.7$; panel~(c) is computed by
+following the itinerary of $x$ and pulling a seed back through the branches of $f_s$.
 
-What this gives the computation is a second way to see the lap numbers.  Since
+This gives a second way to see the lap numbers.  Since
 $f_s(A(x))=A(g_\lambda(x))$, the map $A$ carries every lap of $g_\lambda^n$ into a lap of
 $f_s^n$, so $\ell(f_s^n)\le\ell(g_\lambda^n)$; both grow like $s^n$, and at $\lambda=3.7$
 they agree at every $n$ we computed, as panels~(b) and~(c) of Figure~\ref{fig:laps} show for
-$n=6$.  The growth number $s$ itself is what \S\ref{sec:algo} computes, as $1/t_0$.
+$n=6$.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{fig_model}
+  \includegraphics[width=0.9\textwidth]{fig_model}
   \caption{The three objects at $\lambda=3.7$.  (a)~$g_\lambda$, with the cobweb of the
   critical orbit.  (b)~the tent map $f_s$ of slope $s=e^{h(\lambda)}=1.4648$, with its own
   cobweb.  (c)~the map $A$ of Theorem~\ref{thm:model}, on which the iterates of the critical
