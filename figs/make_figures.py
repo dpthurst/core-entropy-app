@@ -30,6 +30,16 @@ d = np.loadtxt("core_entropy_data.csv", delimiter=",", skiprows=1)
 lam, h = d[:, 0], d[:, 2]
 
 
+def dedupe(v, tol=1e-9):
+    """sorted copy with points closer than tol merged"""
+    v = sorted(v)
+    out = []
+    for z in v:
+        if not out or z - out[-1] > tol:
+            out.append(z)
+    return out
+
+
 def g(x, l):
     return l * x * (1 - x)
 
@@ -162,58 +172,139 @@ def fig_kneading():
 
 
 # ---------------------------------------------------------------- figure 3
-def dedupe(v):
-    v = np.sort(np.asarray(v))
-    out = []
-    for z in v:
-        if not out or z - out[-1] > 1e-12:
-            out.append(z)
-    return out
+def preimages_log(lam0):
+    def f(y):
+        disc = 1 - 4*y/lam0
+        if disc <= 0:
+            return []
+        r = np.sqrt(disc)
+        return [0.5*(1 + r), 0.5*(1 - r)]
+    return f
 
 
-def critical_points(lam0, n):
-    """union of the preimages of 1/2 under g^k, k = 0..n-1: the turning points of g^n"""
-    pts = [0.5]
-    S = [0.5]
+def preimages_tent(s):
+    def f(y):
+        if y > s/2:
+            return []
+        return [p for p in (y/s, 1 - y/s) if 0 < p < 1]
+    return f
+
+
+def lap_count(pre, n, tol=1e-9):
+    S = [0.5]; allp = [0.5]
     for _ in range(n - 1):
-        new = []
+        nx = []
         for y in S:
-            disc = 1 - 4 * y / lam0
-            if disc <= 0:
-                continue
-            r = np.sqrt(disc)
-            new += [0.5 * (1 + r), 0.5 * (1 - r)]
-        S = dedupe(new)
-        pts += [p for p in S if 0 < p < 1]
-    return dedupe([p for p in pts if 0 < p < 1])
-
-
-def laps_of(lam0, n, m=4000):
-    x = np.linspace(0, 1, m)
-    y = x.copy()
-    for _ in range(n):
-        y = g(y, lam0)
-    edges = np.concatenate([[0.0], critical_points(lam0, n), [1.0]])
-    return x, y, edges
+            nx += pre(y)
+        S = dedupe([p for p in nx if 0 < p < 1], tol)
+        allp = dedupe(allp + S, tol)
+    return len([p for p in allp if 0 < p < 1]) + 1
 
 
 def fig_laps():
     lam0 = 3.7
-    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.05), sharey=True,
-                            gridspec_kw={"wspace": 0.12})
-    for a, n in zip(axs, (1, 2, 3)):
-        x, y, edges = laps_of(lam0, n)
-        a.plot(x, y, color=BLUE, lw=1.0)
-        for i in range(len(edges) - 1):
-            if i % 2 == 0:
-                a.axvspan(edges[i], edges[i + 1], color=RED, alpha=0.07, lw=0)
-        for e in edges[1:-1]:
-            a.axvline(e, color=RED, lw=0.5, ls="--")
-        a.set_xlim(0, 1); a.set_ylim(0, 1.02)
-        a.set_xlabel(r"$x$")
-        a.set_title(r"$g_\lambda^{%d}$:  $\ell_{%d}=%d$" % (n, n, len(edges) - 1), fontsize=8)
-    axs[0].set_ylabel(r"$g_\lambda^{\,n}(x)$")
+    s0 = float(np.exp(np.interp(lam0, lam, h)))
+    N = 6
+    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.15),
+                            gridspec_kw={"wspace": 0.28})
+    x = np.linspace(0, 1, 3000)
+
+    a = axs[0]
+    y = g(x, lam0)
+    a.plot(x, y, color=BLUE, lw=1.0)
+    turns = [0.5]
+    edges = np.concatenate([[0.0], turns, [1.0]])
+    for i in range(len(edges) - 1):
+        if i % 2 == 0:
+            a.axvspan(edges[i], edges[i+1], color=RED, alpha=0.07, lw=0)
+    a.axvline(0.5, color=RED, lw=0.5, ls="--")
+    a.set_title(r"$g_\lambda$:  $\ell_1=2$", fontsize=8)
+    a.set_xlabel(r"$x$"); a.set_ylabel(r"$g_\lambda(x)$")
+
+    a = axs[1]
+    y = x.copy()
+    for _ in range(N):
+        y = g(y, lam0)
+    a.plot(x, y, color=BLUE, lw=0.6)
+    a.set_title(r"$g_\lambda^{%d}$:  $\ell_{%d}=%d$" % (N, N, lap_count(preimages_log(lam0), N)),
+                fontsize=8)
+    a.set_xlabel(r"$x$")
+
+    a = axs[2]
+    y = x.copy()
+    for _ in range(N):
+        y = np.where(y < 0.5, s0*y, s0*(1 - y))
+    a.plot(x, y, color="#2f6b4f", lw=0.6)
+    a.set_title(r"$f_s^{%d}$:  $\ell_{%d}=%d$" % (N, N, lap_count(preimages_tent(s0), N)),
+                fontsize=8)
+    a.set_xlabel(r"$y$")
+    for a in axs:
+        a.set_xlim(0, 1); a.set_ylim(-0.02, 1.04)
+        a.tick_params(labelsize=7); a.grid(alpha=.18, lw=.5)
+        a.spines[["top", "right"]].set_visible(False)
     fig.savefig("figs/fig_laps.pdf", bbox_inches="tight")
+
+
+def fig_model():
+    lam0 = 3.7
+    s0 = float(np.exp(np.interp(lam0, lam, h)))
+
+    def A_of(x, n=64):
+        y = x; w = []
+        for _ in range(n):
+            w.append(1 if y < 0.5 else -1)
+            y = g(y, lam0)
+        u = 0.5
+        for c in reversed(w):
+            u = u/s0 if c > 0 else 1 - u/s0
+        return u
+
+    def tent(y):
+        return s0*y if y < 0.5 else s0*(1 - y)
+
+    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.15), gridspec_kw={"wspace": 0.28})
+
+    a = axs[0]
+    x = np.linspace(0, 1, 400)
+    a.plot(x, g(x, lam0), color=BLUE, lw=1.0)
+    a.plot([0, 1], [0, 1], color=GREY, lw=0.6, ls=":")
+    px, py = [], []
+    z = 0.5
+    for _ in range(30):
+        w = g(z, lam0)
+        px += [z, z, w]; py += [z, w, w]; z = w
+    a.plot(px, py, color=RED, lw=0.5)
+    a.set_title(r"(a)  $g_\lambda$,  $\lambda=3.7$", fontsize=8)
+    a.set_xlabel(r"$x$"); a.set_ylabel(r"$g_\lambda(x)$")
+
+    a = axs[1]
+    a.plot([0, 0.5, 1], [0, s0/2, 0], color="#2f6b4f", lw=1.0)
+    a.plot([0, 1], [0, 1], color=GREY, lw=0.6, ls=":")
+    px, py = [], []
+    z = 0.5
+    for _ in range(30):
+        w = tent(z)
+        px += [z, z, w]; py += [z, w, w]; z = w
+    a.plot(px, py, color=RED, lw=0.5)
+    a.set_title(r"(b)  $f_s$,  $s=e^{h(\lambda)}=%.3f$" % s0, fontsize=8)
+    a.set_xlabel(r"$y$"); a.set_ylabel(r"$f_s(y)$")
+
+    a = axs[2]
+    gx = np.linspace(0, 1, 300)
+    a.plot(gx, [A_of(v) for v in gx], color="#333", lw=1.0)
+    oL = [0.5]
+    for _ in range(6):
+        oL.append(g(oL[-1], lam0))
+    a.plot(oL, [A_of(v) for v in oL], "o", ms=3.5, color=RED, zorder=5)
+    a.plot([0, 1], [0, 1], color=GREY, lw=0.6, ls=":")
+    a.set_title(r"(c)  $A$:  $f_s\circ A=A\circ g_\lambda$", fontsize=8)
+    a.set_xlabel(r"$x$"); a.set_ylabel(r"$A(x)$")
+
+    for a in axs:
+        a.set_xlim(0, 1); a.set_ylim(-0.02, 1.04)
+        a.tick_params(labelsize=7); a.grid(alpha=.18, lw=.5)
+        a.spines[["top", "right"]].set_visible(False)
+    fig.savefig("figs/fig_model.pdf", bbox_inches="tight")
 
 
 # ---------------------------------------------------------------- figure 4
@@ -382,8 +473,9 @@ if __name__ == "__main__":
     fig_output()
     fig_kneading()
     fig_laps()
+    fig_model()
     fig_determinant()
     fig_lapgrowth()
     fig_plateau()
-    print("wrote figs/fig_output.pdf, fig_kneading.pdf, fig_laps.pdf,")
+    print("wrote figs/fig_output.pdf, fig_kneading.pdf, fig_laps.pdf, fig_model.pdf,")
     print("      fig_determinant.pdf, fig_lapgrowth.pdf, fig_plateau.pdf")
