@@ -22,8 +22,11 @@ Files:
 | `core_entropy_data.csv` | `lambda,c,h` — 28 696 rows, 12 decimals |
 | `preview.png` | static preview |
 | `preview_bifurcation.png` | static preview with the bifurcation overlay |
+| `preview_tent.png` | static preview of the tent-map page |
 | `core_entropy_notes.pdf` | ten-page write-up of the mathematics and the algorithm, with figures (source: `core_entropy_notes.tex`) |
 | `figs/` | the six figures of the write-up (`make_figures.py` rebuilds them from the CSV) |
+| `tent_map.py` | writes `tent_map.html`: g_λ beside its semi-conjugate tent map |
+| `tent_map.html` | that page (self-contained, ~5 MB) |
 
 Both front ends compute with the same `src/CoreEntropy.jl`; neither of them contains any
 mathematics of its own.
@@ -143,6 +146,20 @@ a 4001-point sweep. The `log φ` plateau was checked separately: at `λ = 3.845`
 sequence is exactly 12-periodic and the numerator of `D` is exactly divisible by
 `t² + t − 1`, so the zero is exactly `1/φ`; at `λ = 3.85, 3.855, 3.8565` a 60-digit
 evaluation gives `D(1/φ) = 0` to the precision of `φ` itself.
+
+## The tent map
+
+`tent_map.py` (Python, numpy only) writes `tent_map.html`: `g_λ` and the tent map `f_s` of
+slope `s = e^{h(λ)} = 1/t₀` side by side, with the cobweb of the critical orbit in each,
+the itinerary the two orbits share, and the semi-conjugacy `h` itself — the continuous
+nondecreasing map with `h ∘ f_s = g_λ ∘ h`, drawn by matching the turning points of the
+iterates.  Move the `λ` slider and everything follows.
+
+A caveat that the page states where it applies: `s = e^{h(λ)}` always matches the *entropy*,
+but the two maps share a kneading sequence — and so are semi-conjugate — only when `g_λ`
+has no attracting cycle.  That holds at 86% of the parameters in `[3.6,4]`; inside a
+hyperbolic component no tent map has the same itinerary, because no tent map has an
+attracting cycle at all, and the page then says so and shows the two differing itineraries.
 
 ## A native window
 
