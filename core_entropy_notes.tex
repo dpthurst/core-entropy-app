@@ -65,7 +65,8 @@ The purpose of this note is to record the algorithm by which the staircase is co
 the conventions it uses and the control it keeps over the truncation error.
 Section~\ref{sec:core} fixes the object, \S\ref{sec:kneading} recalls the kneading theory
 that turns the entropy into a root of a power series, \S\ref{sec:model} the piecewise-linear
-model and how its semi-conjugacy is computed, \S\ref{sec:algo} and~\ref{sec:error} describe
+model, how its semi-conjugacy is computed and when it is a conjugacy, \S\ref{sec:algo}
+and~\ref{sec:error} describe
 and analyse the numerical scheme, and \S\ref{sec:validation} collects the evidence that the
 implementation is correct.  The code,
 \texttt{src/CoreEntropy.jl}, follows the same order; the two front ends contain no
@@ -383,9 +384,10 @@ $g_\lambda$ has two laps the model has at most two, and since $s>1$ it cannot ha
 it is $f_s$.  That is the only point of the quoted statement that has to be checked to read
 it in the notation used here.
 
-The map $A$ is not a conjugacy: it may collapse intervals to points, and in particular the
-basin of an attracting cycle of $g_\lambda$ goes to a cycle of $f_s$.  The arrow does not
-reverse --- a tent map has no attracting cycle, while $g_\lambda$ may have one.  What it buys
+The map $A$ is not always a conjugacy: it may collapse intervals to points, and in particular
+the basin of an attracting cycle of $g_\lambda$ goes to a cycle of $f_s$
+(\S\ref{sec:conjugacy}).  The arrow does not reverse --- a tent map has no attracting cycle,
+while $g_\lambda$ may have one.  What it buys
 the computation is a second view of the lap numbers: since $f_s(A(x))=A(g_\lambda(x))$, the
 map $A$ carries every lap of $g_\lambda^n$ into a lap of $f_s^n$, so
 $\ell(f_s^n)\le\ell(g_\lambda^n)$, and both grow like $s^n$.  At $\lambda=3.7$ they agree at
@@ -444,6 +446,110 @@ $1.0\times10^{-14}$ and $2.2\times10^{-16}$.
   orbit of $f_s$ (abscissae) sit at the corresponding iterates of $g_\lambda$ (ordinates).}
   \label{fig:model}
 \end{figure}
+
+\subsection{When the semi-conjugacy is a conjugacy}\label{sec:conjugacy}
+
+Since $A$ is monotone, it fails to be injective exactly when it collapses a nondegenerate
+interval to a point.  Collapses propagate: if $A$ collapses $J$, so that $\Lambda(J)=0$, then
+$\Lambda(g_\lambda^n(J))=0$ for every $n\ge0$, because $g_\lambda^n(J)$ is a union of intervals
+on which $g_\lambda^n$ is monotone, each of which is collapsed by Lemma~7.3 of \cite{MT}.  The
+question is therefore which intervals can be collapsed.
+
+An interval $J$ is a \emph{homterval} if every iterate $g_\lambda^n$ is monotone on it,
+equivalently if no iterate carries a point of $J$ to the critical point $\tfrac12$.  All points
+of a homterval have the same itinerary, so $A$ is constant on it.  For the quadratic family the
+homtervals are exactly the intervals in the basins of the attracting and neutral cycles: a
+homterval is either attracted to such a cycle or wandering, and an $S$-unimodal map has no
+wandering intervals \cite{dMvS,Guck}.  For an attracting cycle this is Singer's theorem: the
+critical point lies in its basin \cite{Sing}, and a parabolic cycle attracts the critical point
+as well.  So an attracting or a parabolic cycle makes $A$ strict, and if there is no such
+cycle the itinerary map of $g_\lambda$ is injective.
+
+That is not the end of the story, because $f_s$ has a critical point too, and the two inverse
+branches of \eqref{eq:Alim} agree there:
+\[
+  T_0(s/2)=T_1(s/2)=\tfrac12 .
+\]
+If $f_s^k(\tfrac12)=f_s^j(\tfrac12)$ for some $k>j\ge0$, then for every $x$
+\begin{equation}\label{eq:ident}
+  A\bigl(g_\lambda^k(x)\bigr)=f_s^k\bigl(A(x)\bigr)
+  =f_s^j\bigl(A(x)\bigr)=A\bigl(g_\lambda^j(x)\bigr),
+\end{equation}
+and if $g_\lambda^k(x)\ne g_\lambda^j(x)$, monotonicity makes $A$ constant on the interval
+between them.  At $x=\tfrac12$ this is a genuine collapse unless the critical orbit of
+$g_\lambda$ has the same coincidence.  The critical orbit of $f_s$ is eventually periodic for a
+countable set of slopes, namely the growth numbers of the periodic and preperiodic kneading
+sequences; on the corresponding level sets of $h$ the collapse \eqref{eq:ident} therefore takes
+place unless $g_\lambda$'s critical orbit is preperiodic with exactly the same pattern.
+
+\begin{proposition}\label{prop:conj}
+For $s=e^{h(\lambda)}>1$ the following are equivalent:
+\begin{enumerate}[label=(\roman*)]
+  \item $A$ is injective;
+  \item $g_\lambda$ is topologically conjugate to $f_s$;
+  \item $g_\lambda$ has no homterval, and $g_\lambda^k(\tfrac12)=g_\lambda^j(\tfrac12)$ for
+        every $k>j\ge0$ with $f_s^k(\tfrac12)=f_s^j(\tfrac12)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i)$\Leftrightarrow$(ii): a monotone surjection is a homeomorphism exactly when it is
+injective, and $f_s(A(x))=A(g_\lambda(x))$ then exhibits the conjugacy.  (ii)$\Rightarrow$(iii):
+a conjugacy carries homtervals to homtervals and the critical orbit of $g_\lambda$ to that of
+$f_s$, and $f_s$ has no homterval because $|f_s'|=s>1$ wherever it is differentiable.
+(iii)$\Rightarrow$(i): if $A(x)=A(y)$ for $x<y$, then either the two points have equal
+itineraries --- and then $[x,y]$ is a homterval --- or some iterate maps $[x,y]$ across the
+critical point; in the second case the two itineraries are exchanged by the two inverse
+branches at the critical value of $f_s$, and following the critical orbit produces a
+coincidence $f_s^k(\tfrac12)=f_s^j(\tfrac12)$ with $g_\lambda^k(\tfrac12)\ne
+g_\lambda^j(\tfrac12)$.  Both alternatives contradict (iii).
+\end{proof}
+
+\begin{table}[htbp]
+  \centering\small
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    $\lambda$ & $h(\lambda)$ & behaviour of $g_\lambda$ & $A$ \\
+    \midrule
+    $4$ & $\log2$ & $c\mapsto1\mapsto0\mapsto0$ & conjugacy \\
+    $3.6785735\ldots$ & $\log\sqrt2$ & $c\mapsto$ repelling fixed point & conjugacy \\
+    $3.84$ & $\log\varphi$ & attracting $3$-cycle & collapses its basin \\
+    $3.85$ & $\log\varphi$ & chaotic, $g^3(c)=0.4605$ & collapses $[0.45,0.55]$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Four parameters illustrating Proposition~\ref{prop:conj}.  The first two are
+  conjugacies, the last two are not: at $\lambda=3.84$ the obstruction is the attracting
+  cycle, at $\lambda=3.85$ it is the coincidence $f_\varphi^3(\tfrac12)=\tfrac12$ in the
+  model while $g_\lambda^3(\tfrac12)\ne\tfrac12$.}
+  \label{tab:conj}
+\end{table}
+
+Table~\ref{tab:conj} collects the examples.  At $\lambda=4$ the semi-conjugacy is
+$A(x)=\tfrac2\pi\arcsin\sqrt x$, a homeomorphism.  At
+$\lambda=3.6785735104\ldots$ the critical orbit is
+\[
+  \tfrac12\longmapsto0.9196433776\longmapsto0.2718445063\longmapsto0.7281554937,
+\]
+with $0.7281554937$ a repelling fixed point, while the critical orbit of $f_{\sqrt2}$ is
+$\tfrac12\mapsto0.7071068\mapsto0.4142136\mapsto0.5857864$ and lands on its own fixed point;
+the two patterns agree, there is no homterval, and $A$ is a conjugacy.  At $\lambda=3.85$ the
+plateau of $A$ has width $0.10$, against $0.08$ at $\lambda=3.84$: on $[0.45,0.55]$ the lap
+number of $g_\lambda^n$ is $37$ at $n=16$, while $\varphi^{16}\approx2207$, so the interval is
+genuinely collapsed.
+
+So ``no attracting cycle'' is not the same as ``$A$ is a conjugacy''.  The extra obstructions
+come from the critical orbit of the model, and they occur on the level sets of $h$ that meet
+the growth numbers of periodic and preperiodic kneading sequences; the $h=\log\varphi$
+plateau is the first and largest of them.
+
+\begin{remark}[Uniqueness]\label{rem:unique}
+For a unimodal map the semi-conjugacy of Theorem~\ref{thm:model} is unique: any such $A$
+carries the turning point to $\tfrac12$, hence preserves itineraries, and $f_s$ has no
+homterval, so its itinerary map is injective and $A(x)$ is the unique point of $[0,1]$ with
+the itinerary of $x$.  The non-uniqueness of \cite[\S7.8]{MT} therefore needs at least three
+laps: the alternative $A_k$ uses one of the $\ell-1$ columns of the inverse kneading matrix,
+and a unimodal map has only one.
+\end{remark}
 
 \section{The algorithm}\label{sec:algo}
 
@@ -694,6 +800,10 @@ way, once the orbit and its signs are supplied.
 \begin{thebibliography}{9}\footnotesize\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
 \bibitem{dMvS} W.~de Melo and S.~van Strien, \emph{One-dimensional dynamics},
 Ergebnisse der Mathematik 25, Springer, 1993.
+\bibitem{Guck} J.~Guckenheimer, Sensitive dependence on initial conditions for unimodal maps,
+\emph{Comm. Math. Phys.} 70 (1979), 133--160.
+\bibitem{Sing} D.~Singer, Stable orbits and bifurcation of maps of the interval,
+\emph{SIAM J. Appl. Math.} 35 (1978), 260--267.
 \bibitem{MT} J.~Milnor and W.~Thurston, On iterated maps of the interval, in
 \emph{Dynamical Systems} (College Park, 1986--87), Lecture Notes in Math. 1342,
 Springer, 1988, 465--563.

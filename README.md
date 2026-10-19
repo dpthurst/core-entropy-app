@@ -28,7 +28,7 @@ produces them from the sources.
 | `core_entropy.html` | *built* — the interactive entropy page (plotly.js embedded, ~5 MB) |
 | `tent_map.html` | *built* — the integrated page (~5 MB) |
 | `figs/fig_*.pdf` | *built* — the seven figures of the write-up |
-| `core_entropy_notes.pdf` | *built* — the ten-page write-up |
+| `core_entropy_notes.pdf` | *built* — the twelve-page write-up |
 | `preview*.png` | *built* — static previews |
 
 ## Building
@@ -181,7 +181,8 @@ evaluation gives `D(1/φ) = 0` to the precision of `φ` itself.
   `g_λ` is topologically semi-conjugate to the piecewise-linear model `f_s`.  The arrow does
   not reverse — a tent map has no attracting cycle, while `g_λ` may have one — and `A` need
   not be injective: where it collapses an interval, a symbol of the logistic itinerary lands
-  on the critical point of `f_s`, so the two itineraries need not agree.
+  on the critical point of `f_s`, so the two itineraries need not agree.  The write-up's
+  §4.3 gives the exact criterion for `A` to be a conjugacy.
 
 Everything follows the slider.  `core_entropy.py` ports `src/CoreEntropy.jl` to numpy
 (a vectorised sweep over the parameters, with the scalar adaptive-order fallback), and its
