@@ -101,6 +101,11 @@ PAGE = r"""<!DOCTYPE html>
 <div class="ctrl">
   <input type="range" id="slider" min="3.6" max="4" step="0.0002" value="3.7">
   <label class="chk"><input type="checkbox" id="bif" checked> bifurcation diagram</label>
+  <label class="chk"><input type="checkbox" id="iter"> plot the iterates
+    <span class="mono">g<sup>n</sup>, f<sub>s</sub><sup>n</sup></span></label>
+  <span class="chk" id="nwrap" style="display:none">n =
+    <input type="range" id="nslider" min="1" max="10" step="1" value="4" style="width:90px;vertical-align:middle">
+    <span class="mono" id="nlabel">4</span></span>
 </div>
 <div class="ticks"><span>3.6</span><span>λ</span><span>4</span></div>
 
@@ -233,6 +238,38 @@ function rowCenters(){
   return ys;
 }
 
+// number of laps of the n-th iterate: 1 + the number of turning points, i.e.
+// the distinct interior preimages of 1/2 under g^k, k = 0..n-1
+function lapsG(lam, n){
+  let S = [0.5], all = [0.5];
+  for (let k = 0; k < n-1; k++){
+    const nx = [];
+    for (const y of S){
+      const disc = 1 - 4*y/lam;
+      if (disc > 0){ const r = Math.sqrt(disc); nx.push(0.5*(1+r), 0.5*(1-r)); }
+    }
+    S = dedupe(nx, BIF_TOL);
+    all = dedupe(all.concat(S), BIF_TOL);
+  }
+  return all.filter(p => p > 0 && p < 1).length + 1;
+}
+function lapsTent(s, n){
+  let S = [0.5], all = [0.5];
+  for (let k = 0; k < n-1; k++){
+    const nx = [];
+    for (const y of S){
+      if (y <= s/2 + 1e-12){
+        const a = y/s, b = 1 - y/s;
+        if (a > 0 && a < 1) nx.push(a);
+        if (b > 0 && b < 1) nx.push(b);
+      }
+    }
+    S = dedupe(nx, BIF_TOL);
+    all = dedupe(all.concat(S), BIF_TOL);
+  }
+  return all.filter(p => p > 0 && p < 1).length + 1;
+}
+
 // ------------------------------------------------ plots
 const font = {family: '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
               size: 11, color: '#222'};
@@ -317,19 +354,58 @@ function drawBifurcation(){
   Plotly.restyle(gdE, {x: [colCenters(r[0], r[1])], y: [rowCenters()], z: [z]}, [0]);
 }
 
+const iterBox = document.getElementById('iter');
+const nSlider = document.getElementById('nslider');
+const nLabel  = document.getElementById('nlabel');
+const nWrap   = document.getElementById('nwrap');
+
+// either the cobweb of the critical orbit, or the graph of the n-th iterate
+// itself, which is what shows the lap count exploding
+function drawMaps(lam, s){
+  const orbL = orbit(x => g(x, lam), NFILL, 0.5);
+  if (iterBox.checked){
+    const n = Math.max(1, Math.min(10, parseInt(nSlider.value, 10)));
+    const M = 3000, xs = [], yl = [], yt = [];
+    for (let i = 0; i <= M; i++){
+      const x = i/M;
+      let a = x, b = x;
+      for (let k = 0; k < n; k++){ a = g(a, lam); b = tent(b, s); }
+      xs.push(x); yl.push(a); yt.push(b);
+    }
+    const lG = lapsG(lam, n), lT = lapsTent(s, n);
+    Plotly.restyle(gdL, {x: [xs, [], []], y: [yl, [], []]}, [1, 2, 3]);
+    Plotly.restyle(gdT, {x: [xs, [], []], y: [yt, [], []]}, [1, 2, 3]);
+    Plotly.relayout(gdL, {title: {text: 'g_λ^' + n + '   with ℓ_' + n + ' = ' + lG},
+                          'xaxis.title.text': 'x', 'yaxis.title.text': 'g_λ^' + n + '(x)'});
+    Plotly.relayout(gdT, {title: {text: 'f_s^' + n + '   with ℓ_' + n + ' = ' + lT},
+                          'xaxis.title.text': 'y', 'yaxis.title.text': 'f_s^' + n + '(y)'});
+    nLabel.textContent = n;
+  } else {
+    const cwL = cobweb(x => g(x, lam), NFILL, 0.5);
+    const cwT = cobweb(y => tent(y, s), NFILL, 0.5);
+    const orbT = orbit(y => tent(y, s), NFILL, 0.5);
+    const xs = [], ys = [];
+    for (let i = 0; i <= 220; i++){ const x = i/220; xs.push(x); ys.push(g(x, lam)); }
+    Plotly.restyle(gdL, {x: [xs, cwL.x, orbL.slice(0, 7)], y: [ys, cwL.y, orbL.slice(0, 7)]}, [1, 2, 3]);
+    Plotly.restyle(gdT, {x: [[0, 0.5, 1], cwT.x, orbT.slice(0, 7)],
+                         y: [[0, s/2, 0], cwT.y, orbT.slice(0, 7)]}, [1, 2, 3]);
+    Plotly.relayout(gdL, {title: {text: 'g_λ on its interval'},
+                          'xaxis.title.text': 'x', 'yaxis.title.text': 'g_λ(x)'});
+    Plotly.relayout(gdT, {title: {text: 'the tent map f_s'},
+                          'xaxis.title.text': 'y', 'yaxis.title.text': 'f_s(y)'});
+  }
+  return orbL;
+}
+
+let curLam = 3.7;
+
 function setLambda(lam){
   lam = Math.max(3.6, Math.min(4, lam));
   const h = hAt(lam), s = Math.exp(h);
+  curLam = lam;
   Plotly.restyle(gdE, {x: [[lam]], y: [[h]]}, [2]);
 
-  const cwL = cobweb(x => g(x, lam), NFILL, 0.5);
-  const cwT = cobweb(y => tent(y, s), NFILL, 0.5);
-  const orbL = orbit(x => g(x, lam), NFILL, 0.5);
-  const xs = [], ys = [];
-  for (let i = 0; i <= 220; i++){ const x = i/220; xs.push(x); ys.push(g(x, lam)); }
-  Plotly.restyle(gdL, {x: [xs, cwL.x, orbL.slice(0, 7)], y: [ys, cwL.y, orbL.slice(0, 7)]}, [1, 2, 3]);
-  Plotly.restyle(gdT, {x: [[0, 0.5, 1], cwT.x, orbit(y => tent(y, s), NFILL, 0.5).slice(0, 7)],
-                       y: [[0, s/2, 0], cwT.y, orbit(y => tent(y, s), NFILL, 0.5).slice(0, 7)]}, [1, 2, 3]);
+  const orbL = drawMaps(lam, s);
 
   const gx = [], gy = [];
   let err = 0;
@@ -351,6 +427,14 @@ function setLambda(lam){
 }
 
 document.getElementById('slider').addEventListener('input', e => setLambda(parseFloat(e.target.value)));
+iterBox.addEventListener('change', e => {
+  nWrap.style.display = e.target.checked ? '' : 'none';
+  drawMaps(curLam, Math.exp(hAt(curLam)));
+});
+nSlider.addEventListener('input', () => {
+  nLabel.textContent = nSlider.value;
+  if (iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+});
 cbBif.addEventListener('change', e => {
   if (e.target.checked) drawBifurcation();
   Plotly.restyle(gdE, {visible: [e.target.checked]}, [0]);
@@ -363,6 +447,7 @@ gdE.on('plotly_relayout', () => {
 
 drawBifurcation();
 setLambda(parseFloat(document.getElementById('slider').value));
+drawMaps(curLam, Math.exp(hAt(curLam)));
 """
 
 

@@ -157,7 +157,11 @@ evaluation gives `D(1/φ) = 0` to the precision of `φ` itself.
   of the same parameters behind it as a greyscale density on the right-hand axis — togglable,
   and recomputed for the visible range when you zoom;
 - the cobweb of the critical orbit for `g_λ` and for the tent map `f_s` of slope
-  `s = e^{h(λ)} = 1/t₀`, with their itineraries;
+  `s = e^{h(λ)} = 1/t₀`, with their itineraries — or, with the *plot the iterates* toggle,
+  the graphs of `g_λ^n` and `f_s^n` themselves for `n = 1…10`.  The `n`-th iterate has
+  `ℓ_n = 1 +` its turning points monotone pieces, so watching the count climb — 4, 14, 38,
+  90 at `λ = 3.7`, the same for both maps — is the most concrete picture of the quantity
+  whose growth rate is the entropy;
 - the map `A` of Theorem 7.4 of Milnor–Thurston, which satisfies `f_s(A(x)) = A(g_λ(x))`:
   `g_λ` is topologically semi-conjugate to the piecewise-linear model `f_s`.  The arrow does
   not reverse — a tent map has no attracting cycle, while `g_λ` may have one — and `A` need
