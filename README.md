@@ -25,7 +25,8 @@ Files:
 | `preview_tent.png` | static preview of the tent-map page |
 | `core_entropy_notes.pdf` | ten-page write-up of the mathematics and the algorithm, with figures (source: `core_entropy_notes.tex`) |
 | `figs/` | the six figures of the write-up (`make_figures.py` rebuilds them from the CSV) |
-| `tent_map.py` | writes `tent_map.html`: g_λ beside its semi-conjugate tent map |
+| `core_entropy.py` | Python port of the entropy sweep (kneading determinant); writes the CSV |
+| `tent_map.py` | writes `tent_map.html`: entropy, bifurcation diagram and the tent map on one page |
 | `tent_map.html` | that page (self-contained, ~5 MB) |
 
 Both front ends compute with the same `src/CoreEntropy.jl`; neither of them contains any
@@ -147,21 +148,26 @@ sequence is exactly 12-periodic and the numerator of `D` is exactly divisible by
 `t² + t − 1`, so the zero is exactly `1/φ`; at `λ = 3.85, 3.855, 3.8565` a 60-digit
 evaluation gives `D(1/φ) = 0` to the precision of `φ` itself.
 
-## The tent map
+## The integrated page
 
-`tent_map.py` (Python, numpy only) writes `tent_map.html`: `g_λ` and the tent map `f_s` of
-slope `s = e^{h(λ)} = 1/t₀` side by side, with the cobweb of the critical orbit in each,
-the itinerary the two orbits share, and the semi-conjugacy `h` itself — the continuous
-nondecreasing map with `h ∘ f_s = g_λ ∘ h`, drawn by matching the turning points of the
-iterates.  Move the `λ` slider and everything follows.
+`tent_map.py` (Python, numpy only) writes `tent_map.html`, which puts the whole story on one
+`λ` axis:
 
-This is Milnor–Thurston's Theorem 7.4 (*On iterated maps of the interval*, 1988): for every
-piecewise monotone `f` with growth number `s > 1` there is a continuous nondecreasing `A`
-from its interval onto `[0,1]` with `f_s(A(x)) = A(f(x))`, where `f_s` is the piecewise
-linear model of slope `±s`.  The arrow does not reverse — a tent map has no attracting
-cycle, while `g_λ` may have one — and `A` need not be injective: where it collapses an
-interval, a symbol of the logistic itinerary lands on the critical point of `f_s`, so the
-two itineraries on the page need not agree.
+- the core entropy `h(λ)`, computed by `core_entropy.py`, with the **bifurcation diagram**
+  of the same parameters behind it as a greyscale density on the right-hand axis — togglable,
+  and recomputed for the visible range when you zoom;
+- the cobweb of the critical orbit for `g_λ` and for the tent map `f_s` of slope
+  `s = e^{h(λ)} = 1/t₀`, with their itineraries;
+- the map `A` of Theorem 7.4 of Milnor–Thurston, which satisfies `f_s(A(x)) = A(g_λ(x))`:
+  `g_λ` is topologically semi-conjugate to the piecewise-linear model `f_s`.  The arrow does
+  not reverse — a tent map has no attracting cycle, while `g_λ` may have one — and `A` need
+  not be injective: where it collapses an interval, a symbol of the logistic itinerary lands
+  on the critical point of `f_s`, so the two itineraries need not agree.
+
+Everything follows the slider.  `core_entropy.py` ports `src/CoreEntropy.jl` to numpy
+(a vectorised sweep over the parameters, with the scalar adaptive-order fallback), and its
+values agree with the Julia ones to `5e-11` on all 28 696 parameters; `tent_map.py` reuses
+`core_entropy_data.csv` when it matches the grid and recomputes it otherwise.
 
 ## A native window
 
