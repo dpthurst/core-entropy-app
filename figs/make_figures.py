@@ -69,23 +69,27 @@ def fig_output():
         a.spines[["top", "right"]].set_visible(False)
     a1.set_xlim(2, 4)
     a1.set_ylabel(r"core entropy  $h(\lambda)$")
+    box = dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.85)
     a1.axhline(L2, color=GREY, lw=0.6, ls="--")
-    a1.text(2.04, L2 + 0.02, r"$\log 2$", color=GREY, fontsize=7)
+    a1.text(2.04, L2 + 0.02, r"$\log 2$", color="0.3", fontsize=7, bbox=box)
     for x, t in ((LAM_INF, r"$\lambda_\infty$"), (LAM_P3, r"$3.8319$")):
         a1.axvline(x, color=GREY, lw=0.6, ls=":")
-        a1.text(x, 0.70, t, rotation=90, ha="right", va="top", fontsize=7, color=GREY)
+        a1.text(x + 0.015, 0.705, t, ha="left", va="bottom", fontsize=7,
+                color="0.25", bbox=box)
     a1.set_title("(a)  the whole range", fontsize=8)
     a2.set_xlim(3.55, 4)
     a2.axhline(L2, color=GREY, lw=0.6, ls="--")
     a2.axhline(LTAU, color=GREY, lw=0.6, ls="--")
-    a2.text(3.56, L2 + 0.02, r"$\log 2$", color=GREY, fontsize=7)
-    a2.text(3.56, LTAU + 0.02, r"$\log\tau$", color=GREY, fontsize=7)
+    a2.text(3.56, L2 + 0.02, r"$\log 2$", color="0.3", fontsize=7, bbox=box)
+    a2.text(3.56, LTAU + 0.02, r"$\log\tau$", color="0.3", fontsize=7, bbox=box)
     for x in (LAM_INF, LAM_P3):
         a2.axvline(x, color=GREY, lw=0.6, ls=":")
     a2.annotate(r"$\lambda_\infty$", xy=(LAM_INF, 0.05), xytext=(3.60, 0.20), fontsize=7,
-                color=GREY, arrowprops=dict(arrowstyle="-", color=GREY, lw=0.5))
+                color="0.25", bbox=box,
+                arrowprops=dict(arrowstyle="-", color=GREY, lw=0.5))
     a2.annotate("period-3 plateau", xy=(3.845, LTAU), xytext=(3.80, 0.62), fontsize=7,
-                color=GREY, arrowprops=dict(arrowstyle="-", color=GREY, lw=0.5))
+                color="0.25", bbox=box,
+                arrowprops=dict(arrowstyle="-", color=GREY, lw=0.5))
     a2.set_title(r"(b)  the staircase, $\lambda\in[3.55,4]$", fontsize=8)
     fig.savefig("figs/fig_output.pdf", bbox_inches="tight")
 
