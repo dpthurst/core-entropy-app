@@ -20,6 +20,7 @@ plt.rcParams.update({
     "font.size": 8, "axes.titlesize": 8.5, "axes.labelsize": 8,
     "xtick.labelsize": 7, "ytick.labelsize": 7, "legend.fontsize": 7,
     "axes.linewidth": 0.6, "lines.linewidth": 0.9,
+    "savefig.dpi": 600,
 })
 BLUE, RED, GREY = "#1c5f9e", "#c0392b", "#7f8c8d"
 L2, LTAU = np.log(2.0), np.log((1 + 5**0.5) / 2)
@@ -433,7 +434,7 @@ def fig_lapgrowth():
 
 
 # ---------------------------------------------------------------- figure 6
-def density(x0, x1, nc=900, nr=400, transient=1500, keep=1200):
+def density(x0, x1, nc=1600, nr=1000, transient=3000, keep=2000):
     lams = np.linspace(x0, x1, nc)
     x = np.full(nc, 0.5)
     for _ in range(transient):
@@ -456,7 +457,7 @@ def density_axes(ax, lo, hi, cmap, label=False, top=1.0):
     """The limit-set density of [lo,hi] behind `ax`, on a twin axis."""
     t = ax.twinx()
     t.imshow(density(lo, hi), origin="lower", extent=[lo, hi, 0, 1], aspect="auto",
-             cmap=cmap, vmin=0, vmax=1, interpolation="bilinear", zorder=1)
+             cmap=cmap, vmin=0, vmax=1, interpolation="nearest", zorder=1)
     t.set_ylim(0, top)
     if label:
         t.set_yticks([0, 0.5, 1])
@@ -475,15 +476,15 @@ def density_axes(ax, lo, hi, cmap, label=False, top=1.0):
 def fig_plateau():
     cmap = ink_cmap()
     panels = [
-        (3.820, 3.865, 0.481211825, 3.8284271, 3.8414990, 0.476, 0.497,
+        (3.820, 3.865, 0.481211825, 3.8284271, 3.8414990, 3.84943, 0.476, 0.497,
          [3.82, 3.84, 3.86], [0.478, 0.482, 0.486, 0.490, 0.494], r"(a)  period 3"),
-        (3.902, 3.911, 0.543535072, 3.9055719, 3.9061074, 0.537, 0.551,
+        (3.902, 3.911, 0.543535072, 3.9055719, 3.9061074, 3.906454, 0.537, 0.551,
          [3.902, 3.906, 3.910], [0.538, 0.542, 0.546, 0.550], r"(b)  period 5"),
-        (3.955, 3.967, 0.609377863, 3.9601019, 3.9607687, 0.601, 0.620,
+        (3.955, 3.967, 0.609377863, 3.9601019, 3.9607687, 3.961198, 0.601, 0.620,
          [3.955, 3.960, 3.965], [0.602, 0.606, 0.610, 0.614, 0.618], r"(c)  period 4"),
     ]
     fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.3), gridspec_kw={"wspace": 0.36})
-    for k, (a, (lo, hi, h0, sn, pd, ylo, yhi, xt, yt, title)) in enumerate(zip(axs, panels)):
+    for k, (a, (lo, hi, h0, sn, pd, acc, ylo, yhi, xt, yt, title)) in enumerate(zip(axs, panels)):
         density_axes(a, lo, hi, cmap, label=(k == 2))
         m = (lam >= lo) & (lam <= hi)
         a.plot(lam[m], h[m], color=BLUE, lw=1.4, zorder=5)
@@ -496,6 +497,10 @@ def fig_plateau():
         a.axhline(h0, color=GREY, lw=0.6, ls="--")
         for x in (sn, pd):
             a.axvline(x, color="0.4", lw=0.6, ls=":")
+        a.axvline(acc, color="0.25", lw=0.8, ls="-.")
+        a.text(acc, yhi - 0.01*(yhi - ylo), r"$\infty$", fontsize=6.5, color="0.25",
+               ha="center", va="top",
+               bbox=dict(boxstyle="round,pad=0.08", fc="white", ec="none", alpha=0.85))
         a.spines[["top"]].set_visible(False)
         if k == 0:
             a.set_ylabel(r"$h(\lambda)$", fontsize=8)
