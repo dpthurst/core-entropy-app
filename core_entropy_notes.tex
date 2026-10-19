@@ -110,9 +110,9 @@ $T_c\subset K_c$ is the smallest connected closed set containing $P_c$, and the
 \end{definition}
 
 The Hubbard tree is the part of the Julia set that carries the postcritical dynamics: the
-Julia set itself may be a complicated fractal, while $T_c$ is a finite tree on which each
-edge of $T_c$ is mapped over a union of edges by $f_c$.  For real parameters the tree
-degenerates to an interval, and
+Julia set itself may be a complicated fractal, while $T_c$ is a finite tree on which $f_c$
+acts as a Markov map (each edge of $T_c$ is mapped over a union of edges).  For real
+parameters the tree degenerates to an interval, and
 the whole theory becomes one-dimensional.  Indeed, for $c\in[-2,\tfrac14]$ the set $K_c\cap\R$
 is an interval, so $T_c=[\min P_c,\max P_c]$ is a real interval; since $f_c$ maps $P_c$ to
 itself and is continuous, $f_c(T_c)\subset T_c$.  For $c\in[-2,0]$ the critical point $0$
@@ -338,7 +338,9 @@ theorem as a black box and test it in \S\ref{sec:validation}.
 \subsection{The postcritically finite case, exactly}\label{sec:pcf}
 
 A map is \emph{postcritically finite} when its critical orbit is finite; here we treat the
-case in which it is periodic, which makes the determinant rational.  When the critical orbit
+case in which it is periodic, which makes the determinant rational.  In the quadratic family
+a parameter at which the critical point is strictly preperiodic --- the critical orbit finite
+but not periodic --- is called a \emph{Misiurewicz point}.  When the critical orbit
 is periodic of period $k$ the sign sequence is $k$-periodic, so
 $\eps$ is periodic with period $k$ or $2k$ and $D$ is a rational function
 $D=P(t)/(1-t^{p})$ whose numerator $P$ has degree $p-1$ and integer coefficients.  The
@@ -558,7 +560,8 @@ g_\lambda^j(\tfrac12)$.  Both alternatives contradict (iii).
 
 Table~\ref{tab:conj} collects the examples.  At $\lambda=4$ the semi-conjugacy is
 $A(x)=\tfrac2\pi\arcsin\sqrt x$, a homeomorphism.  At
-$\lambda=3.6785735104\ldots$ --- the real root of $\lambda^3-2\lambda^2-4\lambda-8=0$ ---
+$\lambda=3.6785735104\ldots$ --- the real root of $\lambda^3-2\lambda^2-4\lambda-8=0$, a
+Misiurewicz point, where the critical point is strictly preperiodic ---
 the critical orbit is
 \[
   \tfrac12\longmapsto0.9196433776\longmapsto0.2718445063\longmapsto0.7281554937,
