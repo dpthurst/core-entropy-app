@@ -6,6 +6,7 @@
 *.fdb_latexmk
 *.toc
 *.synctex.gz
+core_entropy_notes.pdf
 
 # Python
 __pycache__/
