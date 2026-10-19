@@ -45,8 +45,9 @@ For $\lambda\in[2,4]$ let
 \begin{equation}\label{eq:g}
   g_\lambda(x)=\lambda x(1-x),\qquad x\in[0,1].
 \end{equation}
-The map $g_\lambda$ is unimodal: it increases from $0$ to the critical value $\lambda/4$ on
-$[0,\tfrac12]$ and decreases back to $0$ on $[\tfrac12,1]$.  Its \emph{core entropy}
+The map $g_\lambda$ is unimodal, with critical point $\tfrac12$: it increases from $0$ to the
+critical value $\lambda/4$ on $[0,\tfrac12]$ and decreases back to $0$ on $[\tfrac12,1]$.
+Its \emph{core entropy}
 $h(\lambda)$ is the topological entropy of $g_\lambda$ restricted to its Hubbard tree, the
 smallest invariant interval carrying the critical point and its orbit.  Equivalently ---
 and this is how it will be computed --- it is the exponential growth rate of the number of
@@ -55,7 +56,9 @@ laps of the iterates $g_\lambda^n$.
 As $\lambda$ runs from $2$ to $4$ the parameter crosses the real slice of the quadratic
 family and $h$ rises from $0$ to $\log2$, but not smoothly.  It is constant on every
 hyperbolic component, that is, on every interval of parameters for which an attracting
-cycle exists, and it changes only on the complement of their union.  The graph is
+cycle (a periodic orbit whose multiplier, the product of $g_\lambda'$ along one turn, has
+modulus less than one) exists, and it changes
+only on the complement of their union.  The graph is
 therefore a devil's staircase, with a plateau for each attracting cycle and a Cantor-like
 set of parameters on which the increase takes place.  Tiozzo \cite{Tiozzo} proved that $h$
 is nevertheless continuous in the parameter, and related its values to the dimensions of
@@ -107,9 +110,10 @@ $T_c\subset K_c$ is the smallest connected closed set containing $P_c$, and the
 \end{definition}
 
 The Hubbard tree is the part of the Julia set that carries the postcritical dynamics: the
-Julia set itself may be a dendrite or worse, while $T_c$ is a finite tree on which $f_c$
-acts as a Markov map.  For real parameters the tree degenerates to an interval, and the
-whole theory becomes one-dimensional.  Indeed, for $c\in[-2,\tfrac14]$ the set $K_c\cap\R$
+Julia set itself may be a complicated fractal, while $T_c$ is a finite tree on which each
+edge of $T_c$ is mapped over a union of edges by $f_c$.  For real parameters the tree
+degenerates to an interval, and
+the whole theory becomes one-dimensional.  Indeed, for $c\in[-2,\tfrac14]$ the set $K_c\cap\R$
 is an interval, so $T_c=[\min P_c,\max P_c]$ is a real interval; since $f_c$ maps $P_c$ to
 itself and is continuous, $f_c(T_c)\subset T_c$.  For $c\in[-2,0]$ the critical point $0$
 belongs to $T_c$ and is its only turning point --- a minimum, because $f_c'=2z$ is negative
@@ -124,10 +128,13 @@ into it, so the entropy of $g_\lambda$ on all of $[0,1]$ agrees with $h(\lambda)
 unimodal map the entropy is in any case determined by the itinerary of the critical point,
 which the core contains.  Four values anchor the computation and serve as tests: $h(2)=0$,
 because the critical point is fixed ($c=0$) and the map is conjugate to $z\mapsto z^2$ on
-an interval; $h(1+\sqrt5)=0$, the centre of the basilica component ($c=-1$), where the
-critical point has period $2$; $h=0$ on the whole period-doubling cascade up to the
-Feigenbaum parameter $\lambda_\infty\approx3.5699457$, where an attracting cycle always
-captures the critical orbit; and $h(4)=\log2$, the Chebyshev case $c=-2$, where $g_4$ is
+an interval; $h(1+\sqrt5)=0$, the centre of the period-$2$ component, the basilica ($c=-1$),
+where the
+critical point has period $2$; $h=0$ on the whole period-doubling cascade (the sequence of
+period doublings $2,4,8,\dots$) up to the Feigenbaum parameter $\lambda_\infty\approx3.5699457$,
+where an attracting cycle always
+captures the critical orbit; and $h(4)=\log2$, the Chebyshev case $c=-2$ (the map
+$z\mapsto z^2-2$), where $g_4$ is
 conjugate to the full tent map.
 
 \begin{figure}
@@ -135,11 +142,13 @@ conjugate to the full tent map.
   \includegraphics[width=\textwidth]{fig_output}
   \caption{The core entropy of $g_\lambda$ on $[2,4]$, as computed by the code described
   here on $28\,696$ parameters, against the bifurcation diagram of the same parameters (the
-  limit set as a greyscale density, read on the right-hand axis, with $x=1$ at the height of
+  limit set, or attractor, as a greyscale density, read on the right-hand axis, with $x=1$
+  at the height of
   $\log2$).  (a)~The whole range: $h$
   vanishes identically up to the Feigenbaum parameter $\lambda_\infty$ and reaches $\log2$
   at $\lambda=4$.  (b)~The staircase on $[3.55,4]$; the horizontal dashed lines are
-  $\log\tau$ and $\log2$, and the vertical dotted lines mark the Feigenbaum parameter
+  $\log\tau$, with $\tau=(1+\sqrt5)/2$, and $\log2$, and the vertical dotted lines mark the
+  Feigenbaum parameter
   $\lambda_\infty$ and the period-$3$ centre $3.8319$.}
   \label{fig:output}
 \end{figure}
@@ -149,7 +158,8 @@ Panel~(a) is the whole range: $h$ vanishes identically up to the Feigenbaum para
 $\lambda_\infty$, where the period-doubling cascade accumulates, and then climbs to
 $\log2$.  Panel~(b) resolves the climb.  It is not a curve but a staircase --- a flat step
 for every hyperbolic component, joined by steep pieces on which the parameter passes
-through the queer set --- and the widest of the steps is the one at $\log\tau$, whose
+through the complement of the hyperbolic components --- and the widest of the steps is the
+one at $\log\tau$, whose
 length is explained in \S\ref{sec:validation}.
 
 \section{Kneading theory}\label{sec:kneading}
@@ -165,8 +175,8 @@ For $x\in[0,1]$ the \emph{itinerary} $\iota(x)=(\iota_0(x),\iota_1(x),\dots)$ is
 $\iota_k(x)=0$ if $g_\lambda^k(x)<\tfrac12$ (left of the critical point),
 $\iota_k(x)=1$ if $g_\lambda^k(x)>\tfrac12$ (right), and $\iota_k(x)=*$ if
 $g_\lambda^k(x)=\tfrac12$.  A \emph{lap} of a continuous interval map
-$F$ is a maximal interval on which $F$ is monotone, and $\ell_n$ denotes the number of laps
-of $g_\lambda^n$.
+$F$ is a maximal interval on which $F$ is monotone, and $\ell(F)$ denotes its number of
+laps; we write $\ell_n=\ell(g_\lambda^n)$.
 \end{definition}
 
 \begin{lemma}\label{lem:laps}
@@ -214,7 +224,8 @@ The lemma turns a dynamical quantity into a combinatorial one, and the entropy i
 exponential growth rate of the count:
 
 \begin{theorem}[Misiurewicz--Szlenk \cite{MS}]\label{thm:MS}
-For a piecewise monotone interval map, $\displaystyle h=\lim_{n\to\infty}\frac1n\log\ell_n$.
+For a piecewise monotone interval map (one with finitely many laps),
+$\displaystyle h=\lim_{n\to\infty}\frac1n\log\ell_n$.
 \end{theorem}
 
 The limit exists because $\ell_{m+n}\le\ell_m\ell_n$ --- cutting a lap of $g^{m+n}$ by
@@ -326,7 +337,9 @@ theorem as a black box and test it in \S\ref{sec:validation}.
 
 \subsection{The postcritically finite case, exactly}\label{sec:pcf}
 
-When the critical orbit is periodic of period $k$ the sign sequence is $k$-periodic, so
+A map is \emph{postcritically finite} when its critical orbit is finite; here we treat the
+case in which it is periodic, which makes the determinant rational.  When the critical orbit
+is periodic of period $k$ the sign sequence is $k$-periodic, so
 $\eps$ is periodic with period $k$ or $2k$ and $D$ is a rational function
 $D=P(t)/(1-t^{p})$ whose numerator $P$ has degree $p-1$ and integer coefficients.  The
 zeros of $D$ are then the zeros of $P$, and $t_0$ is the smallest of them in
@@ -368,8 +381,10 @@ is rational and its smallest zero can be read off exactly, with no truncation at
 \section{The piecewise-linear model}\label{sec:model}
 
 The lap counts of \S\ref{sec:kneading} are not special to the quadratic family: every
-piecewise monotone map with growth number $s>1$ is topologically semi-conjugate to a
-piecewise linear map of slope $\pm s$.  For the logistic family that model is the tent map of
+piecewise monotone map with growth number $s=e^{h}>1$ --- the exponential growth rate of its
+lap numbers --- is topologically semi-conjugate to a piecewise linear map of slope $\pm s$,
+that is, there is a continuous nondecreasing surjection intertwining the two maps.  For the
+logistic family that model is the tent map of
 slope $s=e^{h(\lambda)}=1/t_{0}$.  This section states the theorem and then explains how the
 semi-conjugacy is actually computed --- a computation the entropy does not need, but which
 shows that the two lap counts agree, and which is a good deal simpler than the trees of
@@ -391,8 +406,10 @@ $g_\lambda$ has two laps the model has at most two, and since $s>1$ it cannot ha
 it is $f_s$.  That is the only point of the quoted statement that has to be checked to read
 it in the notation used here.
 
-The map $A$ is not always a conjugacy: it may collapse intervals to points, and in particular
-the basin of an attracting cycle of $g_\lambda$ goes to a cycle of $f_s$
+The map $A$ is not always a conjugacy (an invertible semi-conjugacy): it may collapse
+intervals to points, and in particular
+the basin (the set of points whose orbits converge to it) of an attracting cycle of
+$g_\lambda$ goes to a cycle of $f_s$
 (\S\ref{sec:conjugacy}).  The arrow does not reverse --- a tent map has no attracting cycle,
 while $g_\lambda$ may have one.  What it buys
 the computation is a second view of the lap numbers: since $f_s(A(x))=A(g_\lambda(x))$, the
@@ -458,7 +475,11 @@ $1.0\times10^{-14}$ and $2.2\times10^{-16}$.
 \subsection{When the semi-conjugacy is a conjugacy}\label{sec:conjugacy}
 
 Since $A$ is monotone, it fails to be injective exactly when it collapses a nondegenerate
-interval to a point.  Collapses propagate: if $A$ collapses $J$, so that $\Lambda(J)=0$, then
+interval to a point.  Here $\Lambda$ is Milnor and Thurston's growth measure
+\cite[\S7]{MT}: $\Lambda(J)$ is the asymptotic fraction of laps of $g_\lambda^n$ that lie in
+$J$, so $\Lambda$ is finitely additive and $\Lambda(g_\lambda(J))=s\Lambda(J)$ whenever
+$g_\lambda|J$ is a homeomorphism.  Collapses propagate: if $A$ collapses $J$, so that
+$\Lambda(J)=0$, then
 $\Lambda(g_\lambda^n(J))=0$ for every $n\ge0$, because $g_\lambda^n(J)$ is a union of intervals
 on which $g_\lambda^n$ is monotone, each of which is collapsed by Lemma~7.3 of \cite{MT}.  The
 question is therefore which intervals can be collapsed.
@@ -466,11 +487,13 @@ question is therefore which intervals can be collapsed.
 An interval $J$ is a \emph{homterval} if every iterate $g_\lambda^n$ is monotone on it,
 equivalently if no iterate carries a point of $J$ to the critical point $\tfrac12$.  All points
 of a homterval have the same itinerary, so $A$ is constant on it.  For the quadratic family the
-homtervals are exactly the intervals in the basins of the attracting and neutral cycles: a
-homterval is either attracted to such a cycle or wandering, and an $S$-unimodal map has no
+homtervals are exactly the intervals in the basins of the attracting and neutral (parabolic)
+cycles: a
+homterval is either attracted to such a cycle or wandering (its images are pairwise disjoint),
+and an $S$-unimodal map (one with negative Schwarzian and a non-flat critical point) has no
 wandering intervals \cite{dMvS,Guck}.  For an attracting cycle this is Singer's theorem: the
-critical point lies in its basin \cite{Sing}, and a parabolic cycle attracts the critical point
-as well.  So an attracting or a parabolic cycle makes $A$ strict, and if there is no such
+critical point lies in its basin \cite{Sing}, and a parabolic (neutral) cycle attracts it as
+well.  So an attracting or a parabolic cycle makes $A$ strict, and if there is no such
 cycle the itinerary map of $g_\lambda$ is injective.
 
 That is not the end of the story, because $f_s$ has a critical point too, and the two inverse
@@ -486,7 +509,8 @@ If $f_s^k(\tfrac12)=f_s^j(\tfrac12)$ for some $k>j\ge0$, then for every $x$
 and if $g_\lambda^k(x)\ne g_\lambda^j(x)$, monotonicity makes $A$ constant on the interval
 between them.  At $x=\tfrac12$ this is a genuine collapse unless the critical orbit of
 $g_\lambda$ has the same coincidence.  The critical orbit of $f_s$ is eventually periodic for a
-countable set of slopes, namely the growth numbers of the periodic and preperiodic kneading
+countable set of slopes, namely the growth numbers of the periodic and preperiodic
+(eventually periodic) kneading
 sequences; on the corresponding level sets of $h$ the collapse \eqref{eq:ident} therefore takes
 place unless $g_\lambda$'s critical orbit is preperiodic with exactly the same pattern.
 
@@ -556,8 +580,9 @@ For a unimodal map the semi-conjugacy of Theorem~\ref{thm:model} is unique: any 
 carries the turning point to $\tfrac12$, hence preserves itineraries, and $f_s$ has no
 homterval, so its itinerary map is injective and $A(x)$ is the unique point of $[0,1]$ with
 the itinerary of $x$.  The non-uniqueness of \cite[\S7.8]{MT} therefore needs at least three
-laps: the alternative $A_k$ uses one of the $\ell-1$ columns of the inverse kneading matrix,
-and a unimodal map has only one.
+laps: the alternative semiconjugacies $A_k$ of \cite[\S7.8]{MT} use one of the $\ell-1$
+columns of the inverse kneading matrix, where $\ell$ is the number of laps of the map, and a
+unimodal map has only one.
 \end{remark}
 
 \section{The algorithm}\label{sec:algo}
@@ -628,6 +653,8 @@ series, with no information about the orbit beyond the coefficients:
 \begin{equation}\label{eq:tail}
   \bigl|D(t)-D_N(t)\bigr|\le\sum_{k>N}t^k=\frac{t^{N+1}}{1-t},\qquad 0<t<1 .
 \end{equation}
+Write $t_0^{(N)}$ for the smallest zero of $D_N$ and $h_N=-\log t_0^{(N)}$ for the entropy
+read off from it; the truncation error in the entropy is $|h_N-h|$.
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{fig_determinant}
@@ -681,13 +708,13 @@ of the default settings.
 
 \subsection{The floating-point orbit}\label{sec:float}
 
-The signs are read off a double-precision orbit, whose error grows like $e^{\Lambda k}$
-with $\Lambda$ the Lyapunov exponent, so the itinerary is reliable only up to
-$k\approx16\log10/\Lambda$.  Two mechanisms keep this harmless.  On a hyperbolic component
+The signs are read off a double-precision orbit, whose error grows like $e^{\chi k}$
+with $\chi$ the Lyapunov exponent, so the itinerary is reliable only up to
+$k\approx16\log10/\chi$.  Two mechanisms keep this harmless.  On a hyperbolic component
 the critical orbit converges to the attracting cycle and, in floating point, reaches it
 exactly after finitely many steps; the computed sign sequence is then the true itinerary
 forever, and this covers every plateau of $h$.  And when $h$ is small the parameter is
-close to a parabolic or Feigenbaum value, $\Lambda$ is small, the horizon is far, and the
+close to a parabolic or Feigenbaum value, $\chi$ is small, the horizon is far, and the
 criterion $hN\ge\rho$ asks for precisely the large $N$ that this accuracy permits.  Beyond
 the horizon the tail bound \eqref{eq:tail} makes the unknown terms harmless, since their
 total weight is at most $t^N/(1-t)$.
@@ -705,7 +732,8 @@ This is the one structural assumption of the search; it is recorded for complete
 
 Table~\ref{tab:exact} compares the output with the exact values derived in
 \S\ref{sec:kneading}.  The first three are the cases of vanishing entropy, in which
-Theorem~\ref{thm:MT}(ii) applies; the last two are Examples~\ref{ex:lambda4}
+the second assertion of Theorem~\ref{thm:MT} applies; the last two are
+Examples~\ref{ex:lambda4}
 and~\ref{ex:p3}.  The agreement is at the level of roundoff.
 
 \begin{table}[h]
@@ -774,11 +802,11 @@ At $\lambda=3.845$ the computed sign sequence is exactly
 $12$-periodic, so $D=P(t)/(1-t^{12})$ with $P$ of degree $11$ and integer coefficients;
 $P$ is divisible by $t^2+t-1$, hence $D(1/\tau)=0$ exactly and, since no smaller zero
 exists, $h=\log\tau$.  At $\lambda=3.85$, $3.855$ and $3.8565$ a $60$-digit evaluation
-gives $|D(1/\tau)|<10^{-60}$.  The step runs from the saddle-node
-$\lambda=1+\sqrt8=3.8284271$ to $\lambda\approx3.8568$, the real extent of the period-$3$
+gives $|D(1/\tau)|<10^{-60}$.  The step runs from the saddle-node (the parameter where the
+period-$3$ cycle is born) $\lambda=1+\sqrt8=3.8284271$ to $\lambda\approx3.8568$, the real extent of the period-$3$
 copy of the Mandelbrot set, before $h$ rises again.
 
-The same happens at the other windows.  The period-$5$ window, at
+The same happens at the other hyperbolic components (windows).  The period-$5$ window, at
 $\lambda\approx3.9056$--$3.9068$, has $h=\log s_5=0.543535$ throughout, and the
 period-$4$ window, at $\lambda\approx3.9601$--$3.9616$, has $h=\log s_4=0.609378$, where
 $s_3=\tau$, $s_4=1.839286755\ldots$ and $s_5=1.722083806\ldots$ satisfy
