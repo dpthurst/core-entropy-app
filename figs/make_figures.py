@@ -59,12 +59,15 @@ def fig_output():
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.35),
                                  gridspec_kw={"width_ratios": [1, 1.4], "wspace": 0.22})
     cmap = ink_cmap()
-    density_axes(a1, 2.0, 4.0, cmap, label=False)
-    density_axes(a2, 3.55, 4.0, cmap, label=True)
+    ylo, yhi = -0.02, 0.74
+    # put x = 1 of the density at the same height as h = log 2
+    top = 1.0 / ((L2 - ylo) / (yhi - ylo))
+    density_axes(a1, 2.0, 4.0, cmap, label=False, top=top)
+    density_axes(a2, 3.55, 4.0, cmap, label=True, top=top)
     for a in (a1, a2):
         a.plot(lam, h, color=BLUE, lw=1.0, zorder=5)
         a.set_xlabel(r"$\lambda$")
-        a.set_ylim(-0.02, 0.74)
+        a.set_ylim(ylo, yhi)
         a.grid(alpha=0.18, lw=0.5)
         a.spines[["top", "right"]].set_visible(False)
     a1.set_xlim(2, 4)
@@ -449,12 +452,12 @@ def ink_cmap():
         "ink", [(1, 1, 1, 0), (0.24, 0.24, 0.24, 0.30), (0.10, 0.10, 0.10, 0.82), (0, 0, 0, 0.95)])
 
 
-def density_axes(ax, lo, hi, cmap, label=False):
+def density_axes(ax, lo, hi, cmap, label=False, top=1.0):
     """The limit-set density of [lo,hi] behind `ax`, on a twin axis."""
     t = ax.twinx()
     t.imshow(density(lo, hi), origin="lower", extent=[lo, hi, 0, 1], aspect="auto",
              cmap=cmap, vmin=0, vmax=1, interpolation="bilinear", zorder=1)
-    t.set_ylim(0, 1)
+    t.set_ylim(0, top)
     if label:
         t.set_yticks([0, 0.5, 1])
         t.set_ylabel(r"$x$   (limit set)", color=GREY, fontsize=7)
