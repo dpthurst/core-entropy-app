@@ -108,8 +108,10 @@ the download fails the HTML falls back to a CDN `<script>` tag.
 
 ## The interactive page
 
-* the curve: hover for `λ`, `c`, `h`, `h/log 2`; scroll/drag to zoom; the bottom
-  range slider zooms too; the top axis carries the `c` scale;
+* the curve is plotted in units of `log 2`, so that its maximum `h(4) = log 2` sits at `1` and
+  the axis reads as a fraction of the maximal entropy; hover for `λ`, `c`, `h/log 2` and the
+  raw `h`; scroll/drag to zoom, the bottom range slider zooms too, and the top axis carries
+  the `c` scale;
 * click anywhere on the curve, drag the slider, or use the landmark links to choose `λ`;
 * two checkboxes control the view.  **entropy curve** (on by default) hides the curve,
   its marker and the left axis, leaving the `λ` axis and whatever else is shown;
