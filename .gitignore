@@ -1,0 +1,15 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.toc
+*.synctex.gz
+
+# Python
+__pycache__/
+*.pyc
+
+# files attached through the platform, kept in the workspace but out of the repository
+attachments/
