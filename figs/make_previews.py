@@ -29,7 +29,7 @@ BLUE, GREEN, RED, GREY = "#1c5f9e", "#2f6b4f", "#c0392b", "#b9c0c7"
 
 d = np.loadtxt("core_entropy_data.csv", delimiter=",", skiprows=1)
 LAM, H = d[:, 0], d[:, 2]
-L2, LP = np.log(2.0), np.log((1 + 5 ** 0.5) / 2)
+L2, LTAU = np.log(2.0), np.log((1 + 5 ** 0.5) / 2)
 INF, P3 = 3.5699456718, 3.8318740553
 LAM0 = 3.7
 S0 = float(np.exp(np.interp(LAM0, LAM, H)))
@@ -125,7 +125,7 @@ def style(a):
 
 
 def preview_entropy():
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(13.0, 4.3), dpi=100,
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(13.0, 4.3), dpi=100, layout="constrained",
                                  gridspec_kw={"width_ratios": [1, 1.45], "wspace": 0.16})
     for a in (a1, a2):
         a.plot(LAM, H, lw=1.1, color=BLUE)
@@ -142,21 +142,20 @@ def preview_entropy():
     a1.set_title("full range", fontsize=10.5, color="0.25")
     a2.set_xlim(3.55, 4)
     a2.axhline(L2, color="0.85", lw=.8)
-    a2.axhline(LP, color="0.85", lw=.8)
+    a2.axhline(LTAU, color="0.85", lw=.8)
     a2.text(3.555, L2 + 0.008, r"$\log 2$", fontsize=8, color="0.45")
-    a2.text(3.555, LP + 0.008, r"$\log\tau$", fontsize=8, color="0.45")
+    a2.text(3.555, LTAU + 0.008, r"$\log\tau$", fontsize=8, color="0.45")
     a2.axvline(INF, color="0.72", lw=.9, ls=":")
-    a2.annotate("period-3 plateau", xy=(3.845, LP), xytext=(3.79, 0.60), fontsize=8,
+    a2.annotate("period-3 plateau", xy=(3.845, LTAU), xytext=(3.79, 0.60), fontsize=8,
                 color="0.35", ha="center",
                 arrowprops=dict(arrowstyle="-", color="0.75", lw=.7))
     a2.set_title("the staircase", fontsize=10.5, color="0.25")
-    plt.tight_layout()
     plt.savefig("preview.png", dpi=100, facecolor="white")
     plt.close(fig)
 
 
 def preview_bifurcation():
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(13.0, 4.4), dpi=100,
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(13.0, 4.4), dpi=100, layout="constrained",
                                  gridspec_kw={"width_ratios": [1, 1.45], "wspace": 0.12})
     for ax, (lo, hi), title in ((a1, (2, 4), "full range"), (a2, (3.72, 4), "the staircase")):
         Z = density(lo, hi)
@@ -182,10 +181,9 @@ def preview_bifurcation():
                 ax.axvline(xx, color="0.45", lw=.8, ls=":")
     a1.set_ylabel(r"core entropy  $h(\lambda)$", fontsize=10)
     a2.axhline(L2, color="0.8", lw=.8)
-    a2.axhline(LP, color="0.8", lw=.8)
+    a2.axhline(LTAU, color="0.8", lw=.8)
     a2.text(3.725, L2 - 0.045, r"$\log 2$", fontsize=8, color="0.4")
-    a2.text(3.725, LP + 0.008, r"$\log\tau$", fontsize=8, color="0.4")
-    plt.tight_layout()
+    a2.text(3.725, LTAU + 0.008, r"$\log\tau$", fontsize=8, color="0.4")
     plt.savefig("preview_bifurcation.png", dpi=100, facecolor="white", bbox_inches="tight")
     plt.close(fig)
 

@@ -3,9 +3,9 @@
 """
     preimage_growth(λ, nmax) -> Vector{Int}
 
-Number of x ∈ [0,1] with g_λ^n(x) = 1/2 for n = 0..nmax -- the number of laps
-of g_λ^n, which grows like e^{hn}.  Uses the dynamics only (no kneading theory),
-so it is an independent check of h.
+Number of x ∈ [0,1] with g_λ^n(x) = 1/2 for n = 0..nmax.  It grows at the
+same exponential rate e^{hn} as the number of laps of g_λ^n, and uses the
+dynamics only (no kneading theory), so it is an independent check of h.
 """
 function preimage_growth(λ::Float64, nmax::Int; cap::Int = 4_000_000)
     S = [0.5]
@@ -43,7 +43,7 @@ function run_checks()
         (2.0,           0.0,      "critical point fixed (c = 0)"),
         (3.0,           0.0,      "parabolic fixed point (c = -3/4)"),
         (1 + sqrt(5.0), 0.0,      "basilica centre (c = -1)"),
-        (lam3,          log(PHI), "period-3 centre (c = $(round(c3, digits = 7))): log τ"),
+        (lam3,          log(TAU), "period-3 centre (c = $(round(c3, digits = 7))): log τ"),
         (4.0,           LOG2,     "Chebyshev map (c = -2): log 2"),
     ]
     for (λ, want, name) in tests

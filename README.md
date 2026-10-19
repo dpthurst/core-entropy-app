@@ -93,7 +93,7 @@ Let `x_j = g_λ^j(1/2)` be the critical orbit and
 s_j = sign g_λ'(x_j) = +1 if x_j < 1/2,  −1 if x_j > 1/2
 ```
 
-(a return `x_j = 1/2` is read as the `0`-symbol, `s_j = −1`). With
+(a return `x_j = 1/2` is read as the `1`-symbol, `s_j = −1`). With
 `ε_k = s_1 s_2 ⋯ s_k`, the Milnor–Thurston kneading determinant is
 
 ```
@@ -108,8 +108,8 @@ then `h = 0`. The truncation error is bounded by the tail, since `|ε_k| = 1`:
 |D(t) − D_N(t)| ≤ t^(N+1)/(1−t) .
 ```
 
-`core_entropy` therefore accepts a zero only once `(1−t₀)N ≥ 25` (so the tail is below
-`e^{-25}`), doubling `N` from 800 up to 51 200 when `h` is small; `h` is reported as 0,
+`core_entropy` therefore accepts a zero only once `hN ≥ 25` (so the tail is below
+`e^{-25}/h`), raising `N` adaptively from 800 up to 51 200 when `h` is small; `h` is reported as 0,
 resolved down to `h ≈ 0.008`, when no zero exists at that resolution. Over a grid the
 zero from the previous parameter is used as the initial bracket, which is what makes the
 28 696-parameter sweep take about 1.5 s.
@@ -182,9 +182,8 @@ evaluation gives `D(1/τ) = 0` to the precision of `τ` itself.
 - the map `A` of Theorem 7.4 of Milnor–Thurston, which satisfies `f_s(A(x)) = A(g_λ(x))`:
   `g_λ` is topologically semi-conjugate to the piecewise-linear model `f_s`.  The arrow does
   not reverse — a tent map has no attracting cycle, while `g_λ` may have one — and `A` need
-  not be injective: where it collapses an interval, a symbol of the logistic itinerary lands
-  on the critical point of `f_s`, so the two itineraries need not agree.  The write-up's
-  §4.3 gives the exact criterion for `A` to be a conjugacy.
+  not be injective: where it collapses an interval, the two itineraries can differ.  The
+  write-up's §4.3 gives the exact criterion for `A` to be a conjugacy.
 
 Everything follows the slider.  `core_entropy.py` ports `src/CoreEntropy.jl` to numpy
 (a vectorised sweep over the parameters, with the scalar adaptive-order fallback), and its

@@ -13,7 +13,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from matplotlib.lines import Line2D
 
 plt.rcParams.update({
     "font.family": "serif", "font.serif": ["cmr10", "Computer Modern Roman", "DejaVu Serif"],
@@ -23,7 +22,7 @@ plt.rcParams.update({
     "axes.linewidth": 0.6, "lines.linewidth": 0.9,
 })
 BLUE, RED, GREY = "#1c5f9e", "#c0392b", "#7f8c8d"
-L2, LP = np.log(2.0), np.log((1 + 5**0.5) / 2)
+L2, LTAU = np.log(2.0), np.log((1 + 5**0.5) / 2)
 LAM_INF, LAM_P3 = 3.5699456718, 3.8318740553
 
 d = np.loadtxt("core_entropy_data.csv", delimiter=",", skiprows=1)
@@ -75,14 +74,14 @@ def fig_output():
     a1.set_title("(a)  the whole range", fontsize=8)
     a2.set_xlim(3.55, 4)
     a2.axhline(L2, color=GREY, lw=0.6, ls="--")
-    a2.axhline(LP, color=GREY, lw=0.6, ls="--")
+    a2.axhline(LTAU, color=GREY, lw=0.6, ls="--")
     a2.text(3.56, L2 + 0.02, r"$\log 2$", color=GREY, fontsize=7)
-    a2.text(3.56, LP + 0.02, r"$\log\tau$", color=GREY, fontsize=7)
+    a2.text(3.56, LTAU + 0.02, r"$\log\tau$", color=GREY, fontsize=7)
     for x in (LAM_INF, LAM_P3):
         a2.axvline(x, color=GREY, lw=0.6, ls=":")
     a2.annotate(r"$\lambda_\infty$", xy=(LAM_INF, 0.05), xytext=(3.60, 0.20), fontsize=7,
                 color=GREY, arrowprops=dict(arrowstyle="-", color=GREY, lw=0.5))
-    a2.annotate("period-3 plateau", xy=(3.845, LP), xytext=(3.80, 0.62), fontsize=7,
+    a2.annotate("period-3 plateau", xy=(3.845, LTAU), xytext=(3.80, 0.62), fontsize=7,
                 color=GREY, arrowprops=dict(arrowstyle="-", color=GREY, lw=0.5))
     a2.set_title(r"(b)  the staircase, $\lambda\in[3.55,4]$", fontsize=8)
     fig.savefig("figs/fig_output.pdf", bbox_inches="tight")
@@ -437,6 +436,7 @@ def density(x0, x1, nc=900, nr=400, transient=1500, keep=1200):
     return np.log1p(Z) / np.log1p(Z.max())
 
 
+# ---------------------------------------------------------------- figure 7
 def fig_plateau():
     import matplotlib.colors as mcolors
     cmap = mcolors.LinearSegmentedColormap.from_list(

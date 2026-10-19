@@ -433,8 +433,8 @@ those are exactly the ones a double-precision orbit gets right (\S\ref{sec:float
 seed error is $s^{-n}$: at $\lambda=3.7$, where $s=1.4648$, $n=64$ gives
 $2.5\times10^{-11}$, while near $\lambda=4$ the same $n$ gives $5\times10^{-20}$.  The
 implementation takes $n=64$ and checks itself against the functional equation, evaluating
-$\max_x|f_s(A(x))-A(g_\lambda(x))|$ on a grid of $240$ points; at
-$\lambda=3.7,\,3.84,\,3.86,\,4$ that maximum is $5.7\times10^{-12}$, $6.5\times10^{-11}$,
+$\max_x|f_s(A(x))-A(g_\lambda(x))|$ on the $241$ points $x=i/240$; at
+$\lambda=3.7,\,3.84,\,3.86,\,4$ that maximum is $5.7\times10^{-12}$, $1.3\times10^{-14}$,
 $1.0\times10^{-14}$ and $2.2\times10^{-16}$.
 
 \begin{figure}[htbp]

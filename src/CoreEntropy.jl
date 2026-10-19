@@ -13,11 +13,11 @@ entropy of g_λ on [0,1].  It is a continuous, nondecreasing devil's staircase f
 h(2) = 0 to h(4) = log 2 (Tiozzo, Adv. Math. 273 (2015)).
 
 Computation.  With x_j = g_λ^j(1/2) and s_j = sign g_λ'(x_j) (a return
-x_j = 1/2 read as the 0-symbol, s_j = -1), the Milnor-Thurston kneading
+x_j = 1/2 is read as the symbol 1, so s_j = -1), the Milnor-Thurston kneading
 determinant is D(t) = Σ ε_k t^k with ε_k = ∏_{j≤k} s_j, and h = log(1/t₀) where
 t₀ is the smallest zero of D in (0,1): 1/t₀ is the growth rate of the number of
 laps of g^n.  No zero means h = 0.  Truncating at k = N leaves the tail bound
-|D - D_N| ≤ t^(N+1)/(1-t), so a zero is accepted only once (1-t₀)N ≥ 25.
+|D - D_N| ≤ t^(N+1)/(1-t), so a zero is accepted only once h·N ≥ 25.
 """
 module CoreEntropy
 
@@ -25,11 +25,11 @@ using Printf
 
 # landmarks of the family (λ ↦ c = λ/2 − λ²/4)
 const LOG2       = log(2.0)
-const PHI        = (1 + sqrt(5.0)) / 2
+const TAU        = (1 + sqrt(5.0)) / 2
 const LAMBDA_INF = 3.5699456718     # Feigenbaum accumulation, c ≈ -1.4011552
 const LAMBDA_P3  = 3.8318740553     # period-3 centre,       c ≈ -1.7548777
 
-export LOG2, PHI, LAMBDA_INF, LAMBDA_P3
+export LOG2, TAU, LAMBDA_INF, LAMBDA_P3
 export kneading_eps, kneading_D, smallest_root, core_entropy, preimage_growth
 export lambda_grid, compute_curve, write_csv, h_at, critical_orbit, run_checks
 
@@ -113,9 +113,9 @@ end
     core_entropy(λ; N0=800, Nmax=51200, tguess=NaN, resolution=25.0) -> (h, t₀, N)
 
 Core entropy h(λ) = log(1/t₀), its zero t₀, and the number of kneading terms
-used.  A zero is trusted only once (1-t₀)N ≥ resolution, otherwise N is doubled;
-if no zero is found the entropy is reported as 0, resolved down to h ≈
-resolution/N.
+used.  A zero is trusted only once h·N ≥ resolution (h = -log t₀), otherwise N is
+increased, doubling normally and quadrupling once when no zero is found; if no
+zero is found the entropy is reported as 0, resolved down to h ≈ resolution/N.
 """
 function core_entropy(λ::Float64; N0::Int = 800, Nmax::Int = 51200,
                       tguess::Float64 = NaN, resolution::Float64 = 25.0)

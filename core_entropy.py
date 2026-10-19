@@ -3,15 +3,15 @@
 core_entropy.py -- core entropy of the logistic family, in Python.
 
 A port of src/CoreEntropy.jl.  For g_λ(x) = λx(1-x) the critical orbit gives
-signs s_j = sign g_λ'(x_j) (a return to 1/2 read as the 0-symbol, s_j = -1),
-the Milnor-Thurston kneading determinant is D(t) = Σ ε_k t^k with
+signs s_j = sign g_λ'(x_j) (a return to 1/2 is read as the symbol 1, so
+s_j = -1), the Milnor-Thurston kneading determinant is D(t) = Σ ε_k t^k with
 ε_k = s_1···s_k, and the core entropy is h(λ) = log(1/t₀), where t₀ is the
 smallest zero of D in (0,1); h = 0 if there is none.
 
 Truncating at k = N leaves the tail bound |D - D_N| ≤ t^(N+1)/(1-t), so a zero
-is accepted only once h·N ≥ 25; otherwise N is doubled, up to 51200.  The sweep
-is vectorised over λ: one occupancy-free Horner pass per t, all parameters at
-once.
+is accepted only once h·N ≥ 25; otherwise N is increased (doubled, or quadrupled
+once if no zero is found), up to 51200.  The sweep is vectorised over λ: one
+Horner pass per t, all parameters at once.
 
     python3 core_entropy.py          # writes core_entropy_data.csv
 """
@@ -84,26 +84,42 @@ def core_entropy_one(lam, N0=800, Nmax=51200, resolution=RESOLUTION):
         N = min(2 * N, Nmax)
 
 
+def _bisect(D, a, b):
+    for _ in range(70):
+        m = 0.5 * (a + b)
+        if D(m) > 0:
+            a = m
+        else:
+            b = m
+    return 0.5 * (a + b)
+
+
 def _smallest_root(eps, tguess, tmax):
-    """First sign change of D from + to - on (0.45, tmax), by bisection."""
+    """Smallest sign change of D from + to - on (0.45, tmax), by bisection.
+
+    `tguess` (the zero found at a nearby parameter) is tried first as a
+    bracket, which makes a sweep over a grid fast; otherwise 80 points of
+    [0.45, tmax] are scanned for the first + to - crossing.
+    """
     def D(t):
         s = 0.0
         for k in range(len(eps) - 1, -1, -1):
             s = s * t + eps[k]
         return s
+    if tguess is not None:
+        d = 1e-4
+        for _ in range(14):
+            a = max(tguess - d, 0.45)
+            b = min(tguess + d, tmax)
+            if a < b and D(a) > 0 and D(b) < 0:
+                return _bisect(D, a, b)
+            d *= 4
     ts = np.linspace(0.45, tmax, 80)
     prev, fprev = 0.45, D(0.45)
     for t in ts[1:]:
         ft = D(t)
         if fprev > 0 > ft:
-            a, b = prev, t
-            for _ in range(70):
-                m = 0.5 * (a + b)
-                if D(m) > 0:
-                    a = m
-                else:
-                    b = m
-            return 0.5 * (a + b)
+            return _bisect(D, prev, t)
         prev, fprev = t, ft
     return None
 
@@ -133,17 +149,16 @@ def compute_curve(lams, N=800, verbose=True):
     # the vectorised pass used N = 800; anything it could not resolve gets the
     # scalar treatment (h·N < 25, i.e. h < 0.031), and so does every parameter
     # above λ∞ that came out as zero
-    todo = [(h > 0) & (h * N < RESOLUTION)] if verbose else []
+    idx = np.where((h > 0) & (h * N < RESOLUTION))[0]
+    idx0 = np.where((h == 0) & (lams > 3.55))[0]
     if verbose:
-        idx = np.where((h > 0) & (h * N < RESOLUTION))[0]
         print(f"   {n} parameters, {np.count_nonzero(found)} zeros found, "
               f"{len(idx)} need refining")
-        for i in idx:
-            h[i] = core_entropy_one(lams[i])
-        idx0 = np.where((h == 0) & (lams > 3.55))[0]
         print(f"   {len(idx0)} zero-entropy candidates above 3.55, rechecking")
-        for i in idx0:
-            h[i] = core_entropy_one(lams[i])
+    for i in idx:
+        h[i] = core_entropy_one(lams[i])
+    for i in idx0:
+        h[i] = core_entropy_one(lams[i])
     return h
 
 

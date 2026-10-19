@@ -88,7 +88,7 @@ PAGE = r"""<!DOCTYPE html>
   <code>s = e^{h(λ)} = 1/t₀</code>, and the map <code>A</code> of Theorem 7.4 of
   Milnor–Thurston, which satisfies <code>f_s(A(x)) = A(g_λ(x))</code> — <code>g_λ</code> is
   topologically semi-conjugate to the piecewise-linear model <code>f_s</code>.  The arrow
-  does not reverse.  Drag the slider.
+  does not reverse, and <code>A</code> need not be injective.  Drag the slider.
 </p>
 
 <div id="entropy"></div>
@@ -122,8 +122,7 @@ PAGE = r"""<!DOCTYPE html>
     <div class="seq mono" id="v-seqT"></div>
     <div style="color:#666;font-size:12px;margin-top:4px">
       L and R are the two sides of the critical point, * a return to it.  They need not
-      agree: where A collapses an interval, a symbol of g<sub>λ</sub> lands on the critical
-      point of f<sub>s</sub>.
+      agree: where <code>A</code> collapses an interval, the two itineraries can differ.
     </div>
   </div>
 </div>
