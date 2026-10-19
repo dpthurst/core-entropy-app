@@ -88,7 +88,7 @@ def fig_output():
     a2.text(3.56, LTAU + 0.02, r"$\log\tau$", color="0.3", fontsize=7, bbox=box)
     for x in (LAM_INF, LAM_P3):
         a2.axvline(x, color=GREY, lw=0.6, ls=":")
-    a2.annotate(r"$\lambda_\infty$", xy=(LAM_INF, 0.03), xytext=(3.578, 0.30), fontsize=7,
+    a2.annotate(r"$\lambda_\infty$", xy=(LAM_INF, 0.01), xytext=(3.60, 0.05), fontsize=7,
                 color="0.25", bbox=box,
                 arrowprops=dict(arrowstyle="-", color=GREY, lw=0.5))
     a2.annotate("period-3 plateau", xy=(3.845, LTAU), xytext=(3.80, 0.705), fontsize=7,
