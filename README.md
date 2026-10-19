@@ -155,11 +155,13 @@ the itinerary the two orbits share, and the semi-conjugacy `h` itself — the co
 nondecreasing map with `h ∘ f_s = g_λ ∘ h`, drawn by matching the turning points of the
 iterates.  Move the `λ` slider and everything follows.
 
-A caveat that the page states where it applies: `s = e^{h(λ)}` always matches the *entropy*,
-but the two maps share a kneading sequence — and so are semi-conjugate — only when `g_λ`
-has no attracting cycle.  That holds at 86% of the parameters in `[3.6,4]`; inside a
-hyperbolic component no tent map has the same itinerary, because no tent map has an
-attracting cycle at all, and the page then says so and shows the two differing itineraries.
+This is Milnor–Thurston's Theorem 7.4 (*On iterated maps of the interval*, 1988): for every
+piecewise monotone `f` with growth number `s > 1` there is a continuous nondecreasing `A`
+from its interval onto `[0,1]` with `f_s(A(x)) = A(f(x))`, where `f_s` is the piecewise
+linear model of slope `±s`.  The arrow does not reverse — a tent map has no attracting
+cycle, while `g_λ` may have one — and `A` need not be injective: where it collapses an
+interval, a symbol of the logistic itinerary lands on the critical point of `f_s`, so the
+two itineraries on the page need not agree.
 
 ## A native window
 

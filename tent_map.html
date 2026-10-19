@@ -29,14 +29,13 @@
 <h1>g<sub>λ</sub> and its semi-conjugate tent map</h1>
 <p class="sub">
   For <code>g_λ(x) = λx(1−x)</code> take the tent map <code>f_s</code> of slope
-  <code>s = e^{h(λ)} = 1/t₀</code>, the exponential of the core entropy: it always has the
-  same entropy as <code>g_λ</code>.  Where the two also share a kneading sequence they are
-  semi-conjugate, and a continuous nondecreasing <code>h</code> with
-  <code>h ∘ f_s = g_λ ∘ h</code> carries one orbit to the other.  That is the case at 86% of
-  the parameters here; elsewhere <code>g_λ</code> sits inside a hyperbolic component, whose
-  attracting cycle no tent map can have, and then no tent map shares its sequence.  Below:
-  the two maps with the cobweb of the critical orbit, the itineraries, and the map
-  <code>h</code> itself, drawn by matching the turning points of the iterates.
+  <code>s = e^{h(λ)} = 1/t₀</code>, the exponential of the core entropy.  By the
+  Milnor–Thurston theorem (Theorem 7.4) there is then a continuous nondecreasing map
+  <code>A</code> from the interval of <code>g_λ</code> onto <code>[0,1]</code> with
+  <code>f_s(A(x)) = A(g_λ(x))</code>: <code>g_λ</code> is topologically semi-conjugate to the
+  piecewise-linear model <code>f_s</code>.  The arrow does not reverse — a tent map has no
+  attracting cycle, while <code>g_λ</code> may have one.  Below: the two maps with the cobweb
+  of the critical orbit, their itineraries, and <code>A</code> itself.
 </p>
 
 <div class="row">
@@ -50,14 +49,15 @@
       <span class="k">λ</span><span class="v" id="v-lam"></span>
       <span class="k">h(λ)</span><span class="v" id="v-h"></span>
       <span class="k">s = e^{h(λ)} = 1/t₀</span><span class="v" id="v-s"></span>
-      <span class="k">turning points</span><span class="v" id="v-n"></span>
+      <span class="k">max |f_s(A(x)) − A(g_λ(x))|</span><span class="v" id="v-n"></span>
     </div>
-    <div><b>itinerary</b> <span class="v" id="v-cmp"></span></div>
+    <div><b>itineraries of the critical orbits</b></div>
     <div class="seq mono" id="v-seqL"></div>
     <div class="seq mono" id="v-seqT"></div>
     <div style="color:#666;font-size:12px;margin-top:8px">
       first line: g<sub>λ</sub>; second: f<sub>s</sub>.  L and R are the two sides of the
-      critical point, * a return to it.
+      critical point, * a return to it.  The strings need not agree: where A collapses an
+      interval, a symbol of g<sub>λ</sub> may land on the critical point of f<sub>s</sub>.
     </div>
   </div>
 </div>
@@ -127,36 +127,16 @@ function dedupe(v, tol){
   return out;
 }
 
-// turning points of the two maps: union of preimages of 1/2 up to level n.
-// Both trees are pruned by the same kneading sequence, so the two sorted sets
-// have the same length and correspond point by point under the semi-conjugacy.
-function turningPoints(lam, s, maxLevel, target){
-  let SL = [0.5], ST = [0.5];
-  let AL = [0.5], AT = [0.5];
-  let level = 0, ok = true;
-  for (; level < maxLevel; level++){
-    const nl = [], nt = [];
-    for (const y of SL){
-      const disc = 1 - 4 * y / lam;
-      if (disc > 0){ const r = Math.sqrt(disc); nl.push(0.5*(1+r), 0.5*(1-r)); }
-    }
-    for (const y of ST){
-      if (y <= s/2 + 1e-12){
-        const a = y / s, b = 1 - y / s;
-        if (a > 0 && a < 1) nt.push(a);
-        if (b > 0 && b < 1) nt.push(b);
-      }
-    }
-    const dl = dedupe(nl, TOL), dt = dedupe(nt, TOL);
-    if (dl.length !== dt.length){ ok = false; break; }   // numerical mismatch
-    SL = dl; ST = dt;
-    const pl = AL, pt = AT;
-    AL = dedupe(AL.concat(SL), TOL);
-    AT = dedupe(AT.concat(ST), TOL);
-    if (AL.length !== AT.length){ AL = pl; AT = pt; ok = false; break; }
-    if (AL.length >= target || SL.length === 0) break;
-  }
-  return {logistic: AL, tent: AT, level: level, ok: ok};
+// Milnor-Thurston's semiconjugacy A: I -> [0,1], the map with f_s(A(x)) = A(g(x)).
+// Follow the itinerary of x and pull a seed back through the branches of f_s: over
+// the left lap the branch is u -> u/s, over the right lap u -> 1 - u/s, and the
+// composition contracts by s^-n, so any seed gives A to that accuracy.
+function A_of(x, lam, s, n){
+  let y = x; const w = [];
+  for (let k = 0; k < n; k++){ w.push(y < 0.5 ? 1 : -1); y = lam*y*(1-y); }
+  let u = 0.5;
+  for (let k = w.length - 1; k >= 0; k--) u = w[k] > 0 ? u/s : 1 - u/s;
+  return u;
 }
 
 // ---------------------------------------------------------------- plots
@@ -200,7 +180,7 @@ const trH = [
 
 Plotly.newPlot(gdL, trL, baseLayout('x', 'g_λ(x)'), cfg);
 Plotly.newPlot(gdT, trT, baseLayout('y', 'f_s(y)'), cfg);
-Plotly.newPlot(gdH, trH, baseLayout('y   (tent coordinate)', 'x = h(y)'), cfg);
+Plotly.newPlot(gdH, trH, baseLayout('x   (in the interval of g_λ)', 'A(x)   (tent coordinate)'), cfg);
 
 // ---------------------------------------------------------------- update
 const NFILL = 34;          // cobweb steps
@@ -219,30 +199,25 @@ function setLambda(lam){
   Plotly.restyle(gdT, {x: [[0, 0.5, 1], cwT.x, orbT.slice(0, 7)],
                        y: [[0, s/2, 0], cwT.y, orbT.slice(0, 7)]}, [1, 2, 3]);
 
-  const tp = turningPoints(lam, s, 40, 3000);
-  const ok = tp.ok && tp.logistic.length >= 30;
-  const hx = [0].concat(tp.tent, [1]);
-  const hy = [0].concat(tp.logistic, [1]);
-  Plotly.restyle(gdH, {x: [hx, orbT.slice(0, 7)], y: [hy, orbL.slice(0, 7)],
-                       visible: [ok, ok]}, [1, 2]);
-  Plotly.relayout(gdH, {annotations: ok ? [] : [{
-      x: 0.5, y: 0.55, xref: 'paper', yref: 'paper', showarrow: false,
-      text: 'no tent map shares this kneading sequence',
-      font: {size: 11, color: '#999'}}]});
+  const NG = 240, gx = [], gy = [];
+  let err = 0;
+  for (let i = 0; i <= NG; i++){
+    const x = i/NG, a = A_of(x, lam, s, 64);
+    gx.push(x); gy.push(a);
+    const e = Math.abs(A_of(g(x, lam), lam, s, 64) - tent(a, s));
+    if (e > err) err = e;
+  }
+  const oy = orbL.slice(0, 7).map(x => A_of(x, lam, s, 64));
+  Plotly.restyle(gdH, {x: [gx, orbL.slice(0, 7)], y: [gy, oy], visible: [true, true]}, [1, 2]);
 
   const sL = itinerary(x => g(x, lam), NSYM, 1e-6);
   const sT = itinerary(y => tent(y, s), NSYM, 1e-6);
   document.getElementById('v-lam').textContent = lam.toFixed(6);
   document.getElementById('v-h').textContent = h.toFixed(6);
   document.getElementById('v-s').textContent = s.toFixed(6);
-  document.getElementById('v-n').textContent = tp.logistic.length + '  (level ' + tp.level + ')';
+  document.getElementById('v-n').textContent = err.toExponential(1);
   document.getElementById('v-seqL').textContent = 'g_λ : ' + sL;
   document.getElementById('v-seqT').textContent = 'f_s : ' + sT;
-  const same = sL === sT;
-  document.getElementById('v-cmp').textContent = same
-      ? 'identical on the first ' + NSYM + ' symbols'
-      : 'differ: hyperbolic component, no tent partner';
-  document.getElementById('v-cmp').style.color = same ? '#2f6b4f' : '#c0392b';
 }
 
 document.getElementById('slider').addEventListener('input', e => setLambda(parseFloat(e.target.value)));
