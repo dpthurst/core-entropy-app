@@ -757,7 +757,7 @@ $4.00$ & $22$ & $4\,194\,244$ & $0.693144$ & $0.693147$ \\
 The slopes in the figure are read off over the range in which the counts are still far
 from the roundoff floor; where they agree, the two computations of $h$ agree.
 
-\subsection{An exact plateau}
+\subsection{Exact plateaus}
 
 The most conspicuous feature of the graph is the step at $h=\log\tau$, and it is not a
 numerical accident.  At $\lambda=3.845$ the computed sign sequence is exactly
@@ -769,19 +769,30 @@ $\tau$ itself.  The step runs from the saddle-node $\lambda=1+\sqrt8=3.8284271$ 
 $\lambda\approx3.8568$, the real extent of the period-$3$ copy of the Mandelbrot set,
 before $h$ rises again.
 
+The same happens at the other windows.  The period-$5$ window, at
+$\lambda\approx3.9056$--$3.9068$, has $h=\log1.72208=0.543535$ throughout, and the
+period-$4$ window, at $\lambda\approx3.9601$--$3.9616$, has
+$h=\log1.83929=0.609378$; in each case the value is the logarithm of the growth number of
+the window's kneading sequence, and it stays fixed across the whole period-doubling
+cascade.
+
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{fig_plateau}
-  \caption{The plateau at $\log\tau$ against the bifurcation diagram of the same
-  parameters.  The step in $h$ coincides with the period-3 window and is exactly flat from
-  the saddle-node at $3.8284$ out to $\lambda\approx3.8568$.}
+  \caption{Three period-doubling cascades: the period-$3$ window (a), the period-$5$
+  window (b) and the period-$4$ window (c), each against its bifurcation diagram.  In
+  every panel $h$ is flat across the whole cascade --- at $\log\tau$, $\log1.72208$ and
+  $\log1.83929$ respectively --- and rises only when the window's structure ends.  The
+  dotted lines mark the saddle-node and the first period doubling.}
   \label{fig:plateau}
 \end{figure}
 
 Figure~\ref{fig:plateau} places the step against the bifurcation diagram.  The plateau in
-$h$ coincides with the period-3 window, and it ends only where the window's own structure
+$h$ coincides with the period-$3$ window, and it ends only where the window's own structure
 ends, at $\lambda\approx3.8568$; between the two the entropy does not move at all, even
-though the attracting cycle doubles repeatedly along the way.
+though the attracting cycle doubles repeatedly along the way.  Panels~(b) and~(c) show that
+this is not special to period $3$: the period-$5$ and period-$4$ windows have the same flat
+step, at their own heights.
 
 \section{Concluding remarks}
 

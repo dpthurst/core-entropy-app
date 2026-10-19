@@ -441,31 +441,44 @@ def fig_plateau():
     import matplotlib.colors as mcolors
     cmap = mcolors.LinearSegmentedColormap.from_list(
         "ink", [(1, 1, 1, 0), (0.24, 0.24, 0.24, 0.30), (0.10, 0.10, 0.10, 0.82), (0, 0, 0, 0.95)])
-    lo, hi = 3.80, 3.88
-    Z = density(lo, hi)
-    fig, a = plt.subplots(figsize=(6.6, 2.6))
-    t = a.twinx()
-    t.imshow(Z, origin="lower", extent=[lo, hi, 0, 1], aspect="auto", cmap=cmap,
-             vmin=0, vmax=1, interpolation="bilinear", zorder=1)
-    t.set_ylim(0, 1); t.set_yticks([0, 0.5, 1]); t.set_ylabel(r"$x$   (limit set)", color=GREY)
-    t.tick_params(colors=GREY, length=2)
-    for sp in t.spines.values():
-        sp.set_visible(False)
-    m = (lam >= lo) & (lam <= hi)
-    a.plot(lam[m], h[m], color=BLUE, lw=1.4, zorder=5)
-    a.set_zorder(5); a.patch.set_visible(False)
-    a.set_xlim(lo, hi); a.set_ylim(-0.02, 0.60)
-    a.set_xlabel(r"$\lambda$"); a.set_ylabel(r"$h(\lambda)$")
-    a.grid(alpha=0.12, lw=0.5, zorder=0)
-    a.axhline(LP, color=GREY, lw=0.6, ls="--")
-    a.text(lo + 0.002, LP + 0.012, r"$\log\tau$", color=GREY, fontsize=7)
-    for x, lab in ((3.8284271, "saddle-node"), (3.8414990, "period doubling")):
-        a.axvline(x, color="0.4", lw=0.6, ls=":")
-    a.annotate("period doubling", xy=(3.8415, 0.30), xytext=(3.8435, 0.42), fontsize=6.5,
-               color="0.35", arrowprops=dict(arrowstyle="-", color="0.55", lw=0.5))
-    a.annotate(r"plateau ends, $\lambda\approx3.8568$", xy=(3.8568, LP), xytext=(3.8295, 0.545),
-               fontsize=6.5, color="0.35", arrowprops=dict(arrowstyle="-", color="0.55", lw=0.5))
-    a.spines[["top"]].set_visible(False)
+    panels = [
+        (3.820, 3.865, 0.481211825, 3.8284271, 3.8414990, 0.476, 0.497,
+         [3.82, 3.84, 3.86], [0.478, 0.482, 0.486, 0.490, 0.494], r"(a)  period 3"),
+        (3.902, 3.911, 0.543535072, 3.9055719, 3.9061074, 0.537, 0.551,
+         [3.902, 3.906, 3.910], [0.538, 0.542, 0.546, 0.550], r"(b)  period 5"),
+        (3.955, 3.967, 0.609377863, 3.9601019, 3.9607687, 0.601, 0.620,
+         [3.955, 3.960, 3.965], [0.602, 0.606, 0.610, 0.614, 0.618], r"(c)  period 4"),
+    ]
+    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.3), gridspec_kw={"wspace": 0.36})
+    for k, (a, (lo, hi, h0, sn, pd, ylo, yhi, xt, yt, title)) in enumerate(zip(axs, panels)):
+        Z = density(lo, hi)
+        t = a.twinx()
+        t.imshow(Z, origin="lower", extent=[lo, hi, 0, 1], aspect="auto", cmap=cmap,
+                 vmin=0, vmax=1, interpolation="bilinear", zorder=1)
+        t.set_ylim(0, 1)
+        if k == 2:
+            t.set_yticks([0, 0.5, 1])
+            t.set_ylabel(r"$x$   (limit set)", color=GREY, fontsize=7)
+        else:
+            t.set_yticks([])
+        t.tick_params(colors=GREY, length=2, labelsize=6)
+        for sp in t.spines.values():
+            sp.set_visible(False)
+        m = (lam >= lo) & (lam <= hi)
+        a.plot(lam[m], h[m], color=BLUE, lw=1.4, zorder=5)
+        a.set_zorder(5); a.patch.set_visible(False)
+        a.set_xlim(lo, hi); a.set_ylim(ylo, yhi)
+        a.set_xticks(xt); a.set_yticks(yt)
+        a.set_xlabel(r"$\lambda$", fontsize=8)
+        a.set_title(title, fontsize=8)
+        a.tick_params(labelsize=6.5)
+        a.grid(alpha=0.12, lw=0.5, zorder=0)
+        a.axhline(h0, color=GREY, lw=0.6, ls="--")
+        for x in (sn, pd):
+            a.axvline(x, color="0.4", lw=0.6, ls=":")
+        a.spines[["top"]].set_visible(False)
+        if k == 0:
+            a.set_ylabel(r"$h(\lambda)$", fontsize=8)
     fig.savefig("figs/fig_plateau.pdf", bbox_inches="tight")
 
 

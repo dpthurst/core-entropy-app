@@ -81,7 +81,9 @@ exactly `log τ` out to `λ ≈ 3.8568`, i.e. over `c ∈ [−1.789, −1.75]` �
 the period-3 copy of the Mandelbrot set — and only then rises again. At `λ = 3.845` the
 kneading determinant is exactly `(1 − t − t²)·Q(t)/(1 − t¹²)` with `Q` of degree 9, so the
 entropy is exactly `log τ`; a 60-digit evaluation confirms `D(1/τ) = 0` at `λ = 3.85,
-3.855, 3.8565` as well.
+3.855, 3.8565` as well.  The same flat step appears at the period-5 window,
+`λ ≈ 3.9056–3.9068`, where `h = log 1.72208`, and at the period-4 window,
+`λ ≈ 3.9601–3.9616`, where `h = log 1.83929`.
 
 ## How h is computed
 
