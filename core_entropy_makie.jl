@@ -29,7 +29,7 @@ function makie_view()
 
     ax1 = Axis(fig[1:2, 1];
                title = "core entropy of  g_λ(x) = λx(1−x)",
-               xlabel = "λ", ylabel = "h(λ) / log 2")
+               xlabel = "λ", ylabel = "h(λ)"
     ax2 = Axis(fig[1, 2]; aspect = DataAspect(),
                title = "g_λ on [0,1]", xlabel = "x", ylabel = "g_λ(x)",
                limits = ((0.0, 1.0), (0.0, 1.02)))
@@ -38,16 +38,15 @@ function makie_view()
     sl = Slider(fig[2, 2]; range = 2.0:0.001:4.0, startvalue = λ0, tellwidth = true)
 
     # ---- the entropy curve
-    hN = hs ./ LOG2                      # units of log 2, so that h(4) = 1
-    lines!(ax1, lams, hN; color = "#1c5f9e", linewidth = 1.5)
+    lines!(ax1, lams, hs; color = "#1c5f9e", linewidth = 1.5)
     vlines!(ax1, [LAMBDA_INF, LAMBDA_P3]; color = (:gray, 0.5), linestyle = :dash)
-    hlines!(ax1, [1.0]; color = (:gray, 0.3), linestyle = :dot)
+    hlines!(ax1, [LOG2]; color = (:gray, 0.3), linestyle = :dot)
     xlims!(ax1, 2.0, 4.0)
-    ylims!(ax1, -0.03, 1.04)
-    text!(ax1, 3.575, 0.96; text = "λ∞", fontsize = 11, color = (:gray, 0.8))
-    text!(ax1, 3.79, 0.96; text = "period 3", fontsize = 11, color = (:gray, 0.8))
+    ylims!(ax1, -0.02, 0.70)
+    text!(ax1, 3.575, 0.655; text = "λ∞", fontsize = 11, color = (:gray, 0.8))
+    text!(ax1, 3.79, 0.655; text = "period 3", fontsize = 11, color = (:gray, 0.8))
 
-    marker = @lift([Point2f($sl.value, h_at(lams, hs, $sl.value)/LOG2)])
+    marker = @lift([Point2f($sl.value, h_at(lams, hs, $sl.value))])
     scatter!(ax1, marker; color = "#c1272d", markersize = 13,
              strokewidth = 1, strokecolor = :white)
 

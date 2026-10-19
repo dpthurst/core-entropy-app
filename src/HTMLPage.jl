@@ -154,7 +154,6 @@ const LAM = @LAM@;
 const H   = @H@;
 const NPT = LAM.length;
 const LOG2 = Math.log(2);
-const HN   = H.map(v => v / LOG2);      // entropy in units of log 2: h(4) = 1
 const cOf  = l => l/2 - l*l/4;
 const lamOf = c => 1 + Math.sqrt(Math.max(0, 1 - 4*c));
 
@@ -169,7 +168,7 @@ function idxOf(lam){
 const hAt = lam => H[idxOf(lam)];
 
 const CD = new Array(NPT);
-for (let i = 0; i < NPT; i++) CD[i] = [cOf(LAM[i]), H[i]];
+for (let i = 0; i < NPT; i++) CD[i] = [cOf(LAM[i]), H[i]/LOG2];
 
 // ---------------------------------------------------------------- main curve
 const gdCurve = document.getElementById('curve');
@@ -180,7 +179,7 @@ const layoutCurve = {
   margin: {l: 66, r: 26, t: 48, b: 46},
   xaxis: {title: {text: 'λ'}, range: [2, 4], zeroline: false,
           gridcolor: '#eceff2', rangeslider: {visible: true, thickness: 0.07, bgcolor: '#f5f7f9'}},
-  yaxis: {title: {text: 'core entropy   h(λ) / log 2'}, range: [-0.03, 1.04], zeroline: false,
+  yaxis: {title: {text: 'core entropy   h(λ)'}, range: [-0.02, 0.70], zeroline: false,
           gridcolor: '#eceff2'},
   yaxis2: {overlaying: 'y', side: 'right', range: [0, 1], visible: false,
            title: {text: 'x   (limit set)'}, showgrid: false, zeroline: false,
@@ -218,12 +217,12 @@ const trBif = {type: 'heatmap', x: [2], y: [0.5], z: [[0]], yaxis: 'y2',
                zmin: 0, zmax: 1, showscale: false, hoverinfo: 'skip', visible: false};
 
 const trCurve = {
-  x: LAM, y: HN, customdata: CD, type: 'scatter', mode: 'lines',
+  x: LAM, y: H, customdata: CD, type: 'scatter', mode: 'lines',
   line: {color: '#1c5f9e', width: 1.3},
   hovertemplate: 'λ = %{x:.6f}<br>c = %{customdata[0]:.6f}<br>' +
-                 'h / log 2 = %{y:.4f}<br>h = %{customdata[1]:.6f}<extra></extra>'
+                 'h = %{y:.6f}<br>h / log 2 = %{customdata[1]:.4f}<extra></extra>'
 };
-const trMark = {x: [3.8318741], y: [hAt(3.8318741)/LOG2], type: 'scatter', mode: 'markers',
+const trMark = {x: [3.8318741], y: [hAt(3.8318741)], type: 'scatter', mode: 'markers',
                 marker: {size: 9, color: '#c1272d', line: {color: '#fff', width: 1.2}},
                 hoverinfo: 'skip'};
 // Plotly only creates a secondary axis if some trace lives on it, so keep an
@@ -325,7 +324,7 @@ function setLambda(lam, fromSlider){
   lam = Math.max(2, Math.min(4, lam));
   curLam = lam;
   const h = hAt(lam);
-  Plotly.restyle(gdCurve, {x: [[lam]], y: [[h/LOG2]]}, [2]);
+  Plotly.restyle(gdCurve, {x: [[lam]], y: [[h]]}, [2]);
   drawMap(lam);
   updateReadout(lam, h);
   if (!fromSlider) document.getElementById('slider').value = lam;
