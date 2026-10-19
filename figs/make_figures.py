@@ -58,8 +58,11 @@ def h_of(l):
 def fig_output():
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.35),
                                  gridspec_kw={"width_ratios": [1, 1.4], "wspace": 0.22})
+    cmap = ink_cmap()
+    density_axes(a1, 2.0, 4.0, cmap, label=False)
+    density_axes(a2, 3.55, 4.0, cmap, label=True)
     for a in (a1, a2):
-        a.plot(lam, h, color=BLUE, lw=1.0)
+        a.plot(lam, h, color=BLUE, lw=1.0, zorder=5)
         a.set_xlabel(r"$\lambda$")
         a.set_ylim(-0.02, 0.74)
         a.grid(alpha=0.18, lw=0.5)
@@ -436,11 +439,34 @@ def density(x0, x1, nc=900, nr=400, transient=1500, keep=1200):
     return np.log1p(Z) / np.log1p(Z.max())
 
 
+def ink_cmap():
+    import matplotlib.colors as mcolors
+    return mcolors.LinearSegmentedColormap.from_list(
+        "ink", [(1, 1, 1, 0), (0.24, 0.24, 0.24, 0.30), (0.10, 0.10, 0.10, 0.82), (0, 0, 0, 0.95)])
+
+
+def density_axes(ax, lo, hi, cmap, label=False):
+    """The limit-set density of [lo,hi] behind `ax`, on a twin axis."""
+    t = ax.twinx()
+    t.imshow(density(lo, hi), origin="lower", extent=[lo, hi, 0, 1], aspect="auto",
+             cmap=cmap, vmin=0, vmax=1, interpolation="bilinear", zorder=1)
+    t.set_ylim(0, 1)
+    if label:
+        t.set_yticks([0, 0.5, 1])
+        t.set_ylabel(r"$x$   (limit set)", color=GREY, fontsize=7)
+    else:
+        t.set_yticks([])
+    t.tick_params(colors=GREY, length=2, labelsize=6)
+    for sp in t.spines.values():
+        sp.set_visible(False)
+    ax.set_zorder(5)
+    ax.patch.set_visible(False)
+    return t
+
+
 # ---------------------------------------------------------------- figure 7
 def fig_plateau():
-    import matplotlib.colors as mcolors
-    cmap = mcolors.LinearSegmentedColormap.from_list(
-        "ink", [(1, 1, 1, 0), (0.24, 0.24, 0.24, 0.30), (0.10, 0.10, 0.10, 0.82), (0, 0, 0, 0.95)])
+    cmap = ink_cmap()
     panels = [
         (3.820, 3.865, 0.481211825, 3.8284271, 3.8414990, 0.476, 0.497,
          [3.82, 3.84, 3.86], [0.478, 0.482, 0.486, 0.490, 0.494], r"(a)  period 3"),
@@ -451,22 +477,9 @@ def fig_plateau():
     ]
     fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.3), gridspec_kw={"wspace": 0.36})
     for k, (a, (lo, hi, h0, sn, pd, ylo, yhi, xt, yt, title)) in enumerate(zip(axs, panels)):
-        Z = density(lo, hi)
-        t = a.twinx()
-        t.imshow(Z, origin="lower", extent=[lo, hi, 0, 1], aspect="auto", cmap=cmap,
-                 vmin=0, vmax=1, interpolation="bilinear", zorder=1)
-        t.set_ylim(0, 1)
-        if k == 2:
-            t.set_yticks([0, 0.5, 1])
-            t.set_ylabel(r"$x$   (limit set)", color=GREY, fontsize=7)
-        else:
-            t.set_yticks([])
-        t.tick_params(colors=GREY, length=2, labelsize=6)
-        for sp in t.spines.values():
-            sp.set_visible(False)
+        density_axes(a, lo, hi, cmap, label=(k == 2))
         m = (lam >= lo) & (lam <= hi)
         a.plot(lam[m], h[m], color=BLUE, lw=1.4, zorder=5)
-        a.set_zorder(5); a.patch.set_visible(False)
         a.set_xlim(lo, hi); a.set_ylim(ylo, yhi)
         a.set_xticks(xt); a.set_yticks(yt)
         a.set_xlabel(r"$\lambda$", fontsize=8)
