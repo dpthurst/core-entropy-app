@@ -64,10 +64,10 @@ sections of the Mandelbrot set.
 The purpose of this note is to record the algorithm by which the staircase is computed,
 the conventions it uses and the control it keeps over the truncation error.
 Section~\ref{sec:core} fixes the object, \S\ref{sec:kneading} recalls the kneading theory
-that turns the entropy into a root of a power series together with the piecewise-linear model
-that reproduces the lap counts, \S\ref{sec:algo} and~\ref{sec:error} describe and analyse the
-numerical scheme, and \S\ref{sec:validation} collects the evidence that the implementation is
-correct.  The code,
+that turns the entropy into a root of a power series, \S\ref{sec:algo} and~\ref{sec:error}
+describe and analyse the numerical scheme, and \S\ref{sec:validation} collects the evidence
+that the implementation is correct; an appendix records the piecewise-linear model that
+reproduces the lap counts, which is not needed for the algorithm.  The code,
 \texttt{src/CoreEntropy.jl}, follows the same order; the two front ends contain no
 mathematics of their own.
 
@@ -188,7 +188,7 @@ differs from $w$ in the first $n$ symbols.
   \includegraphics[width=\textwidth]{fig_laps}
   \caption{Laps at $\lambda=3.7$.  (a)~$g_\lambda$, with its two laps shaded alternately.
   (b)~the sixth iterate $g_\lambda^6$, drawn on a grid of $3000$ points: its $38$ laps are
-  the oscillations of the graph.  (c)~the sixth iterate of the tent map of \S\ref{sec:model},
+  the oscillations of the graph.  (c)~the sixth iterate of the tent map of Appendix~\ref{sec:model},
   of slope $e^{h(\lambda)}=1.4648$, which has the same $38$.}
   \label{fig:laps}
 \end{figure}
@@ -196,7 +196,7 @@ differs from $w$ in the first $n$ symbols.
 Figure~\ref{fig:laps} illustrates the lemma at $\lambda=3.7$.  Panel~(a) shows $g_\lambda$
 with its two laps; panel~(b) the sixth iterate on a fine grid, where the laps are the
 oscillations and there are $38$ of them; panel~(c) the sixth iterate of the tent map that
-\S\ref{sec:model} associates with the same parameter, which has the same $38$.  The counts
+Appendix~\ref{sec:model} associates with the same parameter, which has the same $38$.  The counts
 for $n=1,2,4,6,8$ are $2,\,4,\,14,\,38,\,90$.  The first values look like $2^n$, and to
 begin with they are, since a lap of $g^n$ has at most two preimage-laps under $g$; the count
 falls away from $2^n$ only once the preimage tree is pruned, which happens because a point
@@ -356,46 +356,6 @@ $h(\lambda_3)=\log\varphi=0.481211825\ldots$.
 
 In both cases the entropy is settled by a polynomial rather than a series: the determinant
 is rational and its smallest zero can be read off exactly, with no truncation at all.
-
-\subsection{The piecewise-linear model}\label{sec:model}
-
-The lap counts are not special to the quadratic family.  Every piecewise monotone map with
-growth number $s>1$ is topologically semi-conjugate to one whose slope is $\pm s$
-everywhere, and for the logistic family that model is the tent map of slope
-$s=e^{h(\lambda)}=1/t_0$:
-
-\begin{theorem}[Milnor--Thurston \cite{MT}, Theorem 7.4]\label{thm:model}
-Let $f$ be piecewise monotone with growth number $s>1$.  Then there is a continuous,
-nondecreasing, surjective $A$ from the interval of $f$ onto $[0,1]$, and a piecewise linear
-$F:[0,1]\to[0,1]$ with $|F'|=s$ everywhere, such that
-\[
-  F(A(x))=A(f(x))\qquad\text{for every }x .
-\]
-The growth number of $F$ is $s$.
-\end{theorem}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\textwidth]{fig_model}
-  \caption{The three objects at $\lambda=3.7$.  (a)~$g_\lambda$, with the cobweb of the
-  critical orbit.  (b)~the tent map $f_s$ of slope $s=e^{h(\lambda)}=1.4648$, with its own
-  cobweb.  (c)~the map $A$ of Theorem~\ref{thm:model}, on which the iterates of the critical
-  orbit of $f_s$ (abscissae) sit at the corresponding iterates of $g_\lambda$ (ordinates).}
-  \label{fig:model}
-\end{figure}
-
-The map $A$ is not a conjugacy.  It may collapse intervals of the interval of $g_\lambda$ to
-points --- in particular the basin of an attracting cycle goes to a cycle of $f_s$ --- and
-the arrow does not reverse: a tent map has no attracting cycle, while $g_\lambda$ may have
-one.  Figure~\ref{fig:model} shows the three objects; panel~(c) is computed by following the
-itinerary of $x$ and pulling a seed back through the branches of $f_s$, which contracts at
-rate $s^{-n}$.
-
-What this gives the computation is a second way to see the lap numbers.  Since
-$F(A(x))=A(f(x))$, the map $A$ carries each lap of $g_\lambda^n$ into a lap of $f_s^n$, so
-$\ell(f_s^n)\le\ell(g_\lambda^n)$; both grow like $s^n$, and at $\lambda=3.7$ they agree at
-every $n$ we computed, as panels~(b) and~(c) of Figure~\ref{fig:laps} show for $n=6$.  The
-growth number $s$ itself is what \S\ref{sec:algo} computes, as $1/t_0$.
 
 \section{The algorithm}\label{sec:algo}
 
@@ -642,6 +602,52 @@ assumption is stated in \S\ref{sec:error} and never failed.  Nothing in the meth
 special to the logistic family except the bound $h\le\log2$ that places the zero above
 $\tfrac12$: any unimodal family with a computable kneading sequence can be treated the same
 way, once the orbit and its signs are supplied.
+
+\appendix
+
+\section{The piecewise-linear model}\label{sec:model}
+
+The lap counts of \S\ref{sec:kneading} are not special to the quadratic family.  Milnor and
+Thurston show that every piecewise monotone map with growth number $s>1$ is topologically
+semi-conjugate to a piecewise linear map of slope $\pm s$; for the logistic family that model
+is the tent map of slope $s=e^{h(\lambda)}=1/t_0$.
+
+\begin{theorem}[Milnor--Thurston \cite{MT}, Theorem 7.4, in the notation of this paper]\label{thm:model}
+Suppose $h(\lambda)>0$ and put $s=e^{h(\lambda)}=1/t_0$.  Then there is a continuous
+nondecreasing surjection $A:[0,1]\to[0,1]$ such that
+\[
+  f_s\bigl(A(x)\bigr)=A\bigl(g_\lambda(x)\bigr)\qquad\text{for every } x\in[0,1],
+\]
+where $f_s(y)=sy$ for $y\le\tfrac12$ and $f_s(y)=s(1-y)$ for $y\ge\tfrac12$.
+\end{theorem}
+
+The map supplied by \cite[Theorem 7.4]{MT} is piecewise linear with slope $\pm s$; since
+$g_\lambda$ has two laps the model has at most two, and since $s>1$ it cannot have fewer, so
+it is $f_s$.  That is the only point of the quoted statement that has to be checked to read
+it in the notation of this paper.
+
+The map $A$ is not a conjugacy.  It may collapse intervals to points --- in particular the
+basin of an attracting cycle of $g_\lambda$ goes to a cycle of $f_s$ --- and the arrow does
+not reverse: a tent map has no attracting cycle, while $g_\lambda$ may have one.
+Figure~\ref{fig:model} shows the three objects at $\lambda=3.7$.  Panel~(c) is computed by
+following the itinerary of $x$ and pulling a seed back through the branches of $f_s$, which
+contracts at rate $s^{-n}$.
+
+What this gives the computation is a second way to see the lap numbers.  Since
+$f_s(A(x))=A(g_\lambda(x))$, the map $A$ carries every lap of $g_\lambda^n$ into a lap of
+$f_s^n$, so $\ell(f_s^n)\le\ell(g_\lambda^n)$; both grow like $s^n$, and at $\lambda=3.7$
+they agree at every $n$ we computed, as panels~(b) and~(c) of Figure~\ref{fig:laps} show for
+$n=6$.  The growth number $s$ itself is what \S\ref{sec:algo} computes, as $1/t_0$.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_model}
+  \caption{The three objects at $\lambda=3.7$.  (a)~$g_\lambda$, with the cobweb of the
+  critical orbit.  (b)~the tent map $f_s$ of slope $s=e^{h(\lambda)}=1.4648$, with its own
+  cobweb.  (c)~the map $A$ of Theorem~\ref{thm:model}, on which the iterates of the critical
+  orbit of $f_s$ (abscissae) sit at the corresponding iterates of $g_\lambda$ (ordinates).}
+  \label{fig:model}
+\end{figure}
 
 \begin{thebibliography}{9}\footnotesize\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
 \bibitem{dMvS} W.~de Melo and S.~van Strien, \emph{One-dimensional dynamics},

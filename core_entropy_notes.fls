@@ -219,12 +219,6 @@ INPUT ./figs/fig_kneading.pdf
 INPUT ./figs/fig_kneading.pdf
 INPUT ./figs/fig_kneading.pdf
 INPUT ./figs/fig_kneading.pdf
-INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmri8.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmri7.tfm
-INPUT ./figs/fig_model.pdf
-INPUT ./figs/fig_model.pdf
-INPUT ./figs/fig_model.pdf
-INPUT ./figs/fig_model.pdf
 INPUT ./figs/fig_determinant.pdf
 INPUT ./figs/fig_determinant.pdf
 INPUT ./figs/fig_determinant.pdf
@@ -251,6 +245,12 @@ INPUT ./figs/fig_plateau.pdf
 INPUT ./figs/fig_plateau.pdf
 INPUT ./figs/fig_plateau.pdf
 INPUT ./figs/fig_plateau.pdf
+INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmri8.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmri7.tfm
+INPUT ./figs/fig_model.pdf
+INPUT ./figs/fig_model.pdf
+INPUT ./figs/fig_model.pdf
+INPUT ./figs/fig_model.pdf
 INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmr9.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmri9.tfm
 INPUT core_entropy_notes.aux
