@@ -9,12 +9,12 @@
 #     python3 tent_map_app.py                  # the window
 #     python3 tent_map_app.py --save f.png --exact
 #
-# It does not currently run: a reader reports a parse error at the Axis(...) call
-# at line 46 below ("Expected `)` or `,`"), which does not reproduce here with
-# Julia 1.11.3 -- the file parses cleanly under Meta.parseall -- so it is a Julia
-# or Makie version difference in the Axis keywords, not something this file can
-# settle without a display and a working Makie.  Nothing else in the repository
-# depends on it.
+# Until recently it did not even parse: the Axis(...) call below was missing its
+# closing parenthesis, which Julia reports as "Expected `)` or `,`" at the end of
+# the xlabel/ylabel line -- on 1.11 and 1.12 alike, so it was never a version
+# difference.  That is fixed and the file parses cleanly under Julia 1.11.3 and
+# 1.12.5.  What remains untested is the drawing, which needs Makie and a display;
+# that is why this stays deprecated in favour of tent_map_app.py.
 #
 # ---- the original description, for reference -------------------------------
 #
@@ -45,7 +45,7 @@ function makie_view()
 
     ax1 = Axis(fig[1:2, 1];
                title = "core entropy of  g_λ(x) = λx(1−x)",
-               xlabel = "λ", ylabel = "h(λ)"
+               xlabel = "λ", ylabel = "h(λ)")
     ax2 = Axis(fig[1, 2]; aspect = DataAspect(),
                title = "g_λ on [0,1]", xlabel = "x", ylabel = "g_λ(x)",
                limits = ((0.0, 1.0), (0.0, 1.02)))

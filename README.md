@@ -225,10 +225,11 @@ display; `--save` exercises the drawing under Agg, and the callbacks were run he
 
 ### Deprecated: the Julia window
 
-`core_entropy_makie.jl` came first and is kept for reference only. It is not maintained, it has
-never been run (no display and no Makie on the machine that wrote it), and it does not
-currently work for at least one reader: Julia reports a parse error in the `Axis(...)` call,
-which does not reproduce here with Julia 1.11.3 — the file parses cleanly under
-`Meta.parseall` — so it is a Julia or Makie version difference in the `Axis` keywords. Use
-`tent_map_app.py`. The entropy code it calls is the tested one, and `core_entropy_data.csv`
-has the columns `lambda,c,h` if you would rather build your own figure.
+`core_entropy_makie.jl` came first and is kept for reference only. It is not maintained and has
+never been run — the machine that wrote it has no display and no Makie — and until recently it
+did not even parse: the `Axis(...)` call was missing its closing parenthesis, which Julia
+reports as `Expected ")" or ","` at the end of the `xlabel`/`ylabel` line on 1.11 and 1.12
+alike. That is fixed, and the file now parses under Julia 1.11.3 and 1.12.5; the drawing
+remains untested. Use `tent_map_app.py`. The entropy code it calls is the tested one —
+`julia core_entropy.jl --check` passes on 1.12.5 too — and `core_entropy_data.csv` has the
+columns `lambda,c,h` if you would rather build your own figure.
