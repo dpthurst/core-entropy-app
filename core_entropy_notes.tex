@@ -253,10 +253,7 @@ positions.
 The sequence $\nu$ is the complete combinatorial invariant of the critical orbit, and by
 the results of \cite{MT} it determines the entropy.  When the critical point is periodic
 the itinerary is undefined at the return, and the symbol has to be given a value.  We read
-$*$ as $1$, so that $s_k=-1$ there.  This is one of the two one-sided limits of the
-kneading sequence as the parameter approaches such a value, and since $h$ is continuous in
-the parameter \cite{Tiozzo}, both limits give the same entropy; the choice only fixes which
-of the two descriptions is written down.
+$*$ as $1$, so that $s_k=-1$ there.
 
 \begin{definition}\label{def:eps}
 The \emph{sign sequence} is $s_k=\sgn g_\lambda'(x_k)$.  Since
@@ -272,6 +269,32 @@ The sign $s_k$ records which branch of $g_\lambda$ the orbit is on at time $k$, 
 product $\eps_k$ records the orientation of $g_\lambda^k$ on the lap whose itinerary is the
 first $k$ symbols of $\nu$: the map is increasing there when $\eps_k=+1$ and decreasing
 when $\eps_k=-1$.
+
+The value given to $*$ does not affect the entropy.  Suppose $\nu$ has period $k$, and let
+$\eps$ and $\eps'$ be the sign sequences of the two fillings.  They differ only in the
+$k$-th symbol of each period, so $\eps'_j=(-1)^{\lfloor j/k\rfloor}\eps_j$: one filling has
+$\eps$ of period $k$ and the other of period $2k$, since $s_k$ changes sign and with it
+$\prod_{r\le k}s_r$.  With $P(t)=\sum_{r<k}\eps_rt^r$, the same for both, the two
+determinants are
+\begin{equation}\label{eq:fillings}
+  D(t)=\frac{P(t)}{1-t^k},\qquad D'(t)=\frac{P(t)}{1+t^k},
+\end{equation}
+in some order.  Neither denominator vanishes on $(0,1)$, so there $D$ and $D'$ vanish
+exactly at the zeros of the common numerator $P$: they have the same smallest zero $t_0$ and
+the same entropy.  At the period-$3$ centre, for instance, $P=1-t-t^2$ and $t_0=1/\tau$
+whichever filling is used.
+
+The two fillings are also literally the two codes seen on the two sides of the parameter.  A
+return is transversal: with $x_k(\lambda)=g_\lambda^k(\tfrac12)$ and
+$x_k(\lambda_0)=\tfrac12$ one has
+$x_k(\lambda_0+\epsilon)-\tfrac12=a_k\epsilon+O(\epsilon^2)$, where
+$a_k=\frac{d}{d\lambda}x_k(\lambda_0)\neq0$.  So the orbit passes on one side of the critical
+point below $\lambda_0$ and on the other side above it, and instead of closing it is
+attracted to the nearby $k$-cycle.  The cycle point nearest $\tfrac12$ agrees with $x_k$ to
+first order, differing from it by $\tfrac12(g^k)''(\tfrac12)a_k^2\epsilon^2$ because $g^k$ is
+critical at $\tfrac12$; the itinerary is therefore exactly $k$-periodic, with no transient,
+and the sign of $a_k$ decides which filling belongs to which side.  At the period-$3$ centre
+$a_3=-2.0876\ldots$, and the code is $(1,0,1)$ below $\lambda_3$ and $(1,0,0)$ above it.
 
 \begin{definition}\label{def:D}
 The \emph{kneading determinant} of $\nu$ is the power series
