@@ -92,10 +92,27 @@ $\pm s^{2^k}$ and is a full tent map exactly at the merger $s^{2^k}=2$, and the 
 determinant has the single zero $t_0^{2^k}$.  So the $2^k$ zeros of $D$ at $t_0\zeta$ are the
 $2^k$ determinations of that one zero, since $t\mapsto t^{2^k}$ takes $\zeta$ to $1$;
 equivalently $c_ns^{-n}$ is a sum of $2^k$ interleaved sequences, one for each residue class
-of $n$ modulo $2^k$, and converges only along those classes --- the period-$2^k$ modulation of the counts in the
-companion note is the band structure read off the counts.  Outside the cascade the
+of $n$ modulo $2^k$, and converges only along those classes --- the period-$2^k$ modulation is
+the band structure read off the counts.  Outside the cascade the
 bookkeeping changes: in the period-$3$ copy of \S\ref{sec:bands3} the band zeros are
 subdominant, though the factor $t\mapsto t^p$ that produces $p$ bands is the same.
+
+\subsection{The periodicity of the counts}\label{sec:periodicity}
+
+Plotted as a single sequence, $\log c_n-h(\lambda)n$ zigzags; split by the residue of $n$
+modulo $2^k$ it falls into $2^k$ smooth curves, one for each band.  Figure~\ref{fig:lapsperiod}
+shows this at two parameters, one in the two-band range and one in the four-band range.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_laps_period}
+  \caption{The periodicity of the counts.  $\log c_n-h(\lambda)n$ against $n$, with the points
+  coloured by the residue of $n$ modulo $2^k$: (a)~the period-$6$ centre $\lambda=3.6276$, in
+  the two-band range, gives two curves; (b)~the period-$12$ centre $\lambda=3.5822$, the
+  parameter of \S\ref{sec:bands4}, in the four-band range, gives four.  Each colour is smooth
+  while the union zigzags.}
+  \label{fig:lapsperiod}
+\end{figure}
 
 \subsection{An exact example with four bands}\label{sec:bands4}
 

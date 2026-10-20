@@ -28,9 +28,9 @@ produces them from the sources.
 | `core_entropy_data.csv` | *built* — `lambda,c,h`, 28 696 rows, 12 decimals |
 | `core_entropy.html` | *built* — the interactive entropy page (plotly.js embedded, ~5 MB) |
 | `tent_map.html` | *built* — the integrated page (~5 MB) |
-| `figs/fig_*.pdf` | *built* — the eight figures of the write-up and the two of the companion note |
-| `core_entropy_notes.pdf` | *built* — the fifteen-page write-up |
-| `bands.pdf` | *built* — the four-page companion note |
+| `figs/fig_*.pdf` | *built* — the seven figures of the write-up and the three of the companion note |
+| `core_entropy_notes.pdf` | *built* — the fourteen-page write-up |
+| `bands.pdf` | *built* — the five-page companion note |
 | `preview*.png` | *built* — static previews |
 
 ## Building
