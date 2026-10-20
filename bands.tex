@@ -110,12 +110,29 @@ Plotted as a single sequence, $\log c_n-h(\lambda)n$ zigzags; split by the resid
 modulo $2^k$ it falls into $2^k$ smooth curves, one for each band.  Figure~\ref{fig:lapsperiod}
 shows this at two parameters, one in the two-band range and one in the four-band range.
 
-Panels~(a) and~(b) of the figure are those two cases.  Panel~(c) is the four-band parameter
-once more, after the renormalization: it counts the preimages of $\tfrac12$ under $g^4$ inside
-the single band $B_0$ and plots $\log\hat c_m-m\log\tau$.  There the counts are Fibonacci from
-$m=4$ on, and the curve is within $4\cdot10^{-6}$ of the limit $\log\tau-\tfrac12\log5$ by $m=12$,
-with no periodic residue left, because the band map is the golden mean one: the period-$4$ modulation of~(b) is the
-interleaving of four copies of that single sequence.
+Panels~(a) and~(b) are those two cases.  Panel~(c) is the four-band parameter again, with the
+counts computed exactly and followed to $n=250$.  At a postcritically finite parameter they
+are integers; the preimages of $\tfrac12$ separate like $\lambda^{-n}$, so double precision is
+exhausted near $n=22$ while a hundred digits reach $n=70$.  The exact terms determine a
+recurrence of order $11$,
+\[
+  c_n=2c_{n-1}-c_{n-2}+c_{n-4}-2c_{n-5}+c_{n-6}+c_{n-8}-2c_{n-9}+c_{n-10},
+\]
+which holds for every term up to $n=70$ and whose characteristic polynomial is
+$-x(x-1)^2(x^8-x^4-1)$.  Its dominant roots are $x^4=\tau$, that is $x=s\zeta$ with
+$\zeta^4=1$ --- the reciprocals of the four zeros of $D$ on the circle of convergence.  So
+$c_n=\sum_jA_j(s\zeta^j)^n+O(n)$, and $c_ns^{-n}$ tends to the period-$4$ sequence
+$\sum_jA_j\zeta^{jn}$, which is what the four dashed lines of panel~(c) mark, at
+$\log P_r=3.921799$, $3.916089$, $3.921388$, $3.912656$ for $r=0,1,2,3$.  Their spread,
+$0.0091$, does not decay: that is the period-$4$ periodicity of the limit, and it is the
+exact form of Corollary~9.5 of \cite{MT}.
+
+Panel~(d) is the same parameter after the renormalization: it counts the preimages of
+$\tfrac12$ under $g^4$ inside the single band $B_0$ and plots $\log\hat c_m-m\log\tau$.
+There the counts are Fibonacci from $m=4$ on, and the curve is within $4\cdot10^{-6}$ of the
+limit $\log\tau-\tfrac12\log5$ by $m=12$, with no periodic residue left, because the band map
+is the golden mean one: the period-$4$ modulation of~(c) is the interleaving of four copies of
+that single sequence.
 
 \begin{figure}[htbp]
   \centering
@@ -124,10 +141,13 @@ interleaving of four copies of that single sequence.
   coloured by the residue of $n$ modulo $2^k$: (a)~the period-$6$ centre $\lambda=3.6276$, in
   the two-band range, gives two curves; (b)~the period-$12$ centre $\lambda=3.5822$, the
   parameter of \S\ref{sec:bands4}, in the four-band range, gives four.  Each colour is smooth
-  while the union zigzags.  (c)~The same period-$12$ centre after the renormalization: the
-  counts $\hat c_m$ of preimages of $\tfrac12$ under $g^4$ inside the band $B_0$, plotted as
+  while the union zigzags.  (c)~The same period-$12$ centre with the counts computed exactly,
+  carried to $n=250$ and zoomed vertically: the four curves settle onto the dashed lines of
+  their own colours, which are their limits $\log P_r$, differing by up to $0.0091$ and not
+  converging to one another.  (d)~The same parameter after the renormalization: the counts
+  $\hat c_m$ of preimages of $\tfrac12$ under $g^4$ inside the band $B_0$, plotted as
   $\log\hat c_m-m\log\tau$ against $m$, with the dashed line at the limit
-  $\log\tau-\tfrac12\log5$.}
+  $\log\tau-\tfrac12\log5$; here the periodicity is gone.}
   \label{fig:lapsperiod}
 \end{figure}
 

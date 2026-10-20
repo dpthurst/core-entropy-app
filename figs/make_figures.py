@@ -588,13 +588,73 @@ def band_counts(l, nmax=18):
     return np.array(out, dtype=float), (lo, hi)
 
 
+REC11 = [2, -1, 0, 1, -2, 1, 0, 1, -2, 1, 0]
+# c_n = 2c_{n-1} - c_{n-2} + c_{n-4} - 2c_{n-5} + c_{n-6} + c_{n-8} - 2c_{n-9} + c_{n-10}
+
+
+def exact_lap_counts(lam, nmax, dps=90):
+    """The counts of solutions of g^n = 1/2 at a PCF parameter, exactly (integers).
+
+    The preimages cluster like lam^-n, so the working precision must exceed about 0.6*nmax
+    digits; in float64 the same computation merges distinct preimages past n = 22.
+    """
+    from mpmath import mp, mpf, sqrt
+    mp.dps = dps
+    L = mpf(lam)
+    S = [mpf(1) / 2]
+    out = [1]
+    tol = mpf(10) ** (-(dps - 30))
+    for _ in range(nmax):
+        T = []
+        for y in S:
+            disc = 1 - 4 * y / L
+            if disc < 0:
+                continue
+            r = sqrt(disc)
+            T.append((1 + r) / 2)
+            if r != 0:
+                T.append((1 - r) / 2)
+        T.sort()
+        U = [T[0]]
+        for z in T[1:]:
+            if z - U[-1] > tol:
+                U.append(z)
+        S = U
+        out.append(len(S))
+    return out
+
+
+def period4_limits(lam=3.582229835820, n_exact=70, n_use=400):
+    """log c_n - h n over a long range, and the four limits on the residue classes mod 4.
+
+    The exact counts satisfy the order-11 recurrence REC11 (checked against every term),
+    whose characteristic polynomial is -x(x-1)^2(x^8-x^4-1): the dominant roots are
+    x^4 = tau, i.e. s*zeta with zeta^4 = 1, so c_n s^{-n} is asymptotically periodic of
+    period 4 and the four limits below are its four values.
+    """
+    c = exact_lap_counts(lam, n_exact)
+    for n in range(len(REC11) + 1, len(c)):
+        assert c[n] == sum(REC11[j - 1] * c[n - j] for j in range(1, len(REC11) + 1)), n
+    seq = list(c)
+    for n in range(len(seq), n_use + 1):
+        seq.append(sum(REC11[j - 1] * seq[n - j] for j in range(1, len(REC11) + 1)))
+    h = np.log((1 + 5 ** 0.5) / 2) / 4
+    d = np.array([np.log(float(v)) - h * n for n, v in enumerate(seq)])
+    lim = np.array([d[[n for n in range(n_use - 40, n_use + 1) if n % 4 == r]].mean()
+                    for r in range(4)])
+    return d, lim
+
+
 def fig_laps_period():
-    """log c_n - h n by n mod 2^k, and the counts of the 4-fold renormalization."""
+    """log c_n - h n by n mod 2^k, the exact counts against their four limits, and the
+    counts of the 4-fold renormalization."""
     cases = [(3.6275575295, 2, r"(a)  $\lambda=3.6276$, two bands"),
              (3.582229835820, 4, r"(b)  $\lambda=3.5822$, four bands")]
     cols = [BLUE, RED, "#2f6b4f", "#8e44ad"]
-    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.2), gridspec_kw={"wspace": 0.36})
-    for a, (lam0, k, title) in zip(axs[:2], cases):
+    fig, axs = plt.subplots(2, 2, figsize=(6.6, 3.5),
+                            gridspec_kw={"wspace": 0.26, "hspace": 0.66})
+    ax = axs.ravel()
+    for a, (lam0, k, title) in zip(ax[:2], cases):
         hh = h_N(lam0, 4000)
         cnt = lap_counts(lam0, 20)
         n = np.arange(len(cnt))
@@ -603,21 +663,38 @@ def fig_laps_period():
             m = n % k == r
             a.plot(n[m], d[m], "o-", ms=2.4, lw=0.6, color=cols[r])
         a.set_xlabel(r"$n$", fontsize=8)
+        a.set_ylabel(r"$\log c_n-h(\lambda)n$", fontsize=8)
         a.set_title(title, fontsize=8)
         a.tick_params(labelsize=7)
         a.grid(alpha=0.15, lw=0.5)
         a.spines[["top", "right"]].set_visible(False)
-    axs[0].set_ylabel(r"$\log c_n-h(\lambda)n$", fontsize=8)
 
+    a = ax[2]
+    d, lim = period4_limits()
+    n = np.arange(len(d))
+    keep = n >= 30
+    for r in range(4):
+        m = keep & (n % 4 == r)
+        a.plot(n[m], d[m], "o-", ms=1.7, lw=0.5, color=cols[r])
+        a.axhline(lim[r], ls="--", lw=0.7, color=cols[r])
+    a.set_xlim(55, 250)
+    a.set_ylim(3.900, 3.927)
+    a.set_xlabel(r"$n$", fontsize=8)
+    a.set_ylabel(r"$\log c_n-h(\lambda)n$", fontsize=8)
+    a.set_title(r"(c)  $\lambda=3.5822$, exact counts", fontsize=8)
+    a.tick_params(labelsize=7)
+    a.grid(alpha=0.15, lw=0.5)
+    a.spines[["top", "right"]].set_visible(False)
+
+    a = ax[3]
     tau = (1 + 5 ** 0.5) / 2
-    a = axs[2]
     cnt, _ = band_counts(3.582229835820, 18)
     m = np.arange(len(cnt))
     a.plot(m, np.log(cnt) - m * np.log(tau), "o-", ms=2.4, lw=0.6, color="#7a4b16")
     a.axhline(np.log(tau) - 0.5 * np.log(5), ls="--", lw=0.8, color="0.35")
     a.set_xlabel(r"$m$", fontsize=8)
     a.set_ylabel(r"$\log\hat c_m-m\log\tau$", fontsize=8)
-    a.set_title(r"(c)  $\lambda=3.5822$, one band", fontsize=8)
+    a.set_title(r"(d)  $\lambda=3.5822$, one band", fontsize=8)
     a.tick_params(labelsize=7)
     a.grid(alpha=0.15, lw=0.5)
     a.spines[["top", "right"]].set_visible(False)
