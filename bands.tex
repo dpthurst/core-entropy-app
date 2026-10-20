@@ -224,8 +224,12 @@ polynomial, and it is natural to ask what the bands look like there.  Let the \e
 Julia set} of $z^2+c$ be the set of $z$ whose orbit stays bounded.  On the real axis the
 filled set is exactly the segment $[-\lambda/2,\lambda/2]$: the endpoint $\lambda/2$ is the
 fixed point $\beta$ of $z^2+c$ and $-\lambda/2$ is its preimage, since $c$ and $\lambda$
-satisfy $\beta^2+c=\beta$ with $\beta=\lambda/2$.  Off the real axis the set is a dendrite,
-with the symmetric arms of Figure~\ref{fig:julia} hanging from that spine.
+satisfy $\beta^2+c=\beta$ with $\beta=\lambda/2$.  Off the real axis the structure that Figure~\ref{fig:julia}
+draws is the Julia set, the boundary of the filled set: not an interval, but a continuum whose
+symmetrically placed arms hang from that spine.  At the two centres the filled set has
+interior --- the Fatou components of the superattracting cycles --- so the two sets differ
+there; at the merging parameter the critical point is preperiodic, the map is expanding on its
+Julia set, and the filled set is the Julia set itself.
 
 \begin{figure}[htbp]
   \centering
@@ -242,11 +246,15 @@ with the symmetric arms of Figure~\ref{fig:julia} hanging from that spine.
   \label{fig:julia}
 \end{figure}
 
-Two warnings about reading the figure.  The filled set is thin: away from the spine its
-two-dimensional measure is small, and the only regions the orbit does not leave are the small
-Fatou components around the superattracting cycles of the two centres, which are invisible at
-this scale --- so what the eye follows is the Julia set itself, drawn by the escape-time
-bands.  And the bands of \S\ref{sec:bands} are not visible here at all.  They are components
+Two warnings about reading the figure.  The Julia set has no area: writing $\mathcal{H}^2$
+for two-dimensional Hausdorff measure and $\dim_H$ for Hausdorff dimension, $\dim_HJ<2$ for
+all three of these maps --- the two centres because they are hyperbolic, the merging parameter
+because it is expanding on its Julia set --- and hence $\mathcal{H}^2(J)=0$, so the filament
+has measure zero however far it is resolved.  The filled set does have area, but only at the
+two centres: there the Fatou components make up $3\cdot10^{-4}$ and $6\cdot10^{-5}$ of the
+window, so at the scale of the figure they are no more than specks.  So the black is not where the structure is --- at
+(a)~and~(b) it is those components, at~(c) there is next to none of it --- and what the eye
+follows is the Julia set, drawn by the escape-time bands.  And the bands of \S\ref{sec:bands} are not visible here at all.  They are components
 of the real limit set, and on the real axis all three pictures show a single interval,
 because it is the limit set that the bands describe and not the shape of the complex
 Julia set.  The complex picture is the geometry in which the renormalization of
