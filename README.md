@@ -21,7 +21,7 @@ produces them from the sources.
 | `core_entropy.py` | the same sweep in Python (numpy); agrees with the Julia one to 5e-11 |
 | `tent_map.py` | Python front end: entropy, bifurcation diagram and tent map on one page |
 | `tent_map_app.py` | Python front end: the same, in a native matplotlib window |
-| `core_entropy_makie.jl` | front end: the Makie window |
+| `core_entropy_makie.jl` | *deprecated* — the Makie window, kept for reference; see `tent_map_app.py` |
 | `core_entropy_notes.tex` | the write-up |
 | `bands.tex` | the companion note: the bands and their renormalization |
 | `figs/make_figures.py`, `figs/make_previews.py` | the figure and preview sources |
@@ -202,25 +202,9 @@ values agree with the Julia ones to `5e-11` on all 28 696 parameters; `tent_map.
 
 ## A native window
 
-`core_entropy_makie.jl` is the Makie counterpart of the HTML page: the entropy curve
-with a `λ` slider that drives a panel showing `g_λ` on `[0,1]` and its critical orbit.
-It includes only `src/CoreEntropy.jl` — not the HTML machinery — and contains nothing but
-the drawing, so the two front ends cannot drift apart. It needs no CSV.
-
-```sh
-julia -e 'using Pkg; Pkg.add(["Makie", "GLMakie"])'   # once
-julia core_entropy_makie.jl
-```
-
-It has **not been run**: the machine this was written on has neither a display nor
-Makie, so the plotting calls are untested (the entropy code it calls is the tested one;
-the helpers were checked against the real grid). It assumes a recent Makie (`Slider`
-with `startvalue`, `Axis` with `limits`). `core_entropy_data.csv` has the columns
-`lambda,c,h` if you would rather build your own figure.
-
-`tent_map_app.py` is the same window in Python and matplotlib, so it needs neither Julia nor
-a browser: the entropy curve with a `λ` slider, `g_λ` on `[0,1]` with its critical orbit, and
-the tent map `f_s` of slope `s = e^{h(λ)}` drawn in the same panel.
+`tent_map_app.py` is the supported one: the entropy curve with a `λ` slider, `g_λ` on `[0,1]`
+with its critical orbit, and the tent map `f_s` of slope `s = e^{h(λ)}` drawn in the same
+panel, in Python and matplotlib — no Julia, no browser, no plotly.
 
 ```sh
 python3 tent_map_app.py                              # open the window
@@ -233,6 +217,18 @@ displays which it used — near the merging parameter the grid spacing alone mov
 `3·10⁻⁴`, and a readout at an off-grid `λ` would misreport it. `--exact` computes `h` at the
 slider's own `λ` instead and prints how long that took: about 10 ms above `λ = 3.6` and about
 36 ms below, where the solver must quadruple `N` before it can report zero. A full redraw
-costs 25 ms on top, so a drag runs at 16–20 updates a second in either mode. Like the Makie window this has **not been driven
-by a real GUI backend** here; `--save` exercises the drawing, and the callbacks were run
-headlessly across `λ` from 2 to 4.
+costs 25 ms on top, so a drag runs at 16–20 updates a second in either mode.
+
+The window itself has **not been driven by a real GUI backend** here, this machine having no
+display; `--save` exercises the drawing under Agg, and the callbacks were run headlessly for
+`λ` from 2 to 4 including the cache path.
+
+### Deprecated: the Julia window
+
+`core_entropy_makie.jl` came first and is kept for reference only. It is not maintained, it has
+never been run (no display and no Makie on the machine that wrote it), and it does not
+currently work for at least one reader: Julia reports a parse error in the `Axis(...)` call,
+which does not reproduce here with Julia 1.11.3 — the file parses cleanly under
+`Meta.parseall` — so it is a Julia or Makie version difference in the `Axis` keywords. Use
+`tent_map_app.py`. The entropy code it calls is the tested one, and `core_entropy_data.csv`
+has the columns `lambda,c,h` if you would rather build your own figure.

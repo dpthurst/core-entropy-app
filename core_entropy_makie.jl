@@ -2,6 +2,22 @@
 #
 # core_entropy_makie.jl -- native Makie window for the core entropy h(λ)
 #
+# DEPRECATED.  Kept for reference; not maintained.  Use tent_map_app.py, which is
+# the same window in Python and matplotlib and needs no Julia, no Makie and no
+# display to render a frame:
+#
+#     python3 tent_map_app.py                  # the window
+#     python3 tent_map_app.py --save f.png --exact
+#
+# It does not currently run: a reader reports a parse error at the Axis(...) call
+# at line 46 below ("Expected `)` or `,`"), which does not reproduce here with
+# Julia 1.11.3 -- the file parses cleanly under Meta.parseall -- so it is a Julia
+# or Makie version difference in the Axis keywords, not something this file can
+# settle without a display and a working Makie.  Nothing else in the repository
+# depends on it.
+#
+# ---- the original description, for reference -------------------------------
+#
 # A second front end over src/CoreEntropy.jl, which does all of the computation;
 # this file only draws.  Requires Makie and GLMakie:
 #     julia -e 'using Pkg; Pkg.add(["Makie", "GLMakie"])'
