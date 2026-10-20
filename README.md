@@ -58,9 +58,11 @@ c = λ/2 − λ²/4  ∈ [−2, 0]        (λ = 1 + sqrt(1 − 4c))
 For real `c` the Hubbard tree of the quadratic is the real interval spanned by the
 postcritical set, and the **core entropy** is the topological entropy of the map
 restricted to it; for `λ ≥ 2` this equals the topological entropy of `g_λ` on `[0,1]`.
-Tiozzo (*Topological entropy of quadratic polynomials and dimension of sections of the
-Mandelbrot set*, Adv. Math. 273, 2015) proved that `h` is continuous in `c`; here it is
-computed rather than quoted.
+Its continuity in the parameter is Milnor and Thurston's (Lemma 12.3: the growth number is
+continuous in the map at fixed lap number), and Tiozzo (*Topological entropy of quadratic
+polynomials and dimension of sections of the Mandelbrot set*, Adv. Math. 273, 2015) proved
+the corresponding statement for all `c` in the Mandelbrot set; here `h` is computed rather
+than quoted.
 
 `h` is a devil's staircase: nondecreasing, constant on every hyperbolic component, and
 it is zero on the whole period-doubling cascade, i.e. for `2 ≤ λ ≤ λ∞ ≈ 3.5699457`

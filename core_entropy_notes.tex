@@ -60,9 +60,12 @@ cycle (a periodic orbit whose multiplier, the product of $g_\lambda'$ along one 
 modulus less than one) exists, and it changes
 only on the complement of their union.  The graph is
 therefore a devil's staircase, with a plateau for each attracting cycle and a Cantor-like
-set of parameters on which the increase takes place.  Tiozzo \cite{Tiozzo} proved that $h$
-is nevertheless continuous in the parameter, and related its values to the dimensions of
-sections of the Mandelbrot set.
+set of parameters on which the increase takes place.  The continuity of $h$ in $\lambda$ is
+a theorem of Milnor and Thurston \cite[Lemma 12.3]{MT}: the growth number of a piecewise
+monotone map is continuous in the map at fixed lap number, which is the sense in which the
+logistic family moves.  Tiozzo \cite{Tiozzo} proved the corresponding statement for all $c$
+in the Mandelbrot set, and related the core entropy to the dimensions of sections of the
+Mandelbrot set.
 
 The purpose of this note is to record the algorithm by which the staircase is computed,
 the conventions it uses and the control it keeps over the truncation error.
@@ -281,8 +284,10 @@ determinants are
 \end{equation}
 in some order.  Neither denominator vanishes on $(0,1)$, so there $D$ and $D'$ vanish
 exactly at the zeros of the common numerator $P$: they have the same smallest zero $t_0$ and
-the same entropy.  At the period-$3$ centre, for instance, $P=1-t-t^2$ and $t_0=1/\tau$
-whichever filling is used.
+the same entropy.  The factor $(1-t^k)/(1+t^k)$ is the one by which Milnor and Thurston
+extend their continuity lemma to a map with a periodic turning point \cite[Lemma 12.3]{MT}.
+At the period-$3$ centre, for instance, $P=1-t-t^2$ and $t_0=1/\tau$ whichever filling is
+used.
 
 The two fillings are also literally the two codes seen on the two sides of the parameter.  A
 return is transversal: with $x_k(\lambda)=g_\lambda^k(\tfrac12)$ and
