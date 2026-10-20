@@ -661,7 +661,7 @@ def fig_laps_period():
         d = np.log(cnt) - hh * n
         for r in range(k):
             m = n % k == r
-            a.plot(n[m], d[m], "o-", ms=2.4, lw=0.6, color=cols[r])
+            a.plot(n[m], d[m], "o-", ms=2.0, lw=0.55, color=cols[r])
         a.set_xlabel(r"$n$", fontsize=8)
         a.set_ylabel(r"$\log c_n-h(\lambda)n$", fontsize=8)
         a.set_title(title, fontsize=8)
@@ -675,7 +675,7 @@ def fig_laps_period():
     keep = n >= 30
     for r in range(4):
         m = keep & (n % 4 == r)
-        a.plot(n[m], d[m], "o-", ms=1.7, lw=0.5, color=cols[r])
+        a.plot(n[m], d[m], "o-", ms=1.2, lw=0.45, color=cols[r])
         a.axhline(lim[r], ls="--", lw=0.7, color=cols[r])
     a.set_xlim(55, 250)
     a.set_ylim(3.900, 3.927)
@@ -690,7 +690,7 @@ def fig_laps_period():
     tau = (1 + 5 ** 0.5) / 2
     cnt, _ = band_counts(3.582229835820, 18)
     m = np.arange(len(cnt))
-    a.plot(m, np.log(cnt) - m * np.log(tau), "o-", ms=2.4, lw=0.6, color="#7a4b16")
+    a.plot(m, np.log(cnt) - m * np.log(tau), "o-", ms=2.0, lw=0.55, color="#7a4b16")
     a.axhline(np.log(tau) - 0.5 * np.log(5), ls="--", lw=0.8, color="0.35")
     a.set_xlabel(r"$m$", fontsize=8)
     a.set_ylabel(r"$\log\hat c_m-m\log\tau$", fontsize=8)
