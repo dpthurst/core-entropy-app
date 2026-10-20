@@ -834,12 +834,15 @@ the line from the start.  The reason is that for small $n$ almost every point ha
 preimages and the growth rate starts near $\log2$, relaxing to $h(\lambda)$ only once the
 preimage tree is pruned; the smaller $h$ is, the longer that takes.  This is the same
 subexponential correction that Table~\ref{tab:laps} measures.  The approach is not always to
-a line.  The determinant has a second zero at $-e^{-h}$, of the same modulus as the smallest
-one, exactly when $s=e^{h}\le\sqrt2$, that is for $\lambda\le3.67857\ldots$; then
-$\ell_n=s^n\bigl(A+B(-1)^n+o(1)\bigr)$ and $c_ns^{-n}$ oscillates with period $2$,
-converging only along each parity, so the dots approach a band rather than a line.  This is
-the case at $\lambda=3.60$, where $s=1.2183$; the other four parameters have $s\ge1.49$, and
-there the smallest zero is the only one of its modulus, so the ratio does converge.
+a line.  The determinant has $2^k$ zeros of modulus $t_0=e^{-h}$, at $t_0$ times the
+$2^k$-th roots of unity, where $k$ is the largest integer with $s^{2^k}\le2$; then
+$c_ns^{-n}$ carries a component of period $2^k$ and converges only along residue classes
+modulo $2^k$.  For $k=1$ this happens exactly for $\lambda\le3.67857\ldots$, and
+$\lambda=3.60$, with $s=1.2183$, is such a parameter --- which is why its dots approach a
+band rather than a line; the other four have $s\ge1.49$ and $k=0$.  The thresholds
+$s^{2^k}=2$ are the band-merging parameters, where the limit set passes from $2^{k+1}$ bands
+to $2^k$, and $2^k$ is the number of times the tent map of slope $s$ renormalizes.  We
+checked the rule at $65$ parameters between $3.5705$ and $3.6985$ without exception.
 
 \subsection{Exact plateaus}
 
