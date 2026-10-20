@@ -423,7 +423,7 @@ def fig_lapgrowth():
         n = np.arange(len(cnt))
         a.plot(n, np.log(cnt), "o", ms=2.2, color=c, label=r"$\lambda=%.2f$" % l)
         hh = h_of(l)
-        a.plot(n, np.log(cnt[3]) + hh * (n - 3), "-", lw=0.7, color=c, alpha=0.7)
+        a.plot(n, np.log(cnt[-1]) + hh * (n - n[-1]), "-", lw=0.7, color=c, alpha=0.7)
     a.set_xlabel(r"$n$")
     a.set_ylabel(r"$\log\,\#\{x: g_\lambda^n(x)=\frac{1}{2}\}$")
     a.grid(alpha=0.18, lw=0.5)

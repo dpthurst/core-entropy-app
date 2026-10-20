@@ -820,12 +820,20 @@ $4.00$ & $22$ & $4\,194\,244$ & $0.693144$ & $0.693147$ \\
   \includegraphics[width=\textwidth]{fig_lapgrowth}
   \caption{The independent check of Theorem~\ref{thm:MS}: the logarithm of the number of
   solutions of $g_\lambda^n(x)=\tfrac12$ against $n$, for five parameters.  The superposed
-  straight lines have slope $h(\lambda)$ as computed from the determinant.}
+  straight lines have slope $h(\lambda)$ as computed from the determinant, and are drawn
+  through the last point.  The counts approach them as $n$ grows, and the transient --- the
+  gap at small $n$ --- is the longer the smaller $h(\lambda)$ is.}
   \label{fig:lapgrowth}
 \end{figure}
 
-The slopes in the figure are read off over the range in which the counts are still far
-from the roundoff floor; where they agree, the two computations of $h$ agree.
+In the figure the dots approach the lines as $n$ grows, and the approach is the slower
+the smaller $h(\lambda)$ is.  At $\lambda=3.60$, where $h=0.197$ is far below $\log2$, the
+gap is still $0.34$ nats at $n=8$ and $0.06$ at $n=16$; for $\lambda\ge3.83$ it is below
+$0.06$ from $n=2$ onwards, and at $\lambda=4$ the count is exactly $2^n$, so the dots lie on
+the line from the start.  The reason is that for small $n$ almost every point has two
+preimages and the growth rate starts near $\log2$, relaxing to $h(\lambda)$ only once the
+preimage tree is pruned; the smaller $h$ is, the longer that takes.  This is the same
+subexponential correction that Table~\ref{tab:laps} measures.
 
 \subsection{Exact plateaus}
 
