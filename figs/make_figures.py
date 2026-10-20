@@ -547,13 +547,54 @@ def fig_bands():
     fig.savefig("figs/fig_bands.pdf", bbox_inches="tight")
 
 
+def preimages(y, l):
+    """The real solutions of g_l(x) = y (one if y is the critical value)."""
+    disc = 1 - 4 * y / l
+    if disc < 0:
+        return []
+    r = np.sqrt(disc)
+    out = [0.5 * (1 + r)]
+    if r > 1e-13:
+        out.append(0.5 * (1 - r))
+    return out
+
+
+def band_counts(l, nmax=18):
+    """Counts of preimages of 1/2 under g^4 inside one band: the renormalized sequence.
+
+    At a period-12 centre the four bands are the intervals of the 4-fold renormalization;
+    g^4 maps the band B_0 = hull{x_0, x_4, x_8} onto itself, unimodally, and the counts of
+    this map are the ones that converge without the period-4 modulation.  Returns the counts
+    and the band.
+    """
+    x = 0.5
+    orb = [x]
+    for _ in range(11):
+        x = g(x, l)
+        orb.append(x)
+    pts = orb[0:12:4]
+    lo, hi = min(pts), max(pts)
+
+    def pre4(y):
+        S = [y]
+        for _ in range(4):
+            S = [z for w in S for z in preimages(w, l)]
+        return [z for z in S if lo - 1e-12 <= z <= hi + 1e-12]
+
+    S, out = [0.5], []
+    for _ in range(nmax + 1):
+        out.append(len(S))
+        S = [z for y in S for z in pre4(y)]
+    return np.array(out, dtype=float), (lo, hi)
+
+
 def fig_laps_period():
-    """log c_n - h n, coloured by n mod 2^k, at a two-band and a four-band centre."""
+    """log c_n - h n by n mod 2^k, and the counts of the 4-fold renormalization."""
     cases = [(3.6275575295, 2, r"(a)  $\lambda=3.6276$, two bands"),
              (3.582229835820, 4, r"(b)  $\lambda=3.5822$, four bands")]
     cols = [BLUE, RED, "#2f6b4f", "#8e44ad"]
-    fig, axs = plt.subplots(1, 2, figsize=(6.6, 2.2), gridspec_kw={"wspace": 0.30})
-    for a, (lam0, k, title) in zip(axs, cases):
+    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.2), gridspec_kw={"wspace": 0.36})
+    for a, (lam0, k, title) in zip(axs[:2], cases):
         hh = h_N(lam0, 4000)
         cnt = lap_counts(lam0, 20)
         n = np.arange(len(cnt))
@@ -567,6 +608,19 @@ def fig_laps_period():
         a.grid(alpha=0.15, lw=0.5)
         a.spines[["top", "right"]].set_visible(False)
     axs[0].set_ylabel(r"$\log c_n-h(\lambda)n$", fontsize=8)
+
+    tau = (1 + 5 ** 0.5) / 2
+    a = axs[2]
+    cnt, _ = band_counts(3.582229835820, 18)
+    m = np.arange(len(cnt))
+    a.plot(m, np.log(cnt) - m * np.log(tau), "o-", ms=2.4, lw=0.6, color="#7a4b16")
+    a.axhline(np.log(tau) - 0.5 * np.log(5), ls="--", lw=0.8, color="0.35")
+    a.set_xlabel(r"$m$", fontsize=8)
+    a.set_ylabel(r"$\log\hat c_m-m\log\tau$", fontsize=8)
+    a.set_title(r"(c)  $\lambda=3.5822$, one band", fontsize=8)
+    a.tick_params(labelsize=7)
+    a.grid(alpha=0.15, lw=0.5)
+    a.spines[["top", "right"]].set_visible(False)
     fig.savefig("figs/fig_laps_period.pdf", bbox_inches="tight")
 
 
