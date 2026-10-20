@@ -59,12 +59,12 @@ For real `c` the Hubbard tree of the quadratic is the real interval spanned by t
 postcritical set, and the **core entropy** is the topological entropy of the map
 restricted to it; for `λ ≥ 2` this equals the topological entropy of `g_λ` on `[0,1]`.
 Its continuity in the parameter is Milnor and Thurston's (Lemma 12.3: the growth number is
-continuous in the map at fixed lap number). For the real family it is proved again, with the
-formula relating the entropy to the dimensions of sections of the Mandelbrot set, by Tiozzo
-(*Topological entropy of quadratic polynomials and dimension of sections of the Mandelbrot
-set*, Adv. Math. 273, 2015); he later proved continuity of the core entropy for all quadratic
-polynomials, as a function of the external angle (*Continuity of core entropy of quadratic
-polynomials*, Invent. Math. 203, 2016). Here `h` is computed rather than quoted.
+continuous in the map at fixed lap number). For real parameters Tiozzo proved the formula
+relating the entropy to the dimensions of sections of the Mandelbrot set (*Topological entropy
+of quadratic polynomials and dimension of sections of the Mandelbrot set*, Adv. Math. 273,
+2015), and he later proved continuity of the core entropy for all quadratic polynomials, as a
+function of the external angle (*Continuity of core entropy of quadratic polynomials*, Invent.
+Math. 203, 2016). Here `h` is computed rather than quoted.
 
 `h` is a devil's staircase: nondecreasing, constant on every hyperbolic component, and
 it is zero on the whole period-doubling cascade, i.e. for `2 ≤ λ ≤ λ∞ ≈ 3.5699457`
