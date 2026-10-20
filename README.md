@@ -28,7 +28,7 @@ produces them from the sources.
 | `core_entropy.html` | *built* — the interactive entropy page (plotly.js embedded, ~5 MB) |
 | `tent_map.html` | *built* — the integrated page (~5 MB) |
 | `figs/fig_*.pdf` | *built* — the seven figures of the write-up |
-| `core_entropy_notes.pdf` | *built* — the fifteen-page write-up |
+| `core_entropy_notes.pdf` | *built* — the sixteen-page write-up |
 | `preview*.png` | *built* — static previews |
 
 ## Building

@@ -842,8 +842,23 @@ modulo $2^k$.  For $k=1$ this happens exactly for $\lambda\le3.67857\ldots$, and
 $\lambda=3.60$, with $s=1.2183$, is such a parameter --- which is why its dots approach a
 band rather than a line; the other four have $s\ge1.49$ and $k=0$.  The thresholds
 $s^{2^k}=2$ are the band-merging parameters, where the limit set passes from $2^{k+1}$ bands
-to $2^k$, and $2^k$ is the number of times the tent map of slope $s$ renormalizes.  We
+to $2^k$, and on each band the model map is $T_s^{2^k}$ (\S\ref{sec:bands}).  We
 checked the rule at $65$ parameters between $3.5705$ and $3.6985$ without exception.
+
+Figure~\ref{fig:lapsperiod} shows the periodicity on its own.  Plotted as a single sequence,
+$\log c_n-h(\lambda)n$ zigzags; split by the residue of $n$ modulo $2^k$ it falls into $2^k$
+smooth curves, one for each band.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{fig_laps_period}
+  \caption{The periodicity of the counts, at two parameters of \S\ref{sec:bands}.
+  $\log c_n-h(\lambda)n$ against $n$, with the points coloured by the residue of $n$ modulo
+  $2^k$: (a)~the period-$6$ centre $\lambda=3.6276$, in the two-band range, gives two curves;
+  (b)~the period-$12$ centre $\lambda=3.5822$, in the four-band range, gives four.  Each
+  colour is smooth while the union zigzags.}
+  \label{fig:lapsperiod}
+\end{figure}
 
 \subsection{Exact plateaus}
 

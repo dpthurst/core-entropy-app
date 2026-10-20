@@ -546,6 +546,29 @@ def fig_bands():
     fig.savefig("figs/fig_bands.pdf", bbox_inches="tight")
 
 
+def fig_laps_period():
+    """log c_n - h n, coloured by n mod 2^k, at a two-band and a four-band centre."""
+    cases = [(3.6275575295, 2, r"(a)  $\lambda=3.6276$, two bands"),
+             (3.582229835820, 4, r"(b)  $\lambda=3.5822$, four bands")]
+    cols = [BLUE, RED, "#2f6b4f", "#8e44ad"]
+    fig, axs = plt.subplots(1, 2, figsize=(6.6, 2.2), gridspec_kw={"wspace": 0.30})
+    for a, (lam0, k, title) in zip(axs, cases):
+        hh = h_N(lam0, 4000)
+        cnt = lap_counts(lam0, 20)
+        n = np.arange(len(cnt))
+        d = np.log(cnt) - hh * n
+        for r in range(k):
+            m = n % k == r
+            a.plot(n[m], d[m], "o-", ms=2.4, lw=0.6, color=cols[r])
+        a.set_xlabel(r"$n$", fontsize=8)
+        a.set_title(title, fontsize=8)
+        a.tick_params(labelsize=7)
+        a.grid(alpha=0.15, lw=0.5)
+        a.spines[["top", "right"]].set_visible(False)
+    axs[0].set_ylabel(r"$\log c_n-h(\lambda)n$", fontsize=8)
+    fig.savefig("figs/fig_laps_period.pdf", bbox_inches="tight")
+
+
 if __name__ == "__main__":
     fig_output()
     fig_kneading()
@@ -555,5 +578,7 @@ if __name__ == "__main__":
     fig_lapgrowth()
     fig_plateau()
     fig_bands()
+    fig_laps_period()
     print("wrote figs/fig_output.pdf, fig_kneading.pdf, fig_laps.pdf, fig_model.pdf,")
-    print("      fig_determinant.pdf, fig_lapgrowth.pdf, fig_plateau.pdf, fig_bands.pdf")
+    print("      fig_determinant.pdf, fig_lapgrowth.pdf, fig_plateau.pdf, fig_bands.pdf,")
+    print("      fig_laps_period.pdf")
