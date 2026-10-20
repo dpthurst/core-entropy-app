@@ -93,7 +93,12 @@ determinant has the single zero $t_0^{2^k}$.  So the $2^k$ zeros of $D$ at $t_0\
 $2^k$ determinations of that one zero, since $t\mapsto t^{2^k}$ takes $\zeta$ to $1$;
 equivalently $c_ns^{-n}$ is a sum of $2^k$ interleaved sequences, one for each residue class
 of $n$ modulo $2^k$, and converges only along those classes --- the period-$2^k$ modulation is
-the band structure read off the counts.  Outside the cascade the
+the band structure read off the counts.  This is Corollary~9.5 of \cite{MT}: the lap
+numbers differ from a finite sum $\sum_j a_j^{-k}$ over the zeros of $D$ in the disc by
+$O\bigl((1+\varepsilon)^k\bigr)$, so a set of zeros on the circle $|t|=t_0$ leaves a main term
+periodic in $k$.  They give the case $k=1$ --- zeros at $\pm1/s$, and lap numbers with one
+asymptotic for $k$ even and another for $k$ odd --- and their Example~14.4 is the
+substitution $D\mapsto(1-t)D(t^2)$ that produces the zeros.  Outside the cascade the
 bookkeeping changes: in the period-$3$ copy of \S\ref{sec:bands3} the band zeros are
 subdominant, though the factor $t\mapsto t^p$ that produces $p$ bands is the same.
 
@@ -285,5 +290,11 @@ is the interval $[c,c^2+c]=[-1.5437,0.8393]$, of length $2.383$, and that is wha
 shows.  In all three the limit set is one-dimensional, and the complex picture around it is
 not a second view of the bands but the geometry in which their renormalization of
 \S\ref{sec:bands4} and \S\ref{sec:bands3} lives.
+
+\begin{thebibliography}{9}\footnotesize\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+\bibitem{MT} J.~Milnor and W.~Thurston, On iterated maps of the interval, in
+\emph{Dynamical Systems} (College Park, 1986--87), Lecture Notes in Math. 1342,
+Springer, 1988, 465--563.
+\end{thebibliography}
 
 \end{document}
