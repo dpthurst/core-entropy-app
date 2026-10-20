@@ -224,11 +224,15 @@ the tent map `f_s` of slope `s = e^{h(λ)}` drawn in the same panel.
 
 ```sh
 python3 tent_map_app.py                              # open the window
+python3 tent_map_app.py --exact                      # h computed on the fly
 python3 tent_map_app.py --save frame.png --lam 3.7   # one frame, no display
 ```
 
-`h` exists only at the grid parameters, so the slider snaps to the nearest one and displays
-which it used — near the merging parameter the grid spacing alone moves `h` by `3·10⁻⁴`, and a
-readout at an off-grid `λ` would misreport it. Like the Makie window this has **not been driven
+`h` exists only at the grid parameters, so by default the slider snaps to the nearest one and
+displays which it used — near the merging parameter the grid spacing alone moves `h` by
+`3·10⁻⁴`, and a readout at an off-grid `λ` would misreport it. `--exact` computes `h` at the
+slider's own `λ` instead and prints how long that took: about 10 ms above `λ = 3.6` and about
+36 ms below, where the solver must quadruple `N` before it can report zero. A full redraw
+costs 25 ms on top, so a drag runs at 16–20 updates a second in either mode. Like the Makie window this has **not been driven
 by a real GUI backend** here; `--save` exercises the drawing, and the callbacks were run
 headlessly across `λ` from 2 to 4.

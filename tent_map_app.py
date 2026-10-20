@@ -9,7 +9,16 @@ matplotlib.
 
     python3 tent_map_app.py                            # open the window
     python3 tent_map_app.py --lam 3.7                  # start elsewhere
+    python3 tent_map_app.py --exact                    # compute h on the fly
     python3 tent_map_app.py --save frame.png --lam 3.7 # render one frame, headless
+
+By default h is read off the 28 696-parameter grid, which is instant.  With
+--exact it is computed at the slider's own lambda by core_entropy.py, so the
+readout and the tent map are exact rather than the nearest grid value.  That
+costs about 10 ms above lambda = 3.6 and about 36 ms below it, where the
+solver has to quadruple N before it can report zero; the readout shows which
+it was.  A full redraw is a further 25 ms, so a drag runs at 16-20 updates a
+second either way.  Results are cached, so revisiting a value is free.
 
 Left: h(lambda) from core_entropy.py, with a marker at the current lambda, the
 dashed lines at the Feigenbaum accumulation and the period-3 centre, and the
@@ -23,6 +32,7 @@ drawing code is exercised by --save, and the entropy it plots is tested by
 """
 import argparse
 import os
+import time
 
 import numpy as np
 
@@ -61,7 +71,7 @@ def critical_orbit(lam, n=400):
     return x
 
 
-def build(lams, hs, lam0):
+def build(lams, hs, lam0, exact=False):
     import matplotlib.pyplot as plt
     from matplotlib.widgets import Slider
 
@@ -114,12 +124,26 @@ def build(lams, hs, lam0):
     sl.label.set_fontsize(10)
     sl.valtext.set_fontsize(9)
 
+    cache = {}
+
+    def h_of(lam):
+        """h at the slider's lambda, plus how long it took and whether it was cached."""
+        if not exact:
+            # h is known only at the grid parameters, so snap to one and say so: near the
+            # merging parameter the grid spacing alone moves h by 3e-4.
+            i = int(np.argmin(np.abs(lams - lam)))
+            sl.valtext.set_text("%.5f" % float(lams[i]))
+            return float(lams[i]), float(hs[i]), None
+        key = round(lam, 7)
+        if key in cache:
+            return lam, cache[key], "cached"
+        t0 = time.perf_counter()
+        h = float(ce.core_entropy_one(lam))
+        cache[key] = h
+        return lam, h, "%.0f ms" % (1e3 * (time.perf_counter() - t0))
+
     def update(_=None):
-        # h is known only at the grid parameters, so snap the slider to one and say so:
-        # near the merging parameter the grid spacing alone moves h by 3e-4.
-        i = int(np.argmin(np.abs(lams - float(sl.val))))
-        lam, h = float(lams[i]), float(hs[i])
-        sl.valtext.set_text("%.5f" % lam)
+        lam, h, timing = h_of(float(sl.val))
         s = float(np.exp(h))
         c = lam / 2.0 - lam ** 2 / 4.0
         mark.set_data([lam], [h])
@@ -128,7 +152,8 @@ def build(lams, hs, lam0):
         o = critical_orbit(lam)
         orb.set_data(o[:-1], o[1:])
         info.set_text(f"lambda = {lam:.5f}    c = {c:.6f}\n"
-                      f"h = {h:.6f}    h/log2 = {h / LOG2:.4f}    s = {s:.6f}")
+                      f"h = {h:.6f}    h/log2 = {h / LOG2:.4f}    s = {s:.6f}"
+                      + (f"    [{timing}]" if exact else ""))
     # the slider sits on a grid parameter, so what is shown is exactly what was computed
         fig.canvas.draw_idle()
 
@@ -144,6 +169,9 @@ def main():
                     help="initial lambda (default: the period-3 centre)")
     ap.add_argument("--save", metavar="PNG",
                     help="render one frame to this file instead of opening a window")
+    ap.add_argument("--exact", action="store_true",
+                    help="compute h at the slider's lambda (about 35 ms each) "
+                         "instead of reading it off the grid")
     args = ap.parse_args()
 
     import matplotlib
@@ -152,7 +180,7 @@ def main():
     import matplotlib.pyplot as plt
 
     lams, hs = sweep()
-    fig, _ = build(lams, hs, args.lam)
+    fig, _ = build(lams, hs, args.lam, exact=args.exact)
 
     if args.save:
         fig.savefig(args.save, dpi=130, bbox_inches="tight")
