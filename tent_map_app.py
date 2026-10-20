@@ -17,7 +17,9 @@ numpy is matplotlib.
 Left: h(lambda), with the bifurcation diagram of the same parameters behind it as
 a greyscale density read on the right-hand axis.  Zooming or panning that axis
 recomputes the diagram for the visible lambda range, which is what makes the small
-scales readable.  Right: g_lambda and the tent map f_s of slope s = exp(h(lambda)),
+scales readable, and rescales the slider beneath it to the same window -- so after
+zooming, the slider's two ends are the ends of the visible range and every pixel of
+it is spent inside it.  Right: g_lambda and the tent map f_s of slope s = exp(h(lambda)),
 each with the cobweb of the critical orbit.
 
 By default h is read off the 28 696-parameter grid, which is instant; with --exact
@@ -104,11 +106,11 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ink = LinearSegmentedColormap.from_list("ink", ["#ffffff", "#97a1ab"])
     fig = plt.figure(figsize=(11.5, 6.2))
 
-    ax_h = fig.add_axes([0.055, 0.13, 0.49, 0.78])
+    ax_h = fig.add_axes([0.055, 0.165, 0.49, 0.745])
     ax_b = ax_h.twinx()
     ax_g = fig.add_axes([0.60, 0.59, 0.35, 0.34])
     ax_t = fig.add_axes([0.60, 0.21, 0.35, 0.34])
-    ax_s = fig.add_axes([0.60, 0.12, 0.35, 0.03])
+    ax_s = fig.add_axes([0.055, 0.072, 0.49, 0.028])
 
     # ---- the bifurcation diagram, behind the entropy curve
     lo, hi = xlim
@@ -220,10 +222,18 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         im.set_extent([lo_, hi_, 0.0, 1.0])
         im.set_clim(0.0, max(1.0, float(np.percentile(z, 99.5))))
         state["range"] = (lo_, hi_)
+        set_slider_range(lo_, hi_)
         m = (lams >= lo_) & (lams <= hi_)
         if m.any():
             top = float(hs[m].max())
             ax_h.set_ylim(-0.02, max(top * 1.15, 0.02) if hi_ - lo_ < 1.9 else 0.70)
+
+    def set_slider_range(lo_, hi_):
+        """Rescale the slider to the visible lambda window, so its ends are the axis ends."""
+        sl.valmin, sl.valmax = lo_, hi_
+        sl.valstep = (hi_ - lo_) / 2000.0
+        sl.ax.set_xlim(lo_, hi_)
+        sl.set_val(min(max(float(sl.val), lo_), hi_))   # clamps and repositions the handle
 
     def on_xlim(_ax):
         if busy["on"]:
@@ -241,6 +251,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
 
     sl.on_changed(update)
+    set_slider_range(lo, hi)
     update()
     return fig, sl
 

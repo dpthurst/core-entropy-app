@@ -212,7 +212,8 @@ values agree with the Julia ones to `5e-11` on all 28 696 parameters; `tent_map.
 read on the right-hand axis; on the right `g_λ` and the tent map `f_s` of slope
 `s = e^{h(λ)}`, each with the **cobweb** of the critical orbit. Drag the slider to move `λ`,
 and **zoom or pan the λ axis** — the bifurcation diagram is recomputed for the visible range,
-which is what makes the small scales readable. Python and matplotlib only: no Julia, no
+which is what makes the small scales readable, and the slider underneath it is rescaled to that
+same window, so its two ends are the ends of the visible range. Python and matplotlib only: no Julia, no
 browser, no plotly.
 
 ```sh
