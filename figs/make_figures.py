@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 from matplotlib.patches import Rectangle
 
 plt.rcParams.update({
@@ -600,14 +601,54 @@ def julia_image(lam, half=2.05, N=1200, ss=2, R=64.0, itmax=900, cycles=9.0):
     return rgb.reshape(N, ss, N, ss, 3).mean(axis=(1, 3)), c
 
 
+def real_limit_set(lam, per=None, n=400000):
+    """The limit set of a typical orbit of g_lam, carried to the z-plane by z = lam(1/2 - x).
+
+    Returned as a list of (lo, hi) intervals in z; an attracting cycle contributes degenerate
+    ones.  At a hyperbolic parameter the period `per` is known, so the cycle is computed
+    exactly by iterating the critical point; otherwise the support of a long orbit is measured
+    and split at its visible gaps.
+    """
+    if per is not None:
+        x = 0.5
+        for _ in range(4000):
+            x = g(x, lam)
+        pts = []
+        for _ in range(per):
+            pts.append(x)
+            x = g(x, lam)
+        return [(lam * (0.5 - y), lam * (0.5 - y)) for y in pts]
+    x = 0.3
+    for _ in range(20000):
+        x = g(x, lam)
+    s = np.empty(n)
+    for i in range(n):
+        x = g(x, lam)
+        s[i] = x
+    s.sort()
+    edges = [s[0]]
+    for i in np.where(np.diff(s) > 0.004)[0]:
+        edges += [s[i], s[i + 1]]
+    edges.append(s[-1])
+    return [(lam * (0.5 - edges[i + 1]), lam * (0.5 - edges[i])) for i in range(0, len(edges), 2)]
+
+
 def fig_julia(path="figs/fig_julia.pdf"):
-    cases = [(3.582229835820, "(a)  four bands"), (3.853675276839, "(b)  three bands"),
-             (3.678573510428, "(c)  the merger")]
+    cases = [(3.582229835820, 12, "(a)  four bands"), (3.853675276839, 9, "(b)  three bands"),
+             (3.678573510428, None, "(c)  the merger")]
     fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.02), gridspec_kw={"wspace": 0.03})
-    for a, (lam, title) in zip(axs, cases):
+    for a, (lam, per, title) in zip(axs, cases):
         rgb, c = julia_image(lam)
         a.imshow(rgb, extent=[-2.05, 2.05, -2.05, 2.05], origin="lower",
                  interpolation="bilinear")
+        for lo, hi in real_limit_set(lam, per):
+            if hi - lo < 1e-5:
+                a.plot([lo], [0.0], "o", ms=2.9, mfc="#ffe600", mec="black", mew=0.35,
+                       zorder=6, clip_on=False)
+            else:
+                a.plot([lo, hi], [0.0, 0.0], "-", lw=2.4, color="#ffe600", zorder=6,
+                       solid_capstyle="butt", clip_on=False,
+                       path_effects=[pe.Stroke(linewidth=3.7, foreground="black"), pe.Normal()])
         a.set_title(title + r"   $c=%.5f$" % c, fontsize=7.5)
         a.set_xticks([])
         a.set_yticks([])

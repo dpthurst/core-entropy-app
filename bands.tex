@@ -242,22 +242,31 @@ Julia set, and the filled set is the Julia set itself.
   as coloured rings; black is the filled set, where the orbit never leaves.  The window is
   $[-2.05,2.05]^2$ throughout, so the panels are drawn to the same scale, and the middle row
   of each panel is the real axis: it meets the filled set in $[-\lambda/2,\lambda/2]$, that is
-  in $[-1.7911,1.7911]$, $[-1.9268,1.9268]$ and $[-1.8393,1.8393]$.}
+  in $[-1.7911,1.7911]$, $[-1.9268,1.9268]$ and $[-1.8393,1.8393]$.  The yellow marks on that
+  row are the limit set of a typical orbit, carried to the plane by the conjugacy: the twelve
+  points of the attracting cycle at (a), the nine at (b), and at (c) the single interval
+  $[c,c^2+c]=[-1.5437,0.8393]$ into which the last two bands have merged.}
   \label{fig:julia}
 \end{figure}
 
-Two warnings about reading the figure.  The Julia set has no area: writing $\mathcal{H}^2$
-for two-dimensional Hausdorff measure and $\dim_H$ for Hausdorff dimension, $\dim_HJ<2$ for
+One thing to know before reading the figure is that the Julia set has no area: writing
+$\mathcal{H}^2$ for two-dimensional Hausdorff measure and $\dim_H$ for Hausdorff dimension, $\dim_HJ<2$ for
 all three of these maps --- the two centres because they are hyperbolic, the merging parameter
 because it is expanding on its Julia set --- and hence $\mathcal{H}^2(J)=0$, so the filament
 has measure zero however far it is resolved.  The filled set does have area, but only at the
 two centres: there the Fatou components make up $3\cdot10^{-4}$ and $6\cdot10^{-5}$ of the
 window, so at the scale of the figure they are no more than specks.  So the black is not where the structure is --- at
 (a)~and~(b) it is those components, at~(c) there is next to none of it --- and what the eye
-follows is the Julia set, drawn by the escape-time bands.  And the bands of \S\ref{sec:bands} are not visible here at all.  They are components
-of the real limit set, and on the real axis all three pictures show a single interval,
-because it is the limit set that the bands describe and not the shape of the complex
-Julia set.  The complex picture is the geometry in which the renormalization of
-\S\ref{sec:bands4} and \S\ref{sec:bands3} lives, not a second view of the bands.
+follows is the Julia set, drawn by the escape-time bands.
+
+The yellow marks then answer the question the panel titles raise, and expose a discrepancy in
+them.  At the two centres the limit set is the attracting cycle itself --- twelve
+points at~(a), nine at~(b) --- so it is a finite set there, and the bands of those titles are
+not present at the parameters drawn: they are what the cycle becomes on moving off the
+centre, the four intervals of \S\ref{sec:bands4} at $\lambda_c-10^{-3}$.  At~(c) the limit set
+is the interval $[c,c^2+c]=[-1.5437,0.8393]$, of length $2.383$, and that is what the bar
+shows.  In all three the limit set is one-dimensional, and the complex picture around it is
+not a second view of the bands but the geometry in which their renormalization of
+\S\ref{sec:bands4} and \S\ref{sec:bands3} lives.
 
 \end{document}
