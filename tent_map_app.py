@@ -25,9 +25,15 @@ each with the cobweb of the critical orbit.
 By default h is read off the 28 696-parameter grid, which is instant; with --exact
 it is computed at the slider's own lambda by core_entropy.py, at about 10 ms above
 lambda = 3.6 and 36 ms below, where the solver must quadruple N before it can
-report zero.  A full redraw is a further 25 ms.  Results are cached, so revisiting
-a value is free.  A recomputed bifurcation diagram costs about 10-15 ms, and is
-built once per zoom rather than per mouse movement.
+report zero.  Results are cached, so revisiting a value is free.  A recomputed
+bifurcation diagram costs about 10-15 ms, and is built once per zoom rather than
+per mouse movement.
+
+A slider event costs one full redraw, about 47 ms here -- the five axes cost 7-13 ms
+each and that is the floor for a pyplot window this size without blitting.  The
+Slider's own drawing is switched off (sl.drawon = False) because set_val draws
+*before* it notifies its observers, so leaving it on renders the figure twice, and
+the first time with the panels still stale.
 
 NOT TESTED INTERACTIVELY: written in an environment with no display, so the window
 and the mouse have never been driven by a real GUI backend.  The drawing code is
@@ -175,6 +181,10 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
                 valfmt="%.4f", color=BLUE)
     sl.label.set_fontsize(10)
     sl.valtext.set_fontsize(9)
+    # Slider.set_val draws before it notifies its observers, so every drag would
+    # render the figure twice, the first time with the panels still stale.  Turn its
+    # own drawing off and let update() do the one draw that is needed.
+    sl.drawon = False
 
     cache = {}
     state = {"range": (lo, hi)}
@@ -227,6 +237,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         if m.any():
             top = float(hs[m].max())
             ax_h.set_ylim(-0.02, max(top * 1.15, 0.02) if hi_ - lo_ < 1.9 else 0.70)
+        fig.canvas.draw_idle()
 
     def set_slider_range(lo_, hi_):
         """Rescale the slider to the visible lambda window, so its ends are the axis ends."""

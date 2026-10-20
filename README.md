@@ -228,8 +228,11 @@ displays which it used — near the merging parameter the grid spacing alone mov
 `3·10⁻⁴`, and a readout at an off-grid `λ` would misreport it. `--exact` computes `h` at the
 slider's own `λ` instead and prints how long that took: about 10 ms above `λ = 3.6` and about
 36 ms below, where the solver must quadruple `N` before it can report zero. A full redraw
-costs 25 ms on top, so a drag runs at 16–20 updates a second in either mode; a recomputed
-bifurcation diagram costs 10–15 ms and is built once per zoom, not per mouse movement.
+costs 25 ms on top; a recomputed bifurcation diagram costs 10–15 ms and is built once per zoom,
+not per mouse movement. A slider event is one full redraw, about 47 ms, which is 21 updates a
+second — the floor for a pyplot window of this size, since the five axes cost 7–13 ms each.
+`Slider.set_val` draws before it notifies its observers, so the widget's own drawing is turned
+off; leaving it on drew the figure twice per event, the first time with the panels stale.
 
 The window itself has **not been driven by a real GUI backend** here, this machine having no
 display; `--save` exercises the drawing under Agg, and the callbacks were run headlessly for
