@@ -209,8 +209,12 @@ values agree with the Julia ones to `5e-11` on all 28 696 parameters; `tent_map.
 
 `tent_map_app.py` is the supported one, and carries what the HTML page does: on the left
 `h(λ)` with the **bifurcation diagram** of the same parameters behind it as a greyscale density
-read on the right-hand axis; on the right `g_λ` and the tent map `f_s` of slope
-`s = e^{h(λ)}`, each with the **cobweb** of the critical orbit. Drag the slider to move `λ`,
+read on the right-hand axis and a red line at the current `λ`; on the right `g_λ` and the tent map
+`f_s` of slope `s = e^{h(λ)}`, each with the **cobweb** of the critical orbit — or, with the
+**iterates** toggle, the graphs of the `n`-th iterates, titled with their lap counts, which the
+two maps share — and Milnor–Thurston's **semi-conjugacy** `A`, with the images of the first seven
+critical points on its graph and the residual `max|f_s(A(x)) − A(g_λ(x))|` printed under the
+slider. Drag the slider to move `λ`,
 and **zoom or pan the λ axis** — the bifurcation diagram is recomputed for the visible range,
 which is what makes the small scales readable, and the slider underneath it is rescaled to that
 same window, so its two ends are the ends of the visible range. Python and matplotlib only: no Julia, no
@@ -229,8 +233,8 @@ displays which it used — near the merging parameter the grid spacing alone mov
 slider's own `λ` instead and prints how long that took: about 10 ms above `λ = 3.6` and about
 36 ms below, where the solver must quadruple `N` before it can report zero. A full redraw
 costs 25 ms on top; a recomputed bifurcation diagram costs 10–15 ms and is built once per zoom,
-not per mouse movement. A slider event is one full redraw, about 47 ms, which is 21 updates a
-second — the floor for a pyplot window of this size, since the five axes cost 7–13 ms each.
+not per mouse movement. A slider event is one full redraw, about 60 ms, which is 16 updates a
+second — the four panels cost 7–13 ms each, the `A` panel 9 ms of it.
 `Slider.set_val` draws before it notifies its observers, so the widget's own drawing is turned
 off; leaving it on drew the figure twice per event, the first time with the panels stale.
 

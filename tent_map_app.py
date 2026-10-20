@@ -22,6 +22,13 @@ zooming, the slider's two ends are the ends of the visible range and every pixel
 it is spent inside it.  Right: g_lambda and the tent map f_s of slope s = exp(h(lambda)),
 each with the cobweb of the critical orbit.
 
+Right, three panels above the slider: g_lambda and the tent map f_s, each with the
+cobweb of the critical orbit -- or, with the "iterates" toggle and its n, the graphs of
+the n-th iterates themselves, titled with their lap counts, which the two maps share;
+and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
+points on its graph and the residual max|f_s(A(x)) - A(g(x))| in the readout.  A red
+vertical line marks the current lambda in the left-hand panel.
+
 By default h is read off the 28 696-parameter grid, which is instant; with --exact
 it is computed at the slider's own lambda by core_entropy.py, at about 10 ms above
 lambda = 3.6 and 36 ms below, where the solver must quadruple N before it can
@@ -29,8 +36,9 @@ report zero.  Results are cached, so revisiting a value is free.  A recomputed
 bifurcation diagram costs about 10-15 ms, and is built once per zoom rather than
 per mouse movement.
 
-A slider event costs one full redraw, about 47 ms here -- the five axes cost 7-13 ms
-each and that is the floor for a pyplot window this size without blitting.  The
+A slider event costs one full redraw, about 60 ms here -- the four panels cost 7-13 ms
+each, the A panel 9 ms of it, and that is the floor for a pyplot window this size
+without blitting.  The
 Slider's own drawing is switched off (sl.drawon = False) because set_val draws
 *before* it notifies its observers, so leaving it on renders the figure twice, and
 the first time with the panels still stale.
@@ -72,6 +80,15 @@ def tent(x, s):
     return np.where(x <= 0.5, s * x, s * (1.0 - x))
 
 
+def critical_orbit(lam, n=7):
+    """The first n points of the orbit of the critical point under g_lam."""
+    out, x = [], 0.5
+    for _ in range(n):
+        out.append(x)
+        x = lam * x * (1.0 - x)
+    return out
+
+
 def cobweb(f, x0, n):
     """The zigzag of the first n iterates: x -> (x,f(x)) -> (f(x),f(x)) -> ..."""
     xs, ys = [], []
@@ -104,23 +121,80 @@ def bifurcation(lo, hi, nlam=640, nrows=400, transient=1200, keep=700):
     return z
 
 
+def preimages_g(y, lam):
+    """The real x with g_lam(x) = y (one, when y is the critical value)."""
+    disc = 1.0 - 4.0 * y / lam
+    if disc <= 0.0:
+        return []
+    r = np.sqrt(disc)
+    return [0.5 * (1.0 + r), 0.5 * (1.0 - r)]
+
+
+def preimages_tent(y, s):
+    """The y' with f_s(y') = y.  None when y is above the peak s/2, which is the image."""
+    if y > s / 2.0 + 1e-12:
+        return []
+    return [v for v in (y / s, 1.0 - y / s) if 1e-12 < v < 1.0 - 1e-12]
+
+
+def lap_count(lam, s, n, which="g"):
+    """1 + the number of distinct interior preimages of 1/2 under the first n-1 iterates.
+
+    That is the lap number of the n-th iterate, counted from the tree rather than off a
+    grid, so it does not depend on a plotting resolution.
+    """
+    dedupe = lambda v: list(np.sort(np.unique(np.round(v, 9))))
+    S, allp = [0.5], [0.5]
+    for _ in range(max(n - 1, 0)):
+        nxt = []
+        for y in S:
+            nxt += preimages_g(y, lam) if which == "g" else preimages_tent(y, s)
+        S = dedupe(nxt)
+        allp = dedupe(allp + S)
+    return len([p for p in allp if 0.0 < p < 1.0]) + 1
+
+
+def semiconjugacy(x, lam, s, n=64):
+    """Milnor-Thurston's A: the itinerary of x under g_lam, folded back through f_s.
+
+    A is the limit of these foldings; it satisfies f_s(A(x)) = A(g_lam(x)) up to the
+    truncation, and the residual is what the readout reports.  Vectorised over x, so a
+    whole graph costs about a millisecond.
+    """
+    X = np.atleast_1d(np.asarray(x, dtype=float)).copy()
+    w = np.empty((n, X.size))
+    for k in range(n):
+        w[k] = np.where(X < 0.5, 1.0, -1.0)
+        X = lam * X * (1.0 - X)
+    u = np.full(X.size, 0.5)
+    for k in range(n - 1, -1, -1):
+        u = np.where(w[k] > 0, u / s, 1.0 - u / s)
+    return u
+
+
 def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     import matplotlib.pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap
-    from matplotlib.widgets import Slider
+    from matplotlib.widgets import CheckButtons, Slider
 
     ink = LinearSegmentedColormap.from_list("ink", ["#ffffff", "#97a1ab"])
-    fig = plt.figure(figsize=(11.5, 6.2))
+    fig = plt.figure(figsize=(12.2, 7.4))
 
-    ax_h = fig.add_axes([0.055, 0.165, 0.49, 0.745])
+    ax_h = fig.add_axes([0.045, 0.175, 0.415, 0.745])
     ax_b = ax_h.twinx()
-    ax_g = fig.add_axes([0.60, 0.59, 0.35, 0.34])
-    ax_t = fig.add_axes([0.60, 0.21, 0.35, 0.34])
-    ax_s = fig.add_axes([0.055, 0.072, 0.49, 0.028])
+    ax_s = fig.add_axes([0.045, 0.085, 0.415, 0.026])
+    ax_g = fig.add_axes([0.525, 0.600, 0.200, 0.290])
+    ax_t = fig.add_axes([0.775, 0.600, 0.200, 0.290])
+    ax_A = fig.add_axes([0.525, 0.180, 0.200, 0.290])
+    ax_cb = fig.add_axes([0.775, 0.395, 0.130, 0.055])
+    ax_n = fig.add_axes([0.775, 0.300, 0.130, 0.025])
 
     # ---- the bifurcation diagram, behind the entropy curve
     lo, hi = xlim
-    z = bifurcation(lo, hi)
+    # sized to about twice the panel's pixels: more is invisible, and the image is
+    # redrawn on every slider event, so it is not free.
+    nlam, nrows = 800, 420
+    z = bifurcation(lo, hi, nlam=nlam, nrows=nrows)
     im = ax_b.imshow(z, origin="lower", extent=[lo, hi, 0.0, 1.0], aspect="auto",
                      cmap=ink, vmin=0.0, vmax=max(1.0, float(np.percentile(z, 99.5))),
                      interpolation="nearest", zorder=1)
@@ -132,7 +206,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_h.set_zorder(ax_b.get_zorder() + 1)
     ax_h.patch.set_visible(False)
 
-    # ---- the entropy curve
+    # ---- the entropy curve, a marker and a vertical line at lambda
     ax_h.plot(lams, hs, color=BLUE, lw=1.3, zorder=5)
     for x in (ce.LAM_INF, ce.LAM_P3):
         ax_h.axvline(x, color="0.35", lw=0.8, ls="--", zorder=6)
@@ -148,10 +222,11 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_h.text(ce.LAM_P3 + 0.02, 0.655, "period 3", va="center", fontsize=9,
               color="0.35", zorder=6, clip_on=True)
     h0 = ce.h_at(lams, hs, lam0)
+    vline = ax_h.axvline(lam0, color=RED, lw=0.9, alpha=0.75, zorder=7)
     mark, = ax_h.plot([lam0], [h0], "o", ms=7, mfc=RED, mec="white", mew=1.0, zorder=8)
 
-    # ---- the two maps, each with the cobweb of the critical orbit
-    xs = np.linspace(0.0, 1.0, 601)
+    # ---- g_lambda and the tent map, with cobwebs or iterates
+    xs = np.linspace(0.0, 1.0, 1201)
     for a in (ax_g, ax_t):
         a.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
         a.axvline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
@@ -160,33 +235,50 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         a.set_aspect("equal", adjustable="box")
         a.set_xlabel(r"$x$", fontsize=9)
         a.tick_params(labelsize=8)
-    gline, = ax_g.plot(xs, lam0 * xs * (1.0 - xs), color=BLUE, lw=1.5, zorder=3,
-                       label=r"$g_\lambda$")
-    tline, = ax_t.plot(xs, tent(xs, np.exp(h0)), color=GREEN, lw=1.5, zorder=3,
-                       label=r"$f_s,\ s=e^{h(\lambda)}$")
-    cw_g, = ax_g.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4,
-                      label="critical orbit")
-    cw_t, = ax_t.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4,
-                      label="critical orbit")
-    for a in (ax_g, ax_t):
-        a.legend(loc="upper left", fontsize=7.5, frameon=False)
+    gline, = ax_g.plot(xs, lam0 * xs * (1.0 - xs), color=BLUE, lw=1.4, zorder=3)
+    tline, = ax_t.plot(xs, tent(xs, np.exp(h0)), color=GREEN, lw=1.4, zorder=3)
+    cw_g, = ax_g.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
+    cw_t, = ax_t.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
     ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
     ax_t.set_ylabel(r"$f_s(y)$", fontsize=9)
-    ax_g.set_title(r"$g_\lambda$ and the cobweb of the critical orbit", fontsize=9)
-    ax_t.set_title(r"the tent map $f_s$, with its own cobweb", fontsize=9)
 
-    info = fig.text(0.60, 0.035, "", fontsize=9.5, va="bottom", family="monospace")
+    # ---- the semi-conjugacy A
+    xg = np.linspace(0.0, 1.0, 241)
+    aline, = ax_A.plot([], [], color="#7a4b16", lw=1.4, zorder=3)
+    adots, = ax_A.plot([], [], "o", ms=3.2, mfc=ORANGE, mec="white", mew=0.4, zorder=4)
+    ax_A.plot([0.0, 1.0], [0.0, 1.0], color="0.85", lw=0.7, ls=":", zorder=1)
+    ax_A.set_xlim(0.0, 1.0)
+    ax_A.set_ylim(0.0, 1.02)
+    ax_A.set_aspect("equal", adjustable="box")
+    ax_A.set_xlabel(r"$x$", fontsize=9)
+    ax_A.set_ylabel(r"$A(x)$", fontsize=9)
+    ax_A.tick_params(labelsize=8)
+    ax_A.set_title(r"$A$, with $f_s(A(x))=A(g_\lambda(x))$", fontsize=9)
 
+    # ---- the widgets
     sl = Slider(ax_s, r"$\lambda$", LAM_LO, LAM_HI, valinit=lam0, valstep=0.0005,
                 valfmt="%.4f", color=BLUE)
     sl.label.set_fontsize(10)
     sl.valtext.set_fontsize(9)
-    # Slider.set_val draws before it notifies its observers, so every drag would
-    # render the figure twice, the first time with the panels still stale.  Turn its
-    # own drawing off and let update() do the one draw that is needed.
+    # Slider.set_val draws before it notifies its observers, so leaving its own
+    # drawing on would render the figure twice per drag, the first time stale.
     sl.drawon = False
 
+    cb = CheckButtons(ax_cb, ["iterates"], [False])
+    ax_cb.set_title("view", fontsize=8)
+    for lab in cb.labels:
+        lab.set_fontsize(8)
+
+    sl_n = Slider(ax_n, r"$n$", 1, 10, valinit=4, valstep=1, valfmt="%d",
+                  color=GREEN, handle_style={"size": 0.86})
+    sl_n.label.set_fontsize(9)
+    sl_n.valtext.set_fontsize(9)
+    sl_n.drawon = False
+
+    info = fig.text(0.045, 0.010, "", fontsize=9.0, va="bottom", family="monospace")
+
     cache = {}
+    cur = {"lam": lam0, "h": h0, "s": float(np.exp(h0))}
     state = {"range": (lo, hi)}
     busy = {"on": False}
 
@@ -204,30 +296,78 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         cache[key] = h
         return lam, h, "%.0f ms" % (1e3 * (time.perf_counter() - t0))
 
+    def draw_maps():
+        """The two map panels: cobweb of the critical orbit, or the n-th iterates."""
+        lam, s = cur["lam"], cur["s"]
+        n = int(round(sl_n.val))
+        if cb.get_status()[0]:
+            gl = lam * xs * (1.0 - xs)
+            for _ in range(n - 1):
+                gl = lam * gl * (1.0 - gl)
+            tl = tent(xs, s)
+            for _ in range(n - 1):
+                tl = tent(tl, s)
+            gline.set_ydata(gl)
+            tline.set_ydata(tl)
+            cw_g.set_data([], [])
+            cw_t.set_data([], [])
+            lg = lap_count(lam, s, n, "g")
+            lt = lap_count(lam, s, n, "t")
+            ax_g.set_title(r"$g_\lambda^{%d}$, $\ell_{%d}=%d$" % (n, n, lg), fontsize=9)
+            ax_t.set_title(r"$f_s^{%d}$, $\ell_{%d}=%d$" % (n, n, lt), fontsize=9)
+            ax_g.set_ylabel(r"$g_\lambda^{%d}(x)$" % n, fontsize=9)
+            ax_t.set_ylabel(r"$f_s^{%d}(y)$" % n, fontsize=9)
+        else:
+            gline.set_ydata(lam * xs * (1.0 - xs))
+            tline.set_ydata(tent(xs, s))
+            cx, cy = cobweb(lambda y: lam * y * (1.0 - y), 0.5, 60)
+            cw_g.set_data(cx, cy)
+            tx, ty = cobweb(lambda y: tent(y, s), 0.5, 60)
+            cw_t.set_data(tx, ty)
+            ax_g.set_title(r"$g_\lambda$ with the cobweb of the critical orbit",
+                           fontsize=9)
+            ax_t.set_title(r"the tent map $f_s$ and the same cobweb", fontsize=9)
+            ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
+            ax_t.set_ylabel(r"$f_s(y)$", fontsize=9)
+
     def update(_=None):
         lam, h, timing = h_of(float(sl.val))
         s = float(np.exp(h))
+        cur.update(lam=lam, h=h, s=s)
         c = lam / 2.0 - lam ** 2 / 4.0
         mark.set_data([lam], [h])
-        gline.set_ydata(lam * xs * (1.0 - xs))
-        tline.set_ydata(tent(xs, s))
-        cx, cy = cobweb(lambda y: lam * y * (1.0 - y), 0.5, 60)
-        cw_g.set_data(cx, cy)
-        tx, ty = cobweb(lambda y: tent(y, s), 0.5, 60)
-        cw_t.set_data(tx, ty)
-        info.set_text(f"lambda = {lam:.5f}    c = {c:.6f}\n"
-                      f"h = {h:.6f}    h/log2 = {h / LOG2:.4f}    s = {s:.6f}"
-                      + (f"    [{timing}]" if exact else ""))
+        vline.set_xdata([lam, lam])
+        draw_maps()
+        o = critical_orbit(lam, 7)
+        a = semiconjugacy(xg, lam, s)
+        aline.set_data(xg, a)
+        adots.set_data(o, semiconjugacy(o, lam, s))
+        err = np.abs(semiconjugacy(lam * xg * (1.0 - xg), lam, s) - tent(a, s)).max()
+        info.set_text(f"lambda = {lam:.5f}    c = {c:.6f}      "
+                      f"h = {h:.6f}  h/log2 = {h / LOG2:.4f}  s = {s:.6f}"
+                      + (f"    [{timing}]" if exact else "")
+                      + f"\nmax |f_s(A(x)) - A(g_lambda(x))| = {err:.1e}  over {xg.size} points")
         fig.canvas.draw_idle()
+
+    def set_slider_range(lo_, hi_):
+        """Rescale the slider to the visible lambda window, so its ends are the axis ends."""
+        sl.valmin, sl.valmax = lo_, hi_
+        sl.valstep = (hi_ - lo_) / 2000.0
+        sl.ax.set_xlim(lo_, hi_)
+        sl.set_val(min(max(float(sl.val), lo_), hi_))   # clamps and repositions the handle
 
     def redraw_bif(lo_, hi_, force=False):
         lo_, hi_ = max(LAM_LO, lo_), min(LAM_HI, hi_)
         if hi_ - lo_ < 2e-4:
             return
         plo, phi = state["range"]
-        if not force and abs(np.log((hi_ - lo_) / (phi - plo))) < 0.06:
+        # Skip only when the window still lies inside the computed one and covers at
+        # least half of it: a scroll-wheel zoom arrives in many small steps and never
+        # fires a button release, so a width-only test would leave a stale, coarse
+        # image stretched over the new window.
+        if not force and lo_ >= plo and hi_ <= phi and (hi_ - lo_) > 0.55 * (phi - plo):
             return
-        z = bifurcation(lo_, hi_)
+        z = bifurcation(lo_, hi_, nlam=nlam, nrows=nrows)
         im.set_data(z)
         im.set_extent([lo_, hi_, 0.0, 1.0])
         im.set_clim(0.0, max(1.0, float(np.percentile(z, 99.5))))
@@ -238,13 +378,6 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             top = float(hs[m].max())
             ax_h.set_ylim(-0.02, max(top * 1.15, 0.02) if hi_ - lo_ < 1.9 else 0.70)
         fig.canvas.draw_idle()
-
-    def set_slider_range(lo_, hi_):
-        """Rescale the slider to the visible lambda window, so its ends are the axis ends."""
-        sl.valmin, sl.valmax = lo_, hi_
-        sl.valstep = (hi_ - lo_) / 2000.0
-        sl.ax.set_xlim(lo_, hi_)
-        sl.set_val(min(max(float(sl.val), lo_), hi_))   # clamps and repositions the handle
 
     def on_xlim(_ax):
         if busy["on"]:
@@ -260,11 +393,18 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     fig.canvas.mpl_connect(
         "button_release_event",
         lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
+    cb.on_clicked(lambda _label: (draw_maps(), fig.canvas.draw_idle()))
+    sl_n.on_changed(lambda _v: (draw_maps(), fig.canvas.draw_idle())
+                    if cb.get_status()[0] else None)
 
     sl.on_changed(update)
     set_slider_range(lo, hi)
     update()
-    return fig, sl
+    return fig, {"slider": sl, "iterates": cb, "n": sl_n, "info": info,
+                 "axes": {"h": ax_h, "b": ax_b, "g": ax_g, "t": ax_t, "A": ax_A},
+                 "lines": {"g": gline, "t": tline, "mark": mark, "vline": vline,
+                           "A": aline, "Adots": adots},
+                 "labels": {"g_ylabel": ax_g.yaxis.label, "t_ylabel": ax_t.yaxis.label}}
 
 
 def main():
