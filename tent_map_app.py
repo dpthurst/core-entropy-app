@@ -443,11 +443,35 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     # knows how to apply one: release_zoom passes the held key to _set_view_from_bbox as
     # its mode, and _get_pan_points zeroes the vertical delta for the key "x".  So the
     # two methods the toolbar ends up calling get x-only versions.
-    _bbox, _pan = ax_h._set_view_from_bbox, ax_h.drag_pan
-    ax_h._set_view_from_bbox = (
-        lambda bbox, direction="in", mode=None, twinx=False, twiny=False:
-        _bbox(bbox, direction=direction, mode="x", twinx=twinx, twiny=twiny))
-    ax_h.drag_pan = lambda button, key, x, y: _pan(button, "x", x, y)
+    #
+    # Both axes need it.  The toolbar collects the axes under the cursor and then adds
+    # their twinned siblings unconditionally, and the entropy axes' patch is invisible so
+    # that the diagram shows through it -- which means the bifurcation axes is picked up
+    # as well, and without this it is the diagram's own y that zooms.
+    def x_only(ax):
+        bbox, pan = ax._set_view_from_bbox, ax.drag_pan
+        ax._set_view_from_bbox = (
+            lambda b, direction="in", mode=None, twinx=False, twiny=False:
+            bbox(b, direction=direction, mode="x", twinx=twinx, twiny=twiny))
+        ax.drag_pan = lambda button, key, x, y: pan(button, "x", x, y)
+
+    for _ax in (ax_h, ax_b):
+        x_only(_ax)
+
+    pin_b = {"busy": False}
+
+    def pin_y_b(_ax=None):
+        """The attractor axis is the interval [0, 1] and never moves either."""
+        if pin_b["busy"]:
+            return
+        pin_b["busy"] = True
+        try:
+            if tuple(ax_b.get_ylim()) != (0.0, 1.0):
+                ax_b.set_ylim(0.0, 1.0)
+        finally:
+            pin_b["busy"] = False
+
+    ax_b.callbacks.connect("ylim_changed", pin_y_b)
     fig.canvas.mpl_connect(
         "button_release_event",
         lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
