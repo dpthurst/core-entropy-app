@@ -73,7 +73,10 @@ app: $(DATA)
 parsecheck:
 	$(JULIA) --startup-file=no src/parsecheck.jl $(JULIA_FILES)
 
+PY_SRC   := core_entropy.py tent_map.py tent_map_app.py figs/make_figures.py figs/make_previews.py
+
 check: $(DATA) parsecheck
+	$(PYTHON) -m py_compile $(PY_SRC)
 	$(JULIA) --startup-file=no core_entropy.jl --check
 	$(PYTHON) -c "import numpy as np, core_entropy as c; print('python: h(3.7) = %.9f' % c.core_entropy_one(3.7))"
 

@@ -207,14 +207,19 @@ values agree with the Julia ones to `5e-11` on all 28 696 parameters; `tent_map.
 
 ## A native window
 
-`tent_map_app.py` is the supported one: the entropy curve with a `λ` slider, `g_λ` on `[0,1]`
-with its critical orbit, and the tent map `f_s` of slope `s = e^{h(λ)}` drawn in the same
-panel, in Python and matplotlib — no Julia, no browser, no plotly.
+`tent_map_app.py` is the supported one, and carries what the HTML page does: on the left
+`h(λ)` with the **bifurcation diagram** of the same parameters behind it as a greyscale density
+read on the right-hand axis; on the right `g_λ` and the tent map `f_s` of slope
+`s = e^{h(λ)}`, each with the **cobweb** of the critical orbit. Drag the slider to move `λ`,
+and **zoom or pan the λ axis** — the bifurcation diagram is recomputed for the visible range,
+which is what makes the small scales readable. Python and matplotlib only: no Julia, no
+browser, no plotly.
 
 ```sh
 python3 tent_map_app.py                              # open the window
 python3 tent_map_app.py --exact                      # h computed on the fly
 python3 tent_map_app.py --save frame.png --lam 3.7   # one frame, no display
+python3 tent_map_app.py --save zoom.png --xlim 3.56 3.60
 ```
 
 `h` exists only at the grid parameters, so by default the slider snaps to the nearest one and
@@ -222,7 +227,8 @@ displays which it used — near the merging parameter the grid spacing alone mov
 `3·10⁻⁴`, and a readout at an off-grid `λ` would misreport it. `--exact` computes `h` at the
 slider's own `λ` instead and prints how long that took: about 10 ms above `λ = 3.6` and about
 36 ms below, where the solver must quadruple `N` before it can report zero. A full redraw
-costs 25 ms on top, so a drag runs at 16–20 updates a second in either mode.
+costs 25 ms on top, so a drag runs at 16–20 updates a second in either mode; a recomputed
+bifurcation diagram costs 10–15 ms and is built once per zoom, not per mouse movement.
 
 The window itself has **not been driven by a real GUI backend** here, this machine having no
 display; `--save` exercises the drawing under Agg, and the callbacks were run headlessly for
