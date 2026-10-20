@@ -212,7 +212,7 @@ values agree with the Julia ones to `5e-11` on all 28 696 parameters; `tent_map.
 read on the right-hand axis and a red line at the current `λ`; on the right `g_λ` and the tent map
 `f_s` of slope `s = e^{h(λ)}`, each with the **cobweb** of the critical orbit — or, with the
 **iterates** toggle, the graphs of the `n`-th iterates, titled with their lap counts, which the
-two maps share — and Milnor–Thurston's **semi-conjugacy** `A`, with the images of the first seven
+two maps share (`+` and `−`, or the arrow keys, step `n` one at a time) — and Milnor–Thurston's **semi-conjugacy** `A`, with the images of the first seven
 critical points on its graph and the residual `max|f_s(A(x)) − A(g_λ(x))|` printed under the
 slider. Two checkboxes switch the iterates view and the `A` panel; with `A` off a slider event
 costs 48 ms rather than 60. Drag the slider to move `λ`,

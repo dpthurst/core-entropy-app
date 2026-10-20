@@ -28,7 +28,8 @@ each with the cobweb of the critical orbit.
 
 Right, three panels above the slider: g_lambda and the tent map f_s, each with the
 cobweb of the critical orbit -- or, with the "iterates" toggle and its n, the graphs of
-the n-th iterates themselves, titled with their lap counts, which the two maps share;
+the n-th iterates themselves, titled with their lap counts, which the two maps share
+(the + and - keys, or the up and down arrows, step n one at a time);
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
 points on its graph and the residual max|f_s(A(x)) - A(g(x))| in the readout.  Two
 checkboxes switch the iterates view and the A panel; with A off a slider event costs
@@ -315,7 +316,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     for lab in cb.labels:
         lab.set_fontsize(8)
 
-    sl_n = Slider(ax_n, r"$n$", 1, 10, valinit=4, valstep=1, valfmt="%d",
+    sl_n = Slider(ax_n, r"$n$  (+/-)", 1, 10, valinit=4, valstep=1, valfmt="%d",
                   color=GREEN, handle_style={"size": 0.86})
     sl_n.label.set_fontsize(9)
     sl_n.valtext.set_fontsize(9)
@@ -439,11 +440,22 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     fig.canvas.mpl_connect(
         "button_release_event",
         lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
+    def step_n(delta):
+        """Move n by one, clamped to 1..10; the slider follows."""
+        sl_n.set_val(max(1, min(10, int(round(sl_n.val)) + delta)))
+
+    def on_key(event):
+        if event.key in ("+", "=", "up"):
+            step_n(+1)
+        elif event.key in ("-", "_", "down"):
+            step_n(-1)
+
     def on_check(_label):
         ax_A.set_visible(cb.get_status()[1])
         update()
 
     cb.on_clicked(on_check)
+    fig.canvas.mpl_connect("key_press_event", on_key)
     sl_n.on_changed(lambda _v: (draw_maps(), fig.canvas.draw_idle())
                     if cb.get_status()[0] else None)
 
