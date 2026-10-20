@@ -21,7 +21,7 @@ DATA     := core_entropy_data.csv
 HTML     := core_entropy.html
 TENT     := tent_map.html
 NOTE     := core_entropy_notes.pdf
-FIGS     := $(addprefix figs/, fig_output.pdf fig_kneading.pdf fig_laps.pdf fig_model.pdf \
+FIGS     := $(addprefix figs/, fig_output.pdf fig_kneading.pdf fig_laps.pdf fig_model.pdf fig_bands.pdf \
                   fig_determinant.pdf fig_lapgrowth.pdf fig_plateau.pdf)
 PREVIEWS := preview.png preview_bifurcation.png preview_kneading.png preview_tent.png
 JULIA_SRC := core_entropy.jl src/CoreEntropy.jl src/checks.jl src/HTMLPage.jl

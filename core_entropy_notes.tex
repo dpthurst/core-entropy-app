@@ -75,7 +75,8 @@ that turns the entropy into a root of a power series, \S\ref{sec:model} the piec
 model, how its semi-conjugacy is computed and when it is a conjugacy, \S\ref{sec:algo}
 and~\ref{sec:error} describe
 and analyse the numerical scheme, and \S\ref{sec:validation} collects the evidence that the
-implementation is correct.  The code,
+implementation is correct; \S\ref{sec:bands} describes the bands of the limit set and works
+out one example exactly.  The code,
 \texttt{src/CoreEntropy.jl}, follows the same order; the two front ends contain no
 mathematics of their own.
 
@@ -882,6 +883,78 @@ The plateau in Figure~\ref{fig:plateau} coincides with the period-$3$ window and
 the window's structure ends, at $\lambda\approx3.8568$; between the two the entropy does not
 move, even though the attracting cycle doubles repeatedly.  Panels~(b) and~(c) show that this
 is not special to period $3$.
+
+\section{Bands and renormalization}\label{sec:bands}
+
+The limit set of $g_\lambda$ is not always an interval, and the pattern of its components is
+visible in the determinant.  For typical $\lambda>\lambda_\infty$ the limit set of a typical
+orbit is a union of $2^k$ closed intervals, the \emph{bands}; as $\lambda$ increases the bands
+merge pairwise, and at $\lambda=3.6785735\ldots$ --- the Misiurewicz parameter of
+\S\ref{sec:conjugacy}, where the critical orbit lands on the fixed point $1-1/\lambda$ --- the
+last two merge and the limit set becomes a single interval.  The mergers are the parameters at
+which $s=e^{h(\lambda)}$ takes the values $2^{1/2^k}$, that is $h(\lambda)=2^{-k}\log2$, and
+they are exactly the thresholds at which $c_ns^{-n}$ stops oscillating with period $2^k$
+(\S\ref{sec:validation}).  In the determinant they appear as the modulus of its zeros: for
+$\lambda$ in the $2^k$-band range $D$ has $2^k$ zeros in $|t|<1$, all of modulus $t_0$, at
+$t_0\zeta$ for the $2^k$-th roots of unity $\zeta$.
+
+The thresholds $s^{2^k}=2$ are the band-merging parameters, and the exact example below shows
+in miniature why the determinant sees them: in the four-band case the numerator of $D$ is a
+polynomial in $t^4$, so its zeros sit at $t_0$ times the fourth roots of unity, and each band
+carries the same period-$3$ dynamics.
+
+\subsection{An exact example with four bands}\label{sec:bands4}
+
+At $\lambda_c=3.5822298358\ldots$ the critical point has period $12$; $\lambda_c$ is the
+centre of a period-$12$ component inside the four-band window $(3.5748,3.5926)$.  Writing
+$x_j=g_{\lambda_c}^j(\tfrac12)$, the orbit is
+\[
+  \begin{array}{llll}
+  x_0=0.5 & x_1=0.895557459 & x_2=0.335061348 & x_3=0.798103760\\
+  x_4=0.577219553 & x_5=0.874197126 & x_6=0.393961138 & x_7=0.855278006\\
+  x_8=0.443399590 & x_9=0.884081405 & x_{10}=0.367112196 & x_{11}=0.832298259
+  \end{array}
+\]
+and $\nu=(1,0,1,1,1,0,1,0,1,0,1,1)$ has period $12$, as does $\eps$.  The determinant collapses
+to
+\begin{equation}\label{eq:twelve}
+  D(t)=\frac{(t-1)(t^8+t^4-1)}{(1+t^2)(1+t^4+t^8)},
+\end{equation}
+whose poles all lie on $|t|=1$ and whose zeros in the disc are the four roots of
+$t^4=\tfrac1\tau$:
+\[
+  t_0=\tau^{-1/4}=0.8866517793\ldots,\qquad h(\lambda_c)=\tfrac14\log\tau=0.1203029563\ldots
+\]
+The other four roots of $t^8+t^4-1$ have modulus $\tau^{1/4}>1$ and lie outside.  The
+substitution $u=t^4$ turns the numerator into $u^2+u-1$, the polynomial of the period-$3$
+example of \S\ref{sec:pcf}: each band carries a period-$3$ renormalization with entropy
+$\log\tau$, and the entropy of the whole map is a quarter of it.
+
+The bands are visible at a nearby parameter.  At $\lambda_c-10^{-3}$ the attractor consists of
+the four intervals
+\[
+  [0.3355,0.3927],\quad[0.4463,0.5760],\quad[0.7985,0.8543],\quad[0.8745,0.8955],
+\]
+and at $\lambda_c$ the twelve points fall three at a time into their limits, by residue modulo
+four:
+\[
+  B_r=\{x_j:\ j\equiv r \ (\mathrm{mod}\ 4)\},
+  \qquad r=0,1,2,3 .
+\]
+Then $g_\lambda$ maps $B_r$ into $B_{r+1}$, cyclically, and $g_\lambda^4$ maps each band into
+itself as a unimodal map whose critical orbit is the $3$-cycle in that band --- the
+renormalized map, with its own period-$3$ centre.  Figure~\ref{fig:bands} shows the two
+pictures together.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_bands}
+  \caption{The four bands.  The shaded density is the attractor at $\lambda_c-10^{-3}$, a
+  union of four intervals; the coloured points are the twelve points of the critical orbit at
+  $\lambda_c$, grouped by band as $x_j$ with $j\equiv r \pmod 4$.  Each group forms a
+  $3$-cycle of $g_\lambda^4$ on its band.}
+  \label{fig:bands}
+\end{figure}
 
 \section{Concluding remarks}
 

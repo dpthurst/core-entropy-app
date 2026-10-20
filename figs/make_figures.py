@@ -504,6 +504,48 @@ def fig_plateau():
     fig.savefig("figs/fig_plateau.pdf", bbox_inches="tight")
 
 
+def fig_bands():
+    """The four bands at lambda_c - 1e-3 and the twelve cycle points at lambda_c."""
+    lamc = 3.582229835820
+    lam = lamc - 1e-3
+    x = 0.5
+    for _ in range(300000):
+        x = g(x, lam)
+    xs = np.empty(300000)
+    for k in range(len(xs)):
+        x = g(x, lam)
+        xs[k] = x
+    lo, hi = 0.32, 0.965
+    h, edges = np.histogram(xs, bins=900, range=(lo, hi))
+    c = 0.5 * (edges[:-1] + edges[1:])
+    fig, a = plt.subplots(figsize=(6.6, 1.75))
+    a.fill_between(c, 0, h, color=GREY, alpha=0.5, lw=0, step="mid")
+    y = 0.5
+    pts = []
+    for _ in range(12):
+        y = g(y, lamc)
+        pts.append(y)
+    cols = [BLUE, RED, "#2f6b4f", "#8e44ad"]
+    ymax = h.max()
+    for r in range(4):
+        p = [pts[j] for j in range(12) if j % 4 == r]
+        yy = 1.06 * ymax if r % 2 == 0 else 1.17 * ymax
+        a.plot(p, [yy] * len(p), "o", ms=3.6, color=cols[r], clip_on=False, zorder=5)
+        a.annotate(r"$B_{%d}$" % r, (sum(p) / len(p), yy), textcoords="offset points",
+                   xytext=(0, 6), ha="center", fontsize=7, color=cols[r])
+    a.set_xlim(lo, hi)
+    a.set_ylim(0, 1.30 * ymax)
+    a.set_xlabel(r"$x$")
+    a.set_ylabel("density", fontsize=7)
+    a.set_yticks([])
+    a.tick_params(labelsize=7)
+    a.grid(alpha=0.15, lw=0.5)
+    a.spines[["top", "right", "left"]].set_visible(False)
+    a.set_title(r"the attractor at $\lambda_c-10^{-3}$ (shaded) and the critical orbit at "
+                r"$\lambda_c$, by band", fontsize=8)
+    fig.savefig("figs/fig_bands.pdf", bbox_inches="tight")
+
+
 if __name__ == "__main__":
     fig_output()
     fig_kneading()
@@ -512,5 +554,6 @@ if __name__ == "__main__":
     fig_determinant()
     fig_lapgrowth()
     fig_plateau()
+    fig_bands()
     print("wrote figs/fig_output.pdf, fig_kneading.pdf, fig_laps.pdf, fig_model.pdf,")
-    print("      fig_determinant.pdf, fig_lapgrowth.pdf, fig_plateau.pdf")
+    print("      fig_determinant.pdf, fig_lapgrowth.pdf, fig_plateau.pdf, fig_bands.pdf")
