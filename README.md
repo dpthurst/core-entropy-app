@@ -41,9 +41,14 @@ make            # everything (about 30 s)
 make note       # just the write-up, from the figures and the .tex
 make bands      # just the companion note on bands and renormalization
 make app        # the native matplotlib window (needs a display)
+make parsecheck # syntax-check every Julia source, loaded or not
 make check      # validation of the Julia and the Python implementations
 make clean      # remove every generated file
 ```
+
+`make check` runs the validation suite of both implementations and `make parsecheck` first; the
+latter parses every `.jl` in the repository, including `core_entropy_makie.jl`, which no other
+target loads.
 
 `make` needs Julia (`core_entropy.jl`), Python 3 with numpy and matplotlib, `latexmk` with
 the usual TeX packages, and `pdftoppm` from poppler for one preview; `JULIA=`, `PYTHON=` and

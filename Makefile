@@ -9,6 +9,7 @@
 #   make bands      bands.pdf (the companion note on bands)
 #   make previews   preview*.png
 #   make app        the native matplotlib window (needs a display)
+#   make parsecheck syntax-check every Julia source, loaded or not
 #   make check      validation suite of both implementations
 #   make clean      remove all of the above
 #
@@ -29,8 +30,10 @@ FIGS     := $(addprefix figs/, fig_output.pdf fig_kneading.pdf fig_laps.pdf fig_
                   fig_determinant.pdf fig_lapgrowth.pdf fig_plateau.pdf)
 PREVIEWS := preview.png preview_bifurcation.png preview_kneading.png preview_tent.png
 JULIA_SRC := core_entropy.jl src/CoreEntropy.jl src/checks.jl src/HTMLPage.jl
+# every Julia source, including the Makie window that no other target loads
+JULIA_FILES := $(JULIA_SRC) core_entropy_makie.jl src/parsecheck.jl
 
-.PHONY: all data html tent figures note bands app previews check clean
+.PHONY: all data html tent figures note bands app parsecheck previews check clean
 
 all: $(DATA) $(HTML) $(TENT) $(FIGS) $(NOTE) $(BANDS) $(PREVIEWS)
 
@@ -66,7 +69,11 @@ $(PREVIEWS) &: figs/make_previews.py $(DATA) figs/fig_kneading.pdf
 app: $(DATA)
 	$(PYTHON) tent_map_app.py
 
-check: $(DATA)
+# a syntax error is the more fundamental failure, so it is checked first
+parsecheck:
+	$(JULIA) --startup-file=no src/parsecheck.jl $(JULIA_FILES)
+
+check: $(DATA) parsecheck
 	$(JULIA) --startup-file=no core_entropy.jl --check
 	$(PYTHON) -c "import numpy as np, core_entropy as c; print('python: h(3.7) = %.9f' % c.core_entropy_one(3.7))"
 
