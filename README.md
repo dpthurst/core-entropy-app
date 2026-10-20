@@ -214,10 +214,14 @@ read on the right-hand axis and a red line at the current `λ`; on the right `g_
 **iterates** toggle, the graphs of the `n`-th iterates, titled with their lap counts, which the
 two maps share — and Milnor–Thurston's **semi-conjugacy** `A`, with the images of the first seven
 critical points on its graph and the residual `max|f_s(A(x)) − A(g_λ(x))|` printed under the
-slider. Drag the slider to move `λ`,
-and **zoom or pan the λ axis** — the bifurcation diagram is recomputed for the visible range,
-which is what makes the small scales readable, and the slider underneath it is rescaled to that
-same window, so its two ends are the ends of the visible range. Python and matplotlib only: no Julia, no
+slider. Two checkboxes switch the iterates view and the `A` panel; with `A` off a slider event
+costs 48 ms rather than 60. Drag the slider to move `λ`,
+and **zoom or pan the λ axis** — the vertical axis is pinned so the zoom acts on λ alone, the
+window opens with the zoom tool selected, the bifurcation diagram is recomputed for the visible
+range, and the slider underneath it is rescaled to that same window, so its two ends are the ends
+of the visible range. Every visited cell of the diagram is drawn with at least half ink, so a
+window containing an attracting cycle — where the counts run from 1 to 700 — reads as well as the
+full range. Python and matplotlib only: no Julia, no
 browser, no plotly.
 
 ```sh

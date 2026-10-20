@@ -19,15 +19,20 @@ a greyscale density read on the right-hand axis.  Zooming or panning that axis
 recomputes the diagram for the visible lambda range, which is what makes the small
 scales readable, and rescales the slider beneath it to the same window -- so after
 zooming, the slider's two ends are the ends of the visible range and every pixel of
-it is spent inside it.  Right: g_lambda and the tent map f_s of slope s = exp(h(lambda)),
+it is spent inside it.  The vertical axis is pinned, so zoom and pan act on lambda alone
+and the entropy scale stays put for comparison, and the window opens with the zoom tool
+selected.  Every visited cell of the diagram is drawn with at least half ink, so a
+window containing an attracting cycle -- where the counts run from 1 to 700 -- reads as
+well as the full range.  Right: g_lambda and the tent map f_s of slope s = exp(h(lambda)),
 each with the cobweb of the critical orbit.
 
 Right, three panels above the slider: g_lambda and the tent map f_s, each with the
 cobweb of the critical orbit -- or, with the "iterates" toggle and its n, the graphs of
 the n-th iterates themselves, titled with their lap counts, which the two maps share;
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
-points on its graph and the residual max|f_s(A(x)) - A(g(x))| in the readout.  A red
-vertical line marks the current lambda in the left-hand panel.
+points on its graph and the residual max|f_s(A(x)) - A(g(x))| in the readout.  Two
+checkboxes switch the iterates view and the A panel; with A off a slider event costs
+48 ms rather than 60.  A red vertical line marks the current lambda.
 
 By default h is read off the 28 696-parameter grid, which is instant; with --exact
 it is computed at the slider's own lambda by core_entropy.py, at about 10 ms above
@@ -38,7 +43,7 @@ per mouse movement.
 
 A slider event costs one full redraw, about 60 ms here -- the four panels cost 7-13 ms
 each, the A panel 9 ms of it, and that is the floor for a pyplot window this size
-without blitting.  The
+without blitting; switching A off brings it back to 48 ms.  The
 Slider's own drawing is switched off (sl.drawon = False) because set_val draws
 *before* it notifies its observers, so leaving it on renders the figure twice, and
 the first time with the panels still stale.
@@ -60,6 +65,15 @@ LOG2 = np.log(2.0)
 BLUE, GREEN, RED, ORANGE = "#1c5f9e", "#2f6b4f", "#c1272d", "#e08a1e"
 LAM_LO, LAM_HI = 2.0, 4.0
 
+# Tuning, kept here rather than in the call signatures: the diagram's grid is about
+# twice the panel's pixels (more is invisible, and the image is redrawn on every slider
+# event), and A is truncated at 64 foldings, which leaves a residual of 1e-11 or better.
+BIF_NLAM, BIF_NROWS, BIF_TRANSIENT, BIF_KEEP = 800, 420, 1200, 700
+BIF_GAMMA, BIF_FLOOR = 0.5, 0.5   # ink = floor + (1-floor)*(count/top)**gamma
+A_STEPS, A_POINTS = 64, 241
+COBWEB_STEPS, ORBIT_DOTS = 60, 7
+Y_PIN = (-0.02, 0.70)    # the entropy axis does not move: only lambda is zoomed
+
 
 def sweep():
     """h(lambda) on the grid, reused from core_entropy_data.csv when it matches."""
@@ -80,7 +94,7 @@ def tent(x, s):
     return np.where(x <= 0.5, s * x, s * (1.0 - x))
 
 
-def critical_orbit(lam, n=7):
+def critical_orbit(lam, n=ORBIT_DOTS):
     """The first n points of the orbit of the critical point under g_lam."""
     out, x = [], 0.5
     for _ in range(n):
@@ -101,7 +115,8 @@ def cobweb(f, x0, n):
     return xs, ys
 
 
-def bifurcation(lo, hi, nlam=640, nrows=400, transient=1200, keep=700):
+def bifurcation(lo, hi, nlam=BIF_NLAM, nrows=BIF_NROWS, transient=BIF_TRANSIENT,
+                keep=BIF_KEEP):
     """Occupancy grid of the attracting set over the visible lambda range.
 
     Vectorised over lambda: every column is iterated at once, which is what makes a
@@ -154,7 +169,7 @@ def lap_count(lam, s, n, which="g"):
     return len([p for p in allp if 0.0 < p < 1.0]) + 1
 
 
-def semiconjugacy(x, lam, s, n=64):
+def semiconjugacy(x, lam, s, n=A_STEPS):
     """Milnor-Thurston's A: the itinerary of x under g_lam, folded back through f_s.
 
     A is the limit of these foldings; it satisfies f_s(A(x)) = A(g_lam(x)) up to the
@@ -170,6 +185,25 @@ def semiconjugacy(x, lam, s, n=64):
     for k in range(n - 1, -1, -1):
         u = np.where(w[k] > 0, u / s, 1.0 - u / s)
     return u
+
+
+def ink(z, gamma=BIF_GAMMA, floor=BIF_FLOOR):
+    """Map an occupancy grid to ink fractions.
+
+    A bifurcation diagram is nearly a set: a cell belongs to the attracting set or it does
+    not, and a column at a periodic parameter piles all 700 iterates into three cells while
+    its neighbour spreads them over hundreds.  Normalising the counts therefore either
+    washes out the sparse columns or flattens the dense ones -- at lambda in [3.82, 3.875]
+    the counts run from 1 to 700.  So every visited cell gets at least `floor` ink, and the
+    count modulates the rest: the picture is readable at every zoom, and still shows where
+    the orbits linger.
+    """
+    visited = z > 0
+    nz = z[visited]
+    top = max(1.0, float(np.percentile(nz, 99.5))) if nz.size else 1.0
+    out = np.zeros_like(z)
+    out[visited] = floor + (1.0 - floor) * (nz / top) ** gamma
+    return np.clip(out, 0.0, 1.0)
 
 
 def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
@@ -206,6 +240,19 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_h.set_zorder(ax_b.get_zorder() + 1)
     ax_h.patch.set_visible(False)
 
+    pin = {"busy": False}
+
+    def pin_y(_ax=None):
+        """Keep the entropy axis where it is: only lambda is zoomed or panned."""
+        if pin["busy"]:
+            return
+        pin["busy"] = True
+        try:
+            if tuple(ax_h.get_ylim()) != Y_PIN:
+                ax_h.set_ylim(*Y_PIN)
+        finally:
+            pin["busy"] = False
+
     # ---- the entropy curve, a marker and a vertical line at lambda
     ax_h.plot(lams, hs, color=BLUE, lw=1.3, zorder=5)
     for x in (ce.LAM_INF, ce.LAM_P3):
@@ -215,8 +262,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_h.set_ylim(-0.02, 0.70)
     ax_h.set_xlabel(r"$\lambda$", fontsize=10)
     ax_h.set_ylabel(r"$h(\lambda)$", fontsize=10)
-    ax_h.set_title(r"core entropy and the bifurcation diagram,   "
-                   r"$g_\lambda(x)=\lambda x(1-x)$", fontsize=10)
+    ax_h.set_title(r"core entropy and the bifurcation diagram", fontsize=10)
     ax_h.text(ce.LAM_INF - 0.02, 0.655, r"$\lambda_\infty$", ha="right", va="center",
               fontsize=9, color="0.35", zorder=6, clip_on=True)
     ax_h.text(ce.LAM_P3 + 0.02, 0.655, "period 3", va="center", fontsize=9,
@@ -253,7 +299,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_A.set_xlabel(r"$x$", fontsize=9)
     ax_A.set_ylabel(r"$A(x)$", fontsize=9)
     ax_A.tick_params(labelsize=8)
-    ax_A.set_title(r"$A$, with $f_s(A(x))=A(g_\lambda(x))$", fontsize=9)
+    ax_A.set_title(r"$A$: $f_s\circ A=A\circ g_\lambda$", fontsize=9)
 
     # ---- the widgets
     sl = Slider(ax_s, r"$\lambda$", LAM_LO, LAM_HI, valinit=lam0, valstep=0.0005,
@@ -264,7 +310,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     # drawing on would render the figure twice per drag, the first time stale.
     sl.drawon = False
 
-    cb = CheckButtons(ax_cb, ["iterates"], [False])
+    cb = CheckButtons(ax_cb, ["iterates", "A"], [False, True])
     ax_cb.set_title("view", fontsize=8)
     for lab in cb.labels:
         lab.set_fontsize(8)
@@ -324,9 +370,8 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             cw_g.set_data(cx, cy)
             tx, ty = cobweb(lambda y: tent(y, s), 0.5, 60)
             cw_t.set_data(tx, ty)
-            ax_g.set_title(r"$g_\lambda$ with the cobweb of the critical orbit",
-                           fontsize=9)
-            ax_t.set_title(r"the tent map $f_s$ and the same cobweb", fontsize=9)
+            ax_g.set_title(r"$g_\lambda$: critical orbit", fontsize=9)
+            ax_t.set_title(r"$f_s$: the same orbit", fontsize=9)
             ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
             ax_t.set_ylabel(r"$f_s(y)$", fontsize=9)
 
@@ -338,15 +383,19 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         mark.set_data([lam], [h])
         vline.set_xdata([lam, lam])
         draw_maps()
-        o = critical_orbit(lam, 7)
-        a = semiconjugacy(xg, lam, s)
-        aline.set_data(xg, a)
-        adots.set_data(o, semiconjugacy(o, lam, s))
-        err = np.abs(semiconjugacy(lam * xg * (1.0 - xg), lam, s) - tent(a, s)).max()
+        if ax_A.get_visible():
+            o = critical_orbit(lam)
+            a = semiconjugacy(xg, lam, s)
+            aline.set_data(xg, a)
+            adots.set_data(o, semiconjugacy(o, lam, s))
+            err = np.abs(semiconjugacy(lam * xg * (1.0 - xg), lam, s) - tent(a, s)).max()
+            second = f"max |f_s(A(x)) - A(g_lambda(x))| = {err:.1e}  over {xg.size} points"
+        else:
+            second = "A hidden"
         info.set_text(f"lambda = {lam:.5f}    c = {c:.6f}      "
                       f"h = {h:.6f}  h/log2 = {h / LOG2:.4f}  s = {s:.6f}"
                       + (f"    [{timing}]" if exact else "")
-                      + f"\nmax |f_s(A(x)) - A(g_lambda(x))| = {err:.1e}  over {xg.size} points")
+                      + "\n" + second)
         fig.canvas.draw_idle()
 
     def set_slider_range(lo_, hi_):
@@ -373,10 +422,6 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         im.set_clim(0.0, max(1.0, float(np.percentile(z, 99.5))))
         state["range"] = (lo_, hi_)
         set_slider_range(lo_, hi_)
-        m = (lams >= lo_) & (lams <= hi_)
-        if m.any():
-            top = float(hs[m].max())
-            ax_h.set_ylim(-0.02, max(top * 1.15, 0.02) if hi_ - lo_ < 1.9 else 0.70)
         fig.canvas.draw_idle()
 
     def on_xlim(_ax):
@@ -390,10 +435,15 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             busy["on"] = False
 
     ax_h.callbacks.connect("xlim_changed", on_xlim)
+    ax_h.callbacks.connect("ylim_changed", pin_y)
     fig.canvas.mpl_connect(
         "button_release_event",
         lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
-    cb.on_clicked(lambda _label: (draw_maps(), fig.canvas.draw_idle()))
+    def on_check(_label):
+        ax_A.set_visible(cb.get_status()[1])
+        update()
+
+    cb.on_clicked(on_check)
     sl_n.on_changed(lambda _v: (draw_maps(), fig.canvas.draw_idle())
                     if cb.get_status()[0] else None)
 
@@ -405,6 +455,27 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
                  "lines": {"g": gline, "t": tline, "mark": mark, "vline": vline,
                            "A": aline, "Adots": adots},
                  "labels": {"g_ylabel": ax_g.yaxis.label, "t_ylabel": ax_t.yaxis.label}}
+
+
+def start_with_zoom(fig):
+    """Select the toolbar's zoom tool, if this backend has a toolbar.
+
+    The toolbar is created with the window, which for some backends happens only at the
+    first draw, so this asks once immediately and once more on that draw.
+    """
+    state = {"done": False}
+
+    def once(_event=None):
+        if state["done"]:
+            return
+        tb = getattr(fig.canvas, "toolbar", None)
+        if tb is None or not hasattr(tb, "zoom"):
+            return
+        tb.zoom()
+        state["done"] = True
+
+    fig.canvas.mpl_connect("draw_event", once)
+    once()
 
 
 def main():
@@ -436,6 +507,7 @@ def main():
         return
     print(f"h({args.lam:.4f}) = {ce.h_at(lams, hs, args.lam):.6f}; "
           f"drag the slider, zoom the lambda axis")
+    start_with_zoom(fig)
     plt.show()
 
 
