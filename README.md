@@ -20,6 +20,7 @@ produces them from the sources.
 | `core_entropy.jl` | front end: runs the sweep, writes the CSV and the HTML |
 | `core_entropy.py` | the same sweep in Python (numpy); agrees with the Julia one to 5e-11 |
 | `tent_map.py` | Python front end: entropy, bifurcation diagram and tent map on one page |
+| `tent_map_app.py` | Python front end: the same, in a native matplotlib window |
 | `core_entropy_makie.jl` | front end: the Makie window |
 | `core_entropy_notes.tex` | the write-up |
 | `bands.tex` | the companion note: the bands and their renormalization |
@@ -39,6 +40,7 @@ produces them from the sources.
 make            # everything (about 30 s)
 make note       # just the write-up, from the figures and the .tex
 make bands      # just the companion note on bands and renormalization
+make app        # the native matplotlib window (needs a display)
 make check      # validation of the Julia and the Python implementations
 make clean      # remove every generated file
 ```
@@ -215,3 +217,18 @@ Makie, so the plotting calls are untested (the entropy code it calls is the test
 the helpers were checked against the real grid). It assumes a recent Makie (`Slider`
 with `startvalue`, `Axis` with `limits`). `core_entropy_data.csv` has the columns
 `lambda,c,h` if you would rather build your own figure.
+
+`tent_map_app.py` is the same window in Python and matplotlib, so it needs neither Julia nor
+a browser: the entropy curve with a `λ` slider, `g_λ` on `[0,1]` with its critical orbit, and
+the tent map `f_s` of slope `s = e^{h(λ)}` drawn in the same panel.
+
+```sh
+python3 tent_map_app.py                              # open the window
+python3 tent_map_app.py --save frame.png --lam 3.7   # one frame, no display
+```
+
+`h` exists only at the grid parameters, so the slider snaps to the nearest one and displays
+which it used — near the merging parameter the grid spacing alone moves `h` by `3·10⁻⁴`, and a
+readout at an off-grid `λ` would misreport it. Like the Makie window this has **not been driven
+by a real GUI backend** here; `--save` exercises the drawing, and the callbacks were run
+headlessly across `λ` from 2 to 4.

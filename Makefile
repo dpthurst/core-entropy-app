@@ -8,6 +8,7 @@
 #   make note       core_entropy_notes.pdf
 #   make bands      bands.pdf (the companion note on bands)
 #   make previews   preview*.png
+#   make app        the native matplotlib window (needs a display)
 #   make check      validation suite of both implementations
 #   make clean      remove all of the above
 #
@@ -29,7 +30,7 @@ FIGS     := $(addprefix figs/, fig_output.pdf fig_kneading.pdf fig_laps.pdf fig_
 PREVIEWS := preview.png preview_bifurcation.png preview_kneading.png preview_tent.png
 JULIA_SRC := core_entropy.jl src/CoreEntropy.jl src/checks.jl src/HTMLPage.jl
 
-.PHONY: all data html tent figures note bands previews check clean
+.PHONY: all data html tent figures note bands app previews check clean
 
 all: $(DATA) $(HTML) $(TENT) $(FIGS) $(NOTE) $(BANDS) $(PREVIEWS)
 
@@ -60,6 +61,10 @@ $(BANDS): bands.tex $(FIGS)
 previews: $(PREVIEWS)
 $(PREVIEWS) &: figs/make_previews.py $(DATA) figs/fig_kneading.pdf
 	$(PYTHON) figs/make_previews.py
+
+# the native window; not part of 'all', since it opens a GUI
+app: $(DATA)
+	$(PYTHON) tent_map_app.py
 
 check: $(DATA)
 	$(JULIA) --startup-file=no core_entropy.jl --check
