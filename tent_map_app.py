@@ -19,9 +19,10 @@ a greyscale density read on the right-hand axis.  Zooming or panning that axis
 recomputes the diagram for the visible lambda range, which is what makes the small
 scales readable, and rescales the slider beneath it to the same window -- so after
 zooming, the slider's two ends are the ends of the visible range and every pixel of
-it is spent inside it.  The vertical axis is pinned, so zoom and pan act on lambda alone
-and the entropy scale stays put for comparison, and the window opens with the zoom tool
-selected.  Every visited cell of the diagram is drawn with at least half ink, so a
+it is spent inside it.  Zoom and pan act on lambda alone: the toolbar's rectangle
+applies only its width -- the band is drawn at the full height to say so -- and a pan
+ignores the vertical component, so the entropy axis stays at [-0.02, 0.70] for
+comparison.  The window opens with the zoom tool selected.  Every visited cell of the diagram is drawn with at least half ink, so a
 window containing an attracting cycle -- where the counts run from 1 to 700 -- reads as
 well as the full range.  Right: g_lambda and the tent map f_s of slope s = exp(h(lambda)),
 each with the cobweb of the critical orbit.
@@ -437,6 +438,16 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     ax_h.callbacks.connect("xlim_changed", on_xlim)
     ax_h.callbacks.connect("ylim_changed", pin_y)
+
+    # Zoom and pan act on lambda alone.  The toolbar applies both axes, but it already
+    # knows how to apply one: release_zoom passes the held key to _set_view_from_bbox as
+    # its mode, and _get_pan_points zeroes the vertical delta for the key "x".  So the
+    # two methods the toolbar ends up calling get x-only versions.
+    _bbox, _pan = ax_h._set_view_from_bbox, ax_h.drag_pan
+    ax_h._set_view_from_bbox = (
+        lambda bbox, direction="in", mode=None, twinx=False, twiny=False:
+        _bbox(bbox, direction=direction, mode="x", twinx=twinx, twiny=twiny))
+    ax_h.drag_pan = lambda button, key, x, y: _pan(button, "x", x, y)
     fig.canvas.mpl_connect(
         "button_release_event",
         lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
@@ -483,6 +494,17 @@ def start_with_zoom(fig):
         tb = getattr(fig.canvas, "toolbar", None)
         if tb is None or not hasattr(tb, "zoom"):
             return
+        if not state.get("band") and hasattr(tb, "draw_rubberband"):
+            # the zoom rectangle would otherwise be drawn as a box while only its width
+            # is used; stretch it to the height of the axes so the band says what it does
+            orig = tb.draw_rubberband
+            box = fig.axes[0].bbox
+
+            def band(event, x0, y0, x1, y1, *args, **kwargs):
+                return orig(event, x0, box.y0, x1, box.y1, *args, **kwargs)
+
+            tb.draw_rubberband = band
+            state["band"] = True
         tb.zoom()
         state["done"] = True
 

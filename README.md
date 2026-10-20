@@ -216,8 +216,9 @@ two maps share (`+` and `−`, or the arrow keys, step `n` one at a time) — an
 critical points on its graph and the residual `max|f_s(A(x)) − A(g_λ(x))|` printed under the
 slider. Two checkboxes switch the iterates view and the `A` panel; with `A` off a slider event
 costs 48 ms rather than 60. Drag the slider to move `λ`,
-and **zoom or pan the λ axis** — the vertical axis is pinned so the zoom acts on λ alone, the
-window opens with the zoom tool selected, the bifurcation diagram is recomputed for the visible
+and **zoom or pan the λ axis** — both act on λ alone: the toolbar's rectangle applies only its
+width (the band is drawn at full height to say so) and a pan ignores the vertical component, so the
+entropy axis stays put for comparison; the window opens with the zoom tool selected, the bifurcation diagram is recomputed for the visible
 range, and the slider underneath it is rescaled to that same window, so its two ends are the ends
 of the visible range. Every visited cell of the diagram is drawn with at least half ink, so a
 window containing an attracting cycle — where the counts run from 1 to 700 — reads as well as the
