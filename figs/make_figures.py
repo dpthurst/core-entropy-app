@@ -569,6 +569,54 @@ def fig_laps_period():
     fig.savefig("figs/fig_laps_period.pdf", bbox_inches="tight")
 
 
+def julia_image(lam, half=2.05, N=1200, ss=2, R=64.0, itmax=900, cycles=9.0):
+    """Rgb escape-time image of the filled Julia set of z -> z^2 + c, c = lam/2 - lam^2/4.
+
+    The window is square and symmetric about the origin, because the filled set meets the
+    real axis in exactly [-lam/2, lam/2]: that segment is the image of [0,1] under the
+    conjugacy, and it is the whole horizontal extent.  Colour encodes the escape time on a
+    logarithmic scale, cycled `cycles` times, so the level sets read as coloured rings;
+    points whose orbit never leaves are black.
+    """
+    c = lam / 2 - lam ** 2 / 4
+    n = N * ss
+    x = np.linspace(-half, half, n)
+    X, Y = np.meshgrid(x, x)
+    Z = X + 1j * Y
+    M = np.full(Z.shape, float(itmax))
+    alive = np.ones(Z.shape, dtype=bool)
+    for k in range(itmax):
+        Z[alive] = Z[alive] ** 2 + c
+        a = np.abs(Z)
+        esc = alive & (a > R)
+        if esc.any():
+            M[esc] = k + 1 - np.log2(np.log(a[esc]) / np.log(R))
+        alive &= ~esc
+        if not alive.any():
+            break
+    v = (np.log1p(M) * cycles / np.log1p(itmax)) % 1.0
+    rgb = plt.get_cmap("twilight_shifted")(v)[..., :3]
+    rgb[alive] = 0.0
+    return rgb.reshape(N, ss, N, ss, 3).mean(axis=(1, 3)), c
+
+
+def fig_julia(path="figs/fig_julia.pdf"):
+    cases = [(3.582229835820, "(a)  four bands"), (3.853675276839, "(b)  three bands"),
+             (3.678573510428, "(c)  the merger")]
+    fig, axs = plt.subplots(1, 3, figsize=(6.6, 2.02), gridspec_kw={"wspace": 0.03})
+    for a, (lam, title) in zip(axs, cases):
+        rgb, c = julia_image(lam)
+        a.imshow(rgb, extent=[-2.05, 2.05, -2.05, 2.05], origin="lower",
+                 interpolation="bilinear")
+        a.set_title(title + r"   $c=%.5f$" % c, fontsize=7.5)
+        a.set_xticks([])
+        a.set_yticks([])
+        for sp in a.spines.values():
+            sp.set_visible(False)
+    fig.savefig(path, bbox_inches="tight")
+    return path
+
+
 if __name__ == "__main__":
     fig_output()
     fig_kneading()
@@ -579,6 +627,7 @@ if __name__ == "__main__":
     fig_plateau()
     fig_bands()
     fig_laps_period()
+    fig_julia()
     print("wrote figs/fig_output.pdf, fig_kneading.pdf, fig_laps.pdf, fig_model.pdf,")
     print("      fig_determinant.pdf, fig_lapgrowth.pdf, fig_plateau.pdf, fig_bands.pdf,")
-    print("      fig_laps_period.pdf")
+    print("      fig_laps_period.pdf, fig_julia.pdf")

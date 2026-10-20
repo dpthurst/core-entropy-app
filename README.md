@@ -22,20 +22,23 @@ produces them from the sources.
 | `tent_map.py` | Python front end: entropy, bifurcation diagram and tent map on one page |
 | `core_entropy_makie.jl` | front end: the Makie window |
 | `core_entropy_notes.tex` | the write-up |
+| `bands.tex` | the companion note: the bands and their renormalization |
 | `figs/make_figures.py`, `figs/make_previews.py` | the figure and preview sources |
 | `Makefile` | builds everything below |
 | `core_entropy_data.csv` | *built* — `lambda,c,h`, 28 696 rows, 12 decimals |
 | `core_entropy.html` | *built* — the interactive entropy page (plotly.js embedded, ~5 MB) |
 | `tent_map.html` | *built* — the integrated page (~5 MB) |
-| `figs/fig_*.pdf` | *built* — the seven figures of the write-up |
-| `core_entropy_notes.pdf` | *built* — the seventeen-page write-up |
+| `figs/fig_*.pdf` | *built* — the eight figures of the write-up and the two of the companion note |
+| `core_entropy_notes.pdf` | *built* — the fifteen-page write-up |
+| `bands.pdf` | *built* — the four-page companion note |
 | `preview*.png` | *built* — static previews |
 
 ## Building
 
 ```sh
-make            # everything (about 15 s)
+make            # everything (about 30 s)
 make note       # just the write-up, from the figures and the .tex
+make bands      # just the companion note on bands and renormalization
 make check      # validation of the Julia and the Python implementations
 make clean      # remove every generated file
 ```

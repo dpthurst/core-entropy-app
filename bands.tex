@@ -1,0 +1,255 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.15cm]{geometry}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\graphicspath{{figs/}}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{1.3ex plus .2ex}{0.7ex}
+\titlespacing*{\subsection}{0pt}{1.1ex plus .2ex}{0.5ex}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\htop}{h_{\mathrm{top}}}
+\setlist{itemsep=2pt,topsep=3pt,leftmargin=1.5em}
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+\setlength{\abovedisplayshortskip}{3pt}
+\setlength{\belowdisplayshortskip}{4pt}
+
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries Bands and renormalization in the logistic family}\\[3pt]
+  {\small companion to \texttt{core\_entropy\_notes.tex}}
+\end{center}
+\vspace{2pt}
+
+\section{Setting}\label{sec:setting}
+
+These notes are a companion to \texttt{core\_entropy\_notes.tex}, which computes the core
+entropy $h(\lambda)$ of the logistic map $g_\lambda(x)=\lambda x(1-x)$, $x\in[0,1]$,
+$\lambda\in[2,4]$, as the reciprocal of the smallest zero of the kneading determinant.  The
+derivation, the algorithm and its error control are there; here we use that machinery and
+that notation.  Let $\nu=\nu_0\nu_1\cdots$ be the itinerary of the critical point, each term
+$0$ or $1$ according to the side of $\tfrac12$ on which $g_\lambda^k(\tfrac12)$ falls, and
+the return symbol $*$ when it falls exactly on $\tfrac12$; let $\eps_k=\pm1$ be the signs of
+$g_\lambda'$ along the critical orbit, a return to $\tfrac12$ being read as the symbol $1$;
+and let
+\[
+  D(t)=\sum_{k\ge0}\eps_k t^k
+\]
+be the kneading determinant.  Its smallest zero in $(0,1)$ is $t_0$, the entropy is
+$h(\lambda)=\log(1/t_0)$, and $s=e^{h}=1/t_0$ is the slope of the piecewise-linear model
+$f_s$, the tent map to which $g_\lambda$ is semi-conjugate.  We write $c_n$ for the number of
+solutions of $g_\lambda^n(x)=\tfrac12$, which grows like $s^n$; it is the modulation of
+$c_ns^{-n}$, rather than the count itself, that carries the information about the bands.  Let
+$\lambda_\infty=3.5699456\ldots$ be the accumulation point of the period-doubling cascade.  A
+parameter is a \emph{Misiurewicz parameter} when its critical point is strictly preperiodic,
+that is, when $g_\lambda^k(\tfrac12)=g_\lambda^j(\tfrac12)$ for some $k>j\ge0$.
+
+What follows concerns the \emph{limit set} of $g_\lambda$ --- the set of limit points of a
+typical orbit, that is, the attractor of the map --- and in particular what its components
+look like when it is not an interval.  Three examples are worked out exactly, and the last
+section draws the corresponding complex picture.
+
+\section{Bands and renormalization}\label{sec:bands}
+
+The limit set of $g_\lambda$ is not always an interval, and the pattern of its components is
+visible in the determinant.  For typical $\lambda>\lambda_\infty$ the limit set of a typical
+orbit is a union of $2^k$ closed intervals, the \emph{bands}; as $\lambda$ increases the bands
+merge pairwise, and at $\lambda=3.6785735\ldots$ --- the Misiurewicz parameter, where the critical orbit
+lands on the fixed point $1-1/\lambda$ --- the last two merge and the limit set becomes a single interval.  The mergers are the parameters at
+which $s=e^{h(\lambda)}$ takes the values $2^{1/2^k}$, that is $h(\lambda)=2^{-k}\log2$, and
+they are exactly the thresholds at which $c_ns^{-n}$ stops oscillating with period $2^k$,
+as the counts of the companion note show.  In the determinant they appear as the modulus of its zeros: for
+$\lambda$ in the $2^k$-band range $D$ has $2^k$ zeros in $|t|<1$, all of modulus $t_0$, at
+$t_0\zeta$ for the $2^k$-th roots of unity $\zeta$.
+
+The thresholds $s^{2^k}=2$ are the band-merging parameters, and the exact example below shows
+in miniature why the determinant sees them: in the four-band case the numerator of $D$ is a
+polynomial in $t^4$, so its zeros sit at $t_0$ times the fourth roots of unity, and each band
+carries the same period-$3$ dynamics.
+
+The two counts of $2^k$ are one, in the period-doubling cascade.  There the bands are the intervals of
+the $2^k$-fold doubling renormalization, the map on a band is $f_s^{2^k}$ with slopes
+$\pm s^{2^k}$ and is a full tent map exactly at the merger $s^{2^k}=2$, and the band
+determinant has the single zero $t_0^{2^k}$.  So the $2^k$ zeros of $D$ at $t_0\zeta$ are the
+$2^k$ determinations of that one zero, since $t\mapsto t^{2^k}$ takes $\zeta$ to $1$;
+equivalently $c_ns^{-n}$ is a sum of $2^k$ interleaved sequences, one for each residue class
+of $n$ modulo $2^k$, and converges only along those classes --- the period-$2^k$ modulation of the counts in the
+companion note is the band structure read off the counts.  Outside the cascade the
+bookkeeping changes: in the period-$3$ copy of \S\ref{sec:bands3} the band zeros are
+subdominant, though the factor $t\mapsto t^p$ that produces $p$ bands is the same.
+
+\subsection{An exact example with four bands}\label{sec:bands4}
+
+At $\lambda_c=3.5822298358\ldots$ the critical point has period $12$; $\lambda_c$ is the
+centre of a period-$12$ component inside the four-band window $(3.5748,3.5926)$.  Writing
+$x_j=g_{\lambda_c}^j(\tfrac12)$, the orbit is
+\[
+  \begin{array}{llll}
+  x_0=0.5 & x_1=0.895557459 & x_2=0.335061348 & x_3=0.798103760\\
+  x_4=0.577219553 & x_5=0.874197126 & x_6=0.393961138 & x_7=0.855278006\\
+  x_8=0.443399590 & x_9=0.884081405 & x_{10}=0.367112196 & x_{11}=0.832298259
+  \end{array}
+\]
+and $\nu=(1,0,1,1,1,0,1,0,1,0,1,1)$ has period $12$, as does $\eps$.  The determinant collapses
+to
+\begin{equation}\label{eq:twelve}
+  D(t)=\frac{(t-1)(t^8+t^4-1)}{(1+t^2)(1+t^4+t^8)},
+\end{equation}
+whose poles all lie on $|t|=1$ and whose zeros in the disc are the four roots of
+$t^4=\tfrac1\tau$:
+\[
+  t_0=\tau^{-1/4}=0.8866517793\ldots,\qquad h(\lambda_c)=\tfrac14\log\tau=0.1203029563\ldots
+\]
+The other four roots of $t^8+t^4-1$ have modulus $\tau^{1/4}>1$ and lie outside.  The
+substitution $u=t^4$ turns the numerator into $u^2+u-1$, the polynomial of the period-$3$ example of the companion note: each band carries a period-$3$ renormalization with entropy
+$\log\tau$, and the entropy of the whole map is a quarter of it.
+
+The bands are visible at a nearby parameter.  At $\lambda_c-10^{-3}$ the attractor consists of
+the four intervals
+\[
+  [0.3357,0.3927],\quad[0.4463,0.5760],\quad[0.7986,0.8541],\quad[0.8746,0.8953],
+\]
+whose eight endpoints are the first eight images of the critical value, so they are exact rather
+than measured.  At $\lambda_c$ the twelve points fall three at a time into their limits, by
+residue modulo four:
+\[
+  B_r=\{x_j:\ j\equiv r \ (\mathrm{mod}\ 4)\},
+  \qquad r=0,1,2,3 .
+\]
+Then $g_\lambda$ maps $B_r$ into $B_{r+1}$, cyclically, and $g_\lambda^4$ maps each band into
+itself as a unimodal map whose critical orbit is the $3$-cycle in that band --- the
+renormalized map, with its own period-$3$ centre.  Figure~\ref{fig:bands} shows the two
+pictures together.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_bands}
+  \caption{The four bands.  The shaded density is the attractor at $\lambda_c-10^{-3}$, a
+  union of four intervals; the coloured points are the twelve points of the critical orbit at
+  $\lambda_c$, grouped by band as $x_j$ with $j\equiv r \pmod 4$.  Each group forms a
+  $3$-cycle of $g_\lambda^4$ on its band.}
+  \label{fig:bands}
+\end{figure}
+
+\subsection{A three-band example}\label{sec:bands3}
+
+The period-$3$ copy behaves differently, and a three-band example makes the difference clear.
+Its chaotic part lies between the accumulation of its own doublings, at
+$\lambda\approx3.8495$, and the crisis at $\lambda\approx3.8568$ where the three bands merge
+into one; beyond $3.8568$ the attractor is a single interval, so the bands live between those
+two values.
+
+At $\lambda_9=3.8536752768\ldots$ the critical point has period $9=3\cdot3$.  With
+$x_j=g_{\lambda_9}^j(\tfrac12)$,
+\[
+  \begin{array}{lll}
+  x_0=0.5 & x_1=0.963418819 & x_2=0.135815070\\
+  x_3=0.452303312 & x_4=0.954651808 & x_5=0.166832284\\
+  x_6=0.535658061 & x_7=0.958518881 & x_8=0.153223807
+  \end{array}
+\]
+and $\nu=(1,0,0,1,0,1,1,0,*)$ has period $9$.  The determinant is
+\begin{equation}\label{eq:nine}
+  D(t)=\frac{(t^2+t-1)(t^6+t^3-1)}{(1+t)(t^2-t+1)(t^6-t^3+1)}
+      =\frac{t^8+t^7-t^6+t^5+t^4-t^3-t^2-t+1}{1+t^9},
+\end{equation}
+whose zeros in the disc are $t_0=1/\tau=0.618\ldots$, from the factor $t^2+t-1$, and the three
+roots of $t^3=\tfrac1\tau$ at $0.8518\ldots$ times the cube roots of unity, from
+$t^6+t^3-1=(t^3)^2+t^3-1$.  So $h(\lambda_9)=\log\tau$, the value the whole period-$3$ copy
+carries, and the band structure sits in the second factor: the substitution $t\mapsto t^3$
+turns it into the same golden polynomial, exactly as $t\mapsto t^4$ did at the period-$12$
+centre.
+
+The nine points fall three at a time into the bands $B_r=\{x_j:\ j\equiv r\pmod3\}$, whose
+hulls are
+\[
+  B_0=[0.4523,0.5357],\qquad B_1=[0.9547,0.9634],\qquad B_2=[0.1358,0.1668],
+\]
+with $\tfrac12\in B_0$; $g_\lambda$ maps $B_r$ into $B_{r+1}$ cyclically, and $g_\lambda^3$
+carries each band into itself with a superattracting $3$-cycle.
+
+One difference from the four-band case is worth recording.  There $t_b^{1/4}=t_0$ was the
+smallest zero of $D$, so the zeros at the fourth roots of unity sat on the circle of
+convergence and the period-$4$ modulation of the counts did not decay.  Here $t_b^{1/3}=0.8518$
+is larger than $t_0=0.618$, so the three cube-root zeros are subdominant and the period-$3$
+modulation decays like $(t_0/t_b^{1/3})^n=\tau^{-2n/3}$; the counts settle onto a line after
+all, only more slowly.
+
+\subsection{The merging parameter}\label{sec:bandsmerge}
+
+At a Misiurewicz value the two pictures degenerate into one, and the determinant becomes as
+simple as it can be.  At $\lambda_M=3.6785735104\ldots$ the critical orbit is
+\[
+  \tfrac12\longmapsto0.9196433776\longmapsto0.2718445063\longmapsto q,
+  \qquad q=1-\tfrac1{\lambda_M}=0.7281554937,
+\]
+with $q$ a repelling fixed point, so $\nu=(1,0,1,1,1,\ldots)$ and
+\begin{equation}\label{eq:merging}
+  D(t)=\frac{1-2t^2}{1+t},
+\end{equation}
+whose zeros are $t=\pm1/\sqrt2$: two of them, of modulus
+$t_0=1/\sqrt2$, as the two bands require, with $h=\log\sqrt2=0.3465736\ldots$  The gap between
+the bands has closed at $q$ --- at $\lambda_M-2\cdot10^{-3}$ the attractor still avoids a
+neighbourhood of $q$, at $\lambda_M$ it does not --- but the merging survives in the invariant
+density, which has a square-root singularity at $q$: measured by a histogram, the excess over
+the background in a bin of width $w$ centred at $q$ grows by $2.4$ when $w$ is reduced by $5$,
+as $|x-q|^{-1/2}$ predicts ($\sqrt5=2.24$).  So the two bands are still visible, as the
+lifetime of an orbit in a neighbourhood of the point where they meet.
+
+\section{The complex picture}\label{sec:julia}
+
+The conjugacy of the companion note, $z=\psi_\lambda(x)=\lambda(\tfrac12-x)$, carries
+$g_\lambda$ to $z\mapsto z^2+c$ with $c=\lambda/2-\lambda^2/4$, and carries $[0,1]$ onto
+$[-\lambda/2,\lambda/2]$.  So every statement about $g_\lambda$ is one about a quadratic
+polynomial, and it is natural to ask what the bands look like there.  Let the \emph{filled
+Julia set} of $z^2+c$ be the set of $z$ whose orbit stays bounded.  On the real axis the
+filled set is exactly the segment $[-\lambda/2,\lambda/2]$: the endpoint $\lambda/2$ is the
+fixed point $\beta$ of $z^2+c$ and $-\lambda/2$ is its preimage, since $c$ and $\lambda$
+satisfy $\beta^2+c=\beta$ with $\beta=\lambda/2$.  Off the real axis the set is a dendrite,
+with the symmetric arms of Figure~\ref{fig:julia} hanging from that spine.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{fig_julia}
+  \caption{The filled Julia set of $z^2+c$ at the three parameters of
+  \S\ref{sec:bands4}, \S\ref{sec:bands3} and \S\ref{sec:bandsmerge}, with
+  $c=\lambda/2-\lambda^2/4$: (a)~the period-$12$ centre, $c=-1.41698$; (b)~the period-$9$
+  centre, $c=-1.78587$; (c)~the merging parameter, $c=-1.54369$.  The colour encodes the
+  escape time of $z$ on a logarithmic scale, cycled nine times, so that the level sets appear
+  as coloured rings; black is the filled set, where the orbit never leaves.  The window is
+  $[-2.05,2.05]^2$ throughout, so the panels are drawn to the same scale, and the middle row
+  of each panel is the real axis: it meets the filled set in $[-\lambda/2,\lambda/2]$, that is
+  in $[-1.7911,1.7911]$, $[-1.9268,1.9268]$ and $[-1.8393,1.8393]$.}
+  \label{fig:julia}
+\end{figure}
+
+Two warnings about reading the figure.  The filled set is thin: away from the spine its
+two-dimensional measure is small, and the only regions the orbit does not leave are the small
+Fatou components around the superattracting cycles of the two centres, which are invisible at
+this scale --- so what the eye follows is the Julia set itself, drawn by the escape-time
+bands.  And the bands of \S\ref{sec:bands} are not visible here at all.  They are components
+of the real limit set, and on the real axis all three pictures show a single interval,
+because it is the limit set that the bands describe and not the shape of the complex
+Julia set.  The complex picture is the geometry in which the renormalization of
+\S\ref{sec:bands4} and \S\ref{sec:bands3} lives, not a second view of the bands.
+
+\end{document}
