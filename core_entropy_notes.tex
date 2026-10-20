@@ -918,15 +918,16 @@ in miniature why the determinant sees them: in the four-band case the numerator 
 polynomial in $t^4$, so its zeros sit at $t_0$ times the fourth roots of unity, and each band
 carries the same period-$3$ dynamics.
 
-The two counts are in fact one.  On a band the model map is $T_s^{2^k}$, whose slopes are
-$\pm s^{2^k}$ and whose entropy is $2^kh$; the band is a full tent map exactly when
-$s^{2^k}=2$, which is the merger.  The determinant of the band dynamics therefore has the
-single zero $t_0^{2^k}=e^{-2^kh}$, and the $2^k$ zeros of $D$ at $t_0\zeta$ are the $2^k$
-determinations of that one zero, as $t\mapsto t^{2^k}$ takes $\zeta$ to $1$.  Equivalently,
-$c_ns^{-n}$ is a sum of $2^k$ interleaved sequences, one for each residue class of $n$
-modulo $2^k$, and converges only along those classes: the period-$2^k$ modulation of
-\S\ref{sec:validation} is the band structure read off the counts.  In the exact example below
-the renormalized determinant is $u^2+u-1$, with $u=t^4$.
+The two counts are one, in the period-doubling cascade.  There the bands are the intervals of
+the $2^k$-fold doubling renormalization, the map on a band is $T_s^{2^k}$ with slopes
+$\pm s^{2^k}$ and is a full tent map exactly at the merger $s^{2^k}=2$, and the band
+determinant has the single zero $t_0^{2^k}$.  So the $2^k$ zeros of $D$ at $t_0\zeta$ are the
+$2^k$ determinations of that one zero, since $t\mapsto t^{2^k}$ takes $\zeta$ to $1$;
+equivalently $c_ns^{-n}$ is a sum of $2^k$ interleaved sequences, one for each residue class
+of $n$ modulo $2^k$, and converges only along those classes --- the period-$2^k$ modulation of
+\S\ref{sec:validation} is the band structure read off the counts.  Outside the cascade the
+bookkeeping changes: in the period-$3$ copy of \S\ref{sec:bands3} the band zeros are
+subdominant, though the factor $t\mapsto t^p$ that produces $p$ bands is the same.
 
 \subsection{An exact example with four bands}\label{sec:bands4}
 
@@ -980,6 +981,50 @@ pictures together.
   $3$-cycle of $g_\lambda^4$ on its band.}
   \label{fig:bands}
 \end{figure}
+
+\subsection{A three-band example}\label{sec:bands3}
+
+The period-$3$ copy behaves differently, and a three-band example makes the difference clear.
+Its chaotic part lies between the accumulation of its own doublings, at
+$\lambda\approx3.8495$, and the crisis at $\lambda\approx3.8568$ where the three bands merge
+into one; beyond $3.8568$ the attractor is a single interval, so the bands live between those
+two values.
+
+At $\lambda_9=3.8536752768\ldots$ the critical point has period $9=3\cdot3$.  With
+$x_j=g_{\lambda_9}^j(\tfrac12)$,
+\[
+  \begin{array}{lll}
+  x_0=0.5 & x_1=0.963418819 & x_2=0.135815070\\
+  x_3=0.452303312 & x_4=0.954651808 & x_5=0.166832284\\
+  x_6=0.535658061 & x_7=0.958518881 & x_8=0.153223807
+  \end{array}
+\]
+and $\nu=(1,0,0,1,0,1,1,0,*)$ has period $9$.  The determinant is
+\begin{equation}\label{eq:nine}
+  D(t)=\frac{(t^2+t-1)(t^6+t^3-1)}{(1+t)(t^2-t+1)(t^6-t^3+1)}
+      =\frac{t^8+t^7-t^6+t^5+t^4-t^3-t^2-t+1}{1+t^9},
+\end{equation}
+whose zeros in the disc are $t_0=1/\tau=0.618\ldots$, from the factor $t^2+t-1$, and the three
+roots of $t^3=\tfrac1\tau$ at $0.8518\ldots$ times the cube roots of unity, from
+$t^6+t^3-1=(t^3)^2+t^3-1$.  So $h(\lambda_9)=\log\tau$, the value the whole period-$3$ copy
+carries, and the band structure sits in the second factor: the substitution $t\mapsto t^3$
+turns it into the same golden polynomial, exactly as $t\mapsto t^4$ did at the period-$12$
+centre.
+
+The nine points fall three at a time into the bands $B_r=\{x_j:\ j\equiv r\pmod3\}$, whose
+hulls are
+\[
+  B_0=[0.4523,0.5357],\qquad B_1=[0.9547,0.9634],\qquad B_2=[0.1358,0.1668],
+\]
+with $\tfrac12\in B_0$; $g_\lambda$ maps $B_r$ into $B_{r+1}$ cyclically, and $g_\lambda^3$
+carries each band into itself with a superattracting $3$-cycle.
+
+One difference from the four-band case is worth recording.  There $t_b^{1/4}=t_0$ was the
+smallest zero of $D$, so the zeros at the fourth roots of unity sat on the circle of
+convergence and the period-$4$ modulation of the counts did not decay.  Here $t_b^{1/3}=0.8518$
+is larger than $t_0=0.618$, so the three cube-root zeros are subdominant and the period-$3$
+modulation decays like $(t_0/t_b^{1/3})^n=\tau^{-2n/3}$; the counts settle onto a line after
+all, only more slowly.
 
 \subsection{The merging parameter}\label{sec:bandsmerge}
 
