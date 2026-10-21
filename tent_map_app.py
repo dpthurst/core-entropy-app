@@ -397,7 +397,9 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         for _ in range(n):
             gx = lam * gx * (1.0 - gx)
         ax_ = float(semiconjugacy([x0], lam, s)[0])
-        fx = float(tent(ax_, s))
+        fx = ax_                       # f_s^n(A(x)), not f_s(A(x)): the panel shows f_s^n
+        for _ in range(n):
+            fx = float(tent(fx, s))
         sq["pg"].set_data([x0], [gx])
         sq["pa"].set_data([x0], [ax_])
         sq["pt"].set_data([fx], [ax_])
@@ -565,7 +567,10 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             err = np.abs(semiconjugacy(lam * xg * (1.0 - xg), lam, s) - tent(a, s)).max()
             if shown:
                 gx0, ax0, fx0 = shown[0]
-                second = (f"A(x) = {ax0:.6f}  f_s(A(x)) = {fx0:.6f}  "
+                # name the iterate the panels are actually showing
+                k = int(round(sl_n.val)) if cobweb_view is False else 1
+                fs = "f_s" if k == 1 else "f_s^%d" % k
+                second = (f"A(x) = {ax0:.6f}  {fs}(A(x)) = {fx0:.6f}  "
                           f"residual {err:.1e} over {xg.size} points")
             else:
                 second = f"residual {err:.1e} over {xg.size} points"
