@@ -407,8 +407,11 @@ def lap_counts(l, nmax):
                 v.append(0.5 * (1 - r))
         v = np.sort(np.array(v))
         w = []
+        # The smallest gap between distinct preimages falls like lam^-n, so the merge
+        # tolerance must stay far below it: at 1e-11 the counts were already short by 2
+        # at n = 21, at 1e-15 they match a 35-digit computation.
         for z in v:
-            if not w or z - w[-1] > 1e-11:
+            if not w or z - w[-1] > 1e-15:
                 w.append(z)
         S = w; counts.append(len(S))
         if len(S) > 3_000_000:

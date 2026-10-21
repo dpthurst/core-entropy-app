@@ -78,7 +78,7 @@ and analyse the numerical scheme, and \S\ref{sec:validation} collects the eviden
 implementation is correct.  The bands of the limit set, and the renormalization they carry,
 are the subject of the companion note \texttt{bands.tex}, which also draws
 the corresponding complex picture.  The code,
-\texttt{src/CoreEntropy.jl}, follows the same order; the two front ends contain no
+\texttt{src/CoreEntropy.jl}, follows the same order; the front ends over it contain no
 mathematics of their own.
 
 \section{The core entropy of a real quadratic polynomial}\label{sec:core}
@@ -805,6 +805,13 @@ the same thing graphically.  The discrepancy decreases with $n$
 and is largest where $h$ is small, because the subexponential corrections to the growth are
 then relatively more important.
 
+The counts are integers, but only if numerically coincident preimages are not merged on the
+way: distinct preimages separate like $\lambda^{-n}$, so the merge tolerance has to stay well
+below that, and it is what limits $n$ in double precision.  With $10^{-15}$ the counts below do
+not change when the tolerance is reduced to $10^{-16}$, the four rows at $n\ge25$ agree exactly
+with a $30$-digit computation, and the row at $\lambda=4$ is $2^{22}$ by the conjugacy to the
+tent map.
+
 \begin{table}[h]
 \centering\small
 \setlength{\tabcolsep}{7pt}
@@ -812,11 +819,11 @@ then relatively more important.
 \toprule
 $\lambda$ & $n$ & number of solutions & growth rate over $4$ steps & $h(\lambda)$ \\
 \midrule
-$3.62$ & $26$ & $3\,068$ & $0.234676$ & $0.234370$ \\
-$3.72$ & $26$ & $67\,872$ & $0.399328$ & $0.399570$ \\
-$3.83$ & $26$ & $392\,612$ & $0.481104$ & $0.481212$ \\
-$3.95$ & $25$ & $4\,265\,466$ & $0.600110$ & $0.600143$ \\
-$4.00$ & $22$ & $4\,194\,244$ & $0.693144$ & $0.693147$ \\
+$3.62$ & $26$ & $3\,106$ & $0.236922$ & $0.234370$ \\
+$3.72$ & $26$ & $67\,948$ & $0.399499$ & $0.399570$ \\
+$3.83$ & $26$ & $392\,836$ & $0.481212$ & $0.481212$ \\
+$3.95$ & $25$ & $4\,266\,184$ & $0.600147$ & $0.600143$ \\
+$4.00$ & $22$ & $4\,194\,304$ & $0.693147$ & $0.693147$ \\
 \bottomrule
 \end{tabular}
 \caption{Independent check by counting solutions of $g^n(x)=\tfrac12$.}

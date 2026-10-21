@@ -21,8 +21,13 @@ function preimage_growth(λ::Float64, nmax::Int; cap::Int = 4_000_000)
         end
         sort!(v)
         w = Float64[]
-        for z in v                          # merge numerically coincident preimages
-            (isempty(w) || z - w[end] > 1e-11) && push!(w, z)
+        # Merge numerically coincident preimages.  The tolerance has to stay far below
+        # the smallest gap, which falls like λ^-n: at 1e-11 distinct preimages were being
+        # merged from n = 21, and λ = 3.62 counted 3068 instead of 3106 at n = 26.  At
+        # 1e-15 the counts agree with a 35-digit computation as far as double precision
+        # reaches.
+        for z in v
+            (isempty(w) || z - w[end] > 1e-15) && push!(w, z)
         end
         S = w
         push!(counts, length(S))
@@ -57,14 +62,18 @@ function run_checks()
     println()
     println("2. independent check: growth rate of the number of preimages of the")
     println("   critical point (laps of g^n); finite-n estimates converge slowly")
-    println("   when h is small, hence the 1% tolerance")
+    println("   when h is small, hence the 2% tolerance")
     for λ in (3.62, 3.72, 3.83, 3.95, 4.0)
         h, _, _ = core_entropy(λ; N0 = 1600, resolution = 40.0)
         cnt = preimage_growth(λ, 26)
         n = length(cnt) - 1
         hnum = (log(cnt[end]) - log(cnt[max(1, end - 4)])) / 4
         err = abs(hnum - h) / max(h, 1e-9)
-        ok &= err < 0.01
+        # The finite-n estimate is biased high by the subexponential correction, and the
+        # bias is worst where h is small: at lambda = 3.62 it is 1.1% at n = 26, which is
+        # why the threshold is 2% rather than 1%.  The 1% of earlier versions was only met
+        # because merged preimages made the counts short.
+        ok &= err < 0.02
         @printf("   λ = %.4f   h = %.9f   laps(n=%d) = %-9d  growth estimate %.6f   rel. diff %.1e\n",
                 λ, h, n, cnt[end], hnum, err)
     end
