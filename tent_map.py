@@ -91,6 +91,10 @@ PAGE = r"""<!DOCTYPE html>
   /* the entropy plot's margins are l:56, r:46, so the slider lines up with its axes */
   #lamctrl, #lamticks { padding-left:56px; padding-right:46px; }
   #lamctrl { margin-top:2px; }
+  /* a range input insets its track by half a thumb at each end, so the box has to be
+     pulled out by that much for the track to start and end where the axis does
+     (Chromium's thumb is about 16 px) */
+  #lamctrl input[type=range] { margin-left:-8px; margin-right:-8px; }
   .help { background:#f6f8fa; border-left:3px solid #1c5f9e; border-radius:0 4px 4px 0;
           padding:8px 14px 9px; margin:0 0 12px; max-width:1100px;
           font-size:12.5px; line-height:1.55; color:#333; }
@@ -125,7 +129,7 @@ PAGE = r"""<!DOCTYPE html>
     <li>Zoom by dragging a box on the <code>λ</code> axis.  Only <code>λ</code> zooms: the entropy
         axis keeps its scale, and so do the three map panels.</li>
     <li>To come back, double-click the plot, press the home button in its mode bar, or use
-        <i>reset zoom</i>.</li>
+        <i>reset zoom</i> (below the maps), or press <b>0</b>.</li>
     <li><b>+</b> and <b>&minus;</b>, or the buttons beside the slider, or the arrow keys on the
         slider itself, change the number of iterates, from 1 to 20.</li>
     <li>The checkboxes below the maps switch the bifurcation diagram, the iterates view (in which
@@ -137,7 +141,6 @@ PAGE = r"""<!DOCTYPE html>
 
 <div class="ctrl" id="lamctrl">
   <input type="range" id="slider" min="2" max="4" step="0.001" value="3.7">
-  <button type="button" class="btn" id="resetzoom">reset zoom</button>
 </div>
 <div class="ticks" id="lamticks"><span id="tick0">2</span><span>λ</span><span id="tick1">4</span></div>
 
@@ -160,6 +163,7 @@ PAGE = r"""<!DOCTYPE html>
     <input type="range" id="fillslider" min="2" max="1000" step="1" value="34" style="width:90px;vertical-align:middle">
     <span class="mono" id="filllabel">34</span></span>
   <label class="chk"><input type="checkbox" id="ashow" checked> A panel</label>
+  <button type="button" class="btn" id="resetzoom" title="back to the whole family (the 0 key)">reset zoom</button>
 </div>
 <div class="info">
   <div class="kv">
@@ -562,6 +566,7 @@ document.addEventListener('keydown', e => {
   if (tag === 'INPUT' && type !== 'range' && type !== 'checkbox') return;
   if (e.key === '+' || e.key === '=') { stepN(+1); e.preventDefault(); }
   else if (e.key === '-' || e.key === '_') { stepN(-1); e.preventDefault(); }
+  else if (e.key === '0') { resetZoom(); e.preventDefault(); }
 });
 fillSlider.addEventListener('input', () => {
   fillLabel.textContent = fillSlider.value;
@@ -571,11 +576,14 @@ document.getElementById('ashow').addEventListener('change', e => {
   document.getElementById('semi').style.display = e.target.checked ? '' : 'none';
   Plotly.Plots.resize(gdL); Plotly.Plots.resize(gdT);
 });
-document.getElementById('resetzoom').addEventListener('click', () => {
+function resetZoom(){
   Plotly.relayout(gdE, {'xaxis.autorange': true});
   setTimeout(syncSliderToView, 0);
   [gdL, gdT, gdH].forEach(gd =>
     Plotly.relayout(gd, {'xaxis.autorange': true, 'yaxis.autorange': true}));
+}
+document.getElementById('resetzoom').addEventListener('click', () => {
+  resetZoom();
 });
 cbBif.addEventListener('change', e => {
   if (e.target.checked) drawBifurcation();
