@@ -1,0 +1,73 @@
+# COPY THIS FILE TO .github/workflows/pages.yml
+#
+# It lives here because the GitHub connection this repository is pushed through
+# cannot create files under .github/workflows (its app has no `workflows`
+# permission).  Moving it is one step in the browser: Add file -> Create new file,
+# name it .github/workflows/pages.yml, and paste this.
+#
+# Build the two interactive pages and publish them with GitHub Pages.
+#
+# The pages are static: all the computation happens in the browser.  The only
+# build steps are the Julia sweep (about 2 s) and the Python page writer, both
+# with --cdn so that the site carries 0.6 MB pages rather than 5 MB ones; the
+# plotly library comes from cdn.plot.ly.
+#
+# One-time setup: Settings -> Pages -> Build and deployment -> Source:
+# "GitHub Actions".  Until that is done the deploy step fails and the build
+# step still succeeds.
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.11'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: install numpy
+        run: python3 -m pip install --quiet numpy
+
+      - name: build the pages
+        run: |
+          set -eux
+          julia --startup-file=no core_entropy.jl --cdn
+          python3 tent_map.py --cdn
+          mkdir -p site
+          cp tent_map.html site/index.html
+          cp core_entropy.html site/entropy.html
+          ls -l site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

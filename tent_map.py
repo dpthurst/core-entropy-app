@@ -12,7 +12,8 @@ Writes tent_map.html.  Everything is computed in Python:
   * for each λ the tent map has slope s = exp(h(λ)) = 1/t₀, and Theorem 7.4 of
     Milnor-Thurston gives a continuous nondecreasing A with f_s(A(x)) = A(g_λ(x)).
 
-    python3 tent_map.py
+    python3 tent_map.py            # self-contained page, plotly inlined (5 MB)
+    python3 tent_map.py --cdn      # same page, plotly from cdn.plot.ly (0.6 MB)
 """
 import os
 import numpy as np
@@ -21,6 +22,14 @@ import core_entropy as ce
 HERE = os.path.dirname(os.path.abspath(__file__))
 PLOTLY_VERSION = "2.35.2"
 CACHE = os.path.join(os.path.expanduser("~"), ".cache", "core_entropy", "plotly.min.js")
+
+
+def plotly_script(cdn=False):
+    """The plotly tag: inline (self-contained) or from the CDN (0.6 MB pages)."""
+    if cdn:
+        return ('<script src="https://cdn.plot.ly/plotly-%s.min.js" charset="utf-8">'
+                '</script>' % PLOTLY_VERSION)
+    return "<script>" + plotly_js() + "</script>"
 
 
 def plotly_js():
@@ -99,21 +108,27 @@ PAGE = r"""<!DOCTYPE html>
 </div>
 
 <div class="ctrl">
-  <input type="range" id="slider" min="3.6" max="4" step="0.0002" value="3.7">
+  <input type="range" id="slider" min="2" max="4" step="0.0002" value="3.7">
   <label class="chk"><input type="checkbox" id="bif" checked> bifurcation diagram</label>
-  <label class="chk"><input type="checkbox" id="iter"> plot the iterates
+  <label class="chk"><input type="checkbox" id="iter" checked> plot the iterates
     <span class="mono">g<sup>n</sup>, f<sub>s</sub><sup>n</sup></span></label>
-  <span class="chk" id="nwrap" style="display:none">n =
-    <input type="range" id="nslider" min="1" max="10" step="1" value="4" style="width:90px;vertical-align:middle">
-    <span class="mono" id="nlabel">4</span></span>
+  <span class="chk" id="nwrap">n =
+    <input type="range" id="nslider" min="1" max="20" step="1" value="1" style="width:90px;vertical-align:middle">
+    <span class="mono" id="nlabel">1</span></span>
+  <span class="chk" id="fwrap" style="display:none">cobweb steps =
+    <input type="range" id="fillslider" min="2" max="1000" step="1" value="34" style="width:90px;vertical-align:middle">
+    <span class="mono" id="filllabel">34</span></span>
+  <label class="chk"><input type="checkbox" id="ashow" checked> A panel</label>
 </div>
-<div class="ticks"><span>3.6</span><span>λ</span><span>4</span></div>
+<div class="ticks"><span>2</span><span>λ</span><span>4</span></div>
 
 <div class="info">
   <div class="kv">
     <span class="k">λ</span><span class="v" id="v-lam"></span>
     <span class="k">h(λ)</span><span class="v" id="v-h"></span>
+    <span class="k">c = λ/2 − λ²/4</span><span class="v" id="v-c"></span>
     <span class="k">s = e^{h(λ)}</span><span class="v" id="v-s"></span>
+    <span class="k">h(λ)/log 2</span><span class="v" id="v-hr"></span>
     <span class="k">max |f_s(A) − A(g_λ)|</span><span class="v" id="v-err"></span>
   </div>
   <div>
@@ -187,7 +202,8 @@ function A_of(x, lam, s, n){
 
 // ------------------------------------------------ the bifurcation diagram
 const BIF_COLS = 1000, BIF_ROWS = 400, BIF_TRANSIENT = 1500, BIF_KEEP = 1200;
-const BIF_TOL = 1e-9;
+const BIF_TOL = 1e-14;   // below the smallest gap between distinct preimages of 1/2
+const LAP_CAP = 120000;  // stop counting turning points above this: 2^n at lambda = 4
 
 function dedupe(v, tol){
   v.sort((a, b) => a - b);
@@ -221,7 +237,7 @@ function normaliseGrid(z){
   const out = new Array(BIF_ROWS);
   for (let i = 0; i < BIF_ROWS; i++){
     const row = z[i], o = new Array(BIF_COLS);
-    for (let j = 0; j < BIF_COLS; j++) o[j] = row[j] > 0 ? Math.log1p(row[j])*sc : 0;
+    for (let j = 0; j < BIF_COLS; j++) o[j] = row[j] > 0 ? 0.6 + 0.4*Math.log1p(row[j])*sc : 0;
     out[i] = o;
   }
   return out;
@@ -249,6 +265,7 @@ function lapsG(lam, n){
     }
     S = dedupe(nx, BIF_TOL);
     all = dedupe(all.concat(S), BIF_TOL);
+    if (all.length > LAP_CAP) return null;
   }
   return all.filter(p => p > 0 && p < 1).length + 1;
 }
@@ -265,6 +282,7 @@ function lapsTent(s, n){
     }
     S = dedupe(nx, BIF_TOL);
     all = dedupe(all.concat(S), BIF_TOL);
+    if (all.length > LAP_CAP) return null;
   }
   return all.filter(p => p > 0 && p < 1).length + 1;
 }
@@ -286,17 +304,22 @@ const layoutE = {
   xaxis: {title: {text: 'λ', font: {size: 11}}, range: [2, 4], gridcolor: '#eef1f3',
           tickfont: {size: 10}},
   yaxis: {title: {text: 'core entropy  h(λ)', font: {size: 11}}, range: [-0.02, 0.70],
-          gridcolor: '#eef1f3', tickfont: {size: 10}},
-  yaxis2: {overlaying: 'y', side: 'right', range: [0, 1], showgrid: false,
+          gridcolor: '#eef1f3', tickfont: {size: 10}, fixedrange: true},
+  yaxis2: {overlaying: 'y', side: 'right', range: [0, 1], showgrid: false, fixedrange: true,
            title: {text: 'x   (limit set)', font: {size: 10}}, tickfont: {size: 9},
            automargin: true},
   showlegend: false, font: font, paper_bgcolor: '#fff', plot_bgcolor: '#fff',
-  hovermode: 'closest'
+  hovermode: 'closest', dragmode: 'zoom',
+  shapes: [
+    {type: 'line', x0: 3.5699456718, x1: 3.5699456718, yref: 'paper', y0: 0, y1: 1,
+     line: {color: '#777', width: 0.8, dash: 'dash'}},
+    {type: 'line', x0: 3.7, x1: 3.7, yref: 'paper', y0: 0, y1: 1,
+     line: {color: '#c1272d', width: 1.0}}
+  ]
 };
 const trE = [
   {type: 'heatmap', x: [2], y: [0.5], z: [[0]], yaxis: 'y2',
-   colorscale: [[0, 'rgba(255,255,255,0)'], [0.10, 'rgba(60,60,60,0.28)'],
-                [0.40, 'rgba(25,25,25,0.80)'], [1, 'rgba(0,0,0,0.95)']],
+   colorscale: [[0, 'rgba(255,255,255,0)'], [1, 'rgba(90,101,112,0.95)']],
    zmin: 0, zmax: 1, showscale: false, hoverinfo: 'skip'},
   {x: LAM, y: H, type: 'scatter', mode: 'lines', line: {color: '#1c5f9e', width: 1.2},
    hovertemplate: 'λ = %{x:.6f}<br>h = %{y:.6f}<extra></extra>'},
@@ -316,13 +339,13 @@ function panel(title, xt, yt, colour){
 const trL = [
   {x: [0,1], y: [0,1], mode: 'lines', line: {color: grey, width: 1, dash: 'dot'}, hoverinfo: 'skip'},
   {x: [], y: [], mode: 'lines', line: {color: '#1c5f9e', width: 1.6}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'lines', line: {color: '#c0392b', width: 0.7}, hoverinfo: 'skip'},
+  {x: [], y: [], mode: 'lines', line: {color: '#c0392b', width: 0.35}, hoverinfo: 'skip'},
   {x: [], y: [], mode: 'markers', marker: {size: 4, color: '#c0392b'}, hoverinfo: 'skip'}
 ];
 const trT = [
   {x: [0,1], y: [0,1], mode: 'lines', line: {color: grey, width: 1, dash: 'dot'}, hoverinfo: 'skip'},
   {x: [], y: [], mode: 'lines', line: {color: '#2f6b4f', width: 1.6}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'lines', line: {color: '#c0392b', width: 0.7}, hoverinfo: 'skip'},
+  {x: [], y: [], mode: 'lines', line: {color: '#c0392b', width: 0.35}, hoverinfo: 'skip'},
   {x: [], y: [], mode: 'markers', marker: {size: 4, color: '#c0392b'}, hoverinfo: 'skip'}
 ];
 const trH = [
@@ -339,7 +362,10 @@ Plotly.newPlot(gdH, trH, panel('Milnor–Thurston A:  f_s ∘ A = A ∘ g_λ',
                                'x  (interval of g_λ)', 'A(x)  (tent coordinate)'), cfg);
 
 // ------------------------------------------------ update everything
-const NFILL = 34, NSYM = 15, NG = 240;
+const NSYM = 15, NG = 240;
+const fillSlider = document.getElementById('fillslider');
+const fillLabel = document.getElementById('filllabel');
+const fillSteps = () => parseInt(fillSlider.value, 10);
 const cbBif = document.getElementById('bif');
 let bifTimer = null;
 
@@ -361,28 +387,36 @@ const nWrap   = document.getElementById('nwrap');
 // either the cobweb of the critical orbit, or the graph of the n-th iterate
 // itself, which is what shows the lap count exploding
 function drawMaps(lam, s){
-  const orbL = orbit(x => g(x, lam), NFILL, 0.5);
+  const orbL = orbit(x => g(x, lam), fillSteps(), 0.5);
   if (iterBox.checked){
-    const n = Math.max(1, Math.min(10, parseInt(nSlider.value, 10)));
-    const M = 3000, xs = [], yl = [], yt = [];
+    const n = Math.max(1, Math.min(20, parseInt(nSlider.value, 10)));
+    const lG = lapsG(lam, n), lT = lapsTent(s, n);
+    // sample by the number of laps: a fixed grid aliases a curve with thousands of them
+    const M = Math.min(40001, Math.max(2401, 30*(lG || LAP_CAP))), xs = [], yl = [], yt = [];
     for (let i = 0; i <= M; i++){
       const x = i/M;
       let a = x, b = x;
       for (let k = 0; k < n; k++){ a = g(a, lam); b = tent(b, s); }
       xs.push(x); yl.push(a); yt.push(b);
     }
-    const lG = lapsG(lam, n), lT = lapsTent(s, n);
+    const lw = Math.max(0.5, 1.6 - 0.1*n);
+    Plotly.restyle(gdL, {line: {width: lw}}, [1]);
+    Plotly.restyle(gdT, {line: {width: lw}}, [1]);
     Plotly.restyle(gdL, {x: [xs, [], []], y: [yl, [], []]}, [1, 2, 3]);
     Plotly.restyle(gdT, {x: [xs, [], []], y: [yt, [], []]}, [1, 2, 3]);
-    Plotly.relayout(gdL, {title: {text: 'g_λ^' + n + '   with ℓ_' + n + ' = ' + lG},
+    const lgTxt = lG === null ? '&gt;' + LAP_CAP : lG;
+    const ltTxt = lT === null ? '&gt;' + LAP_CAP : lT;
+    Plotly.relayout(gdL, {title: {text: 'g_λ^' + n + '   with ℓ_' + n + ' = ' + lgTxt},
                           'xaxis.title.text': 'x', 'yaxis.title.text': 'g_λ^' + n + '(x)'});
-    Plotly.relayout(gdT, {title: {text: 'f_s^' + n + '   with ℓ_' + n + ' = ' + lT},
+    Plotly.relayout(gdT, {title: {text: 'f_s^' + n + '   with ℓ_' + n + ' = ' + ltTxt},
                           'xaxis.title.text': 'y', 'yaxis.title.text': 'f_s^' + n + '(y)'});
     nLabel.textContent = n;
   } else {
-    const cwL = cobweb(x => g(x, lam), NFILL, 0.5);
-    const cwT = cobweb(y => tent(y, s), NFILL, 0.5);
-    const orbT = orbit(y => tent(y, s), NFILL, 0.5);
+    Plotly.restyle(gdL, {line: {width: 1.6}}, [1]);
+    Plotly.restyle(gdT, {line: {width: 1.6}}, [1]);
+    const cwL = cobweb(x => g(x, lam), fillSteps(), 0.5);
+    const cwT = cobweb(y => tent(y, s), fillSteps(), 0.5);
+    const orbT = orbit(y => tent(y, s), fillSteps(), 0.5);
     const xs = [], ys = [];
     for (let i = 0; i <= 220; i++){ const x = i/220; xs.push(x); ys.push(g(x, lam)); }
     Plotly.restyle(gdL, {x: [xs, cwL.x, orbL.slice(0, 7)], y: [ys, cwL.y, orbL.slice(0, 7)]}, [1, 2, 3]);
@@ -417,7 +451,15 @@ function setLambda(lam){
   const oy = orbL.slice(0, 7).map(x => A_of(x, lam, s, 64));
   Plotly.restyle(gdH, {x: [gx, orbL.slice(0, 7)], y: [gy, oy]}, [1, 2]);
 
+  Plotly.relayout(gdE, {shapes: [
+    {type: 'line', x0: 3.5699456718, x1: 3.5699456718, yref: 'paper', y0: 0, y1: 1,
+     line: {color: '#777', width: 0.8, dash: 'dash'}},
+    {type: 'line', x0: lam, x1: lam, yref: 'paper', y0: 0, y1: 1,
+     line: {color: '#c1272d', width: 1.0}}
+  ]});
   document.getElementById('v-lam').textContent = lam.toFixed(6);
+  document.getElementById('v-c').textContent = (lam/2 - lam*lam/4).toFixed(6);
+  document.getElementById('v-hr').textContent = (h/LOG2).toFixed(4);
   document.getElementById('v-h').textContent = h.toFixed(6);
   document.getElementById('v-s').textContent = s.toFixed(6);
   document.getElementById('v-err').textContent = err.toExponential(1);
@@ -428,11 +470,20 @@ function setLambda(lam){
 document.getElementById('slider').addEventListener('input', e => setLambda(parseFloat(e.target.value)));
 iterBox.addEventListener('change', e => {
   nWrap.style.display = e.target.checked ? '' : 'none';
+  document.getElementById('fwrap').style.display = e.target.checked ? 'none' : '';
   drawMaps(curLam, Math.exp(hAt(curLam)));
 });
 nSlider.addEventListener('input', () => {
   nLabel.textContent = nSlider.value;
   if (iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+});
+fillSlider.addEventListener('input', () => {
+  fillLabel.textContent = fillSlider.value;
+  if (!iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+});
+document.getElementById('ashow').addEventListener('change', e => {
+  document.getElementById('semi').style.display = e.target.checked ? '' : 'none';
+  Plotly.Plots.resize(gdL); Plotly.Plots.resize(gdT);
 });
 cbBif.addEventListener('change', e => {
   if (e.target.checked) drawBifurcation();
@@ -451,8 +502,9 @@ drawMaps(curLam, Math.exp(hAt(curLam)));
 
 
 def main():
+    import sys
     lams, hs = curve()
-    html = (PAGE.replace("@PLOTLY@", "<script>" + plotly_js() + "</script>")
+    html = (PAGE.replace("@PLOTLY@", plotly_script("--cdn" in sys.argv))
                 .replace("@APP@", APP.replace("@LAM@", json_vec(lams)).replace("@H@", json_vec(hs))))
     out = os.path.join(HERE, "tent_map.html")
     with open(out, "w", encoding="utf-8") as f:

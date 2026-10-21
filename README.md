@@ -205,6 +205,24 @@ Everything follows the slider.  `core_entropy.py` ports `src/CoreEntropy.jl` to 
 values agree with the Julia ones to `5e-11` on all 28 696 parameters; `tent_map.py` reuses
 `core_entropy_data.csv` when it matches the grid and recomputes it otherwise.
 
+## The pages on the web
+
+`tent_map.html` and `core_entropy.html` are static, so GitHub Pages can serve them; the only
+thing that changes is that plotly comes from `cdn.plot.ly` instead of being inlined, which takes
+the pages from 5 MB to 0.6 MB:
+
+```sh
+julia core_entropy.jl --cdn        # core_entropy.html, 0.6 MB
+python3 tent_map.py --cdn          # tent_map.html, 0.6 MB
+```
+
+`.github/workflows/pages.yml` builds both and deploys them on every push to `main`. It is kept in
+`ci/pages.yml` rather than in place because the GitHub connection this repository is pushed
+through is not allowed to create workflow files: move it there yourself once (Add file → Create
+new file → `.github/workflows/pages.yml`), and set Settings → Pages → Source to *GitHub Actions*.
+The site then lives at `https://dpthurst.github.io/core-entropy-app/`, with the full page at
+`index.html` and the entropy-only page at `entropy.html`.
+
 ## A native window
 
 `tent_map_app.py` is the supported one, and carries what the HTML page does: on the left
