@@ -38,13 +38,14 @@ show; with A off it goes back to the usual reading, argument across and value up
 identity f_s(A(x)) = A(g(x)) can be read off the picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
 height to the tent graph, which meets it at f_s(A(x)) -- the value A takes at the image
 point.  In the cobweb view there is one such connection at each of the first few points of
-the orbit, and the length of the cobweb is set by its own slider (2..200) or by the [ and ]
-keys, which step it by one -- the slider spans those 198 values in about 130 pixels, so near
+the orbit, and the length of the cobweb is set by its own slider (2..1000) or by the [ and ]
+keys, which step it by one -- the slider spans a thousand values in about 130 pixels, so near
 its low end a mouse step is a fraction of a pixel and the keys are the only way to land on 2
 or 3.  Showing a connection at every point would be a mess, and a few is enough to see A
 carrying the g-orbit onto the f_s-orbit.  In
-the iterates view there is a single one, at a generic x, and it is drawn only at n = 1,
-where the panels really do show g and f_s; nothing is drawn with A switched off.  Two
+the iterates view there is a single one, at a generic x, and it is drawn at every n, since
+f_s^n(A(x)) = A(g^n(x)) follows from the functional equation and the same two segments then
+run against the graphs of g^n and f_s^n.  Nothing is drawn with A switched off.  Two
 checkboxes switch the iterates view (on at start, at n = 1) and the A panel (off at
 start); with A off a slider event costs 48 ms rather than 60.  A red vertical line marks
 the current lambda.
@@ -86,7 +87,7 @@ LAM_LO, LAM_HI = 2.0, 4.0
 BIF_NLAM, BIF_NROWS, BIF_TRANSIENT, BIF_KEEP = 800, 420, 1200, 700
 BIF_GAMMA, BIF_FLOOR = 0.35, 0.6  # ink = floor + (1-floor)*(count/top)**gamma
 A_STEPS, A_POINTS = 64, 241
-COBWEB_STEPS, ORBIT_DOTS = 60, 7
+COBWEB_STEPS, COBWEB_MAX, ORBIT_DOTS = 60, 1000, 7
 Y_PIN = (-0.02, 0.70)    # the entropy axis does not move: only lambda is zoomed
 
 
@@ -243,9 +244,9 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_g = fig.add_axes([0.525, 0.165, 0.200, 0.270])
     ax_A = fig.add_axes([0.525, 0.520, 0.200, 0.270])
     ax_t = fig.add_axes([0.775, 0.520, 0.200, 0.270])
-    ax_cb = fig.add_axes([0.775, 0.395, 0.130, 0.060])
-    ax_n = fig.add_axes([0.775, 0.315, 0.130, 0.025])
-    ax_w = fig.add_axes([0.775, 0.245, 0.130, 0.025])
+    ax_cb = fig.add_axes([0.775, 0.335, 0.150, 0.058])
+    ax_n = fig.add_axes([0.775, 0.255, 0.130, 0.025])
+    ax_w = fig.add_axes([0.775, 0.185, 0.130, 0.025])
 
     # ---- the bifurcation diagram, behind the entropy curve
     lo, hi = xlim
@@ -305,21 +306,18 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         a.set_aspect("equal", adjustable="box")
         a.tick_params(labelsize=8)
     ax_g.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
-    ax_g.axvline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
     ax_g.set_xlabel(r"$x$", fontsize=9)
     gline, = ax_g.plot(xs, lam0 * xs * (1.0 - xs), color=BLUE, lw=1.4, zorder=3)
-    cw_g, = ax_g.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
+    cw_g, = ax_g.plot([], [], color=ORANGE, lw=0.35, alpha=0.85, zorder=4)
     ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
     ax_g.set_title(r"$g_\lambda$", fontsize=9, pad=3)
 
     ax_t.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
-    tline_h, = ax_t.plot([0.5, 0.5], [0.0, 1.02], color="0.87", lw=0.7, ls="--", zorder=1)
-    tline_v, = ax_t.plot([0.0, 1.0], [0.5, 0.5], color="0.87", lw=0.7, ls="--", zorder=1)
     ax_t.set_xlabel(r"$f_s(y)$", fontsize=9)
     ax_t.set_ylabel(r"$y$", fontsize=9)
     ax_t.set_title(r"$f_s$, argument up", fontsize=9, pad=3)
     tline, = ax_t.plot(tent(xs, np.exp(h0)), xs, color=GREEN, lw=1.4, zorder=3)
-    cw_t, = ax_t.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
+    cw_t, = ax_t.plot([], [], color=ORANGE, lw=0.35, alpha=0.85, zorder=4)
 
     # ---- the semi-conjugacy A
     xg = np.linspace(0.0, 1.0, 241)
@@ -361,10 +359,15 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             for art in sq["arts"]:
                 art.set_visible(False)
 
-    def place_square(k, x0, lam):
-        """Put one connection at x0: up from g, across from A to the tent graph."""
+    def place_square(k, x0, lam, n=1):
+        """Put one connection at x0: up from g^n, across from A to the graph of f_s^n.
+
+        The same two segments serve every n, since f_s^n(A(x)) = A(g^n(x)).
+        """
         s, sq = cur["s"], squares[k]
-        gx = lam * x0 * (1.0 - x0)
+        gx = x0
+        for _ in range(n):
+            gx = lam * gx * (1.0 - gx)
         ax_ = float(semiconjugacy([x0], lam, s)[0])
         fx = float(tent(ax_, s))
         sq["pg"].set_data([x0], [gx])
@@ -388,12 +391,12 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     sl.drawon = False
 
     cb = CheckButtons(ax_cb, ["iterates", "A"], [True, False])
-    ax_cb.set_title("view", fontsize=8)
+    ax_cb.set_title("view options", fontsize=8.5, fontweight="bold", loc="left", pad=4)
     for lab in cb.labels:
         lab.set_fontsize(8)
     ax_A.set_visible(cb.get_status()[1])   # the checkbox's opening state is the panel's
 
-    sl_w = Slider(ax_w, "steps  ([ ])", 2, 200, valinit=COBWEB_STEPS, valstep=1,
+    sl_w = Slider(ax_w, "steps  ([ ])", 2, COBWEB_MAX, valinit=COBWEB_STEPS, valstep=1,
                   valfmt="%d", color=ORANGE, handle_style={"size": 0.86})
     sl_w.label.set_fontsize(8)
     sl_w.valtext.set_fontsize(8)
@@ -464,10 +467,6 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         else:
             tline.set_data(xs, tl)
 
-        # the middle line: y = 1/2 is a vertical position when the argument is up
-        tline_v.set_visible(transposed)
-        tline_h.set_visible(not transposed)
-
         f = (r"$f_s^{%d}(y)$" % n) if iterates else r"$f_s(y)$"
         ax_t.set_xlabel(f if transposed else r"$y$", fontsize=9)
         ax_t.set_ylabel(r"$y$" if transposed else f, fontsize=9)
@@ -496,15 +495,16 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         # cobweb view at a few points of the orbit, in the iterates view at n = 1 only.
         hide_squares()
         cobweb_view = not cb.get_status()[0]
-        plain = cobweb_view or int(round(sl_n.val)) == 1
+        # valid for every n, not only n = 1: f_s^n(A(x)) = A(g^n(x)) follows from the
+        # functional equation, so the same two segments work against g^n and f_s^n
         shown = []
-        if plain and ax_A.get_visible():
+        if ax_A.get_visible():
             if cobweb_view:
                 steps = int(round(sl_w.val))
                 for k in range(min(NSQ, steps - 1)):
                     shown.append(place_square(k, 0.5 if k == 0 else _orbit[k], lam))
             else:
-                shown.append(place_square(0, X0, lam))
+                shown.append(place_square(0, X0, lam, int(round(sl_n.val))))
         if ax_A.get_visible():
             o = critical_orbit(lam)
             a = semiconjugacy(xg, lam, s)
@@ -605,7 +605,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         sl_n.set_val(max(1, min(10, int(round(sl_n.val)) + delta)))
 
     def step_steps(delta):
-        """Move the cobweb length by one.  The slider spans 2..200 in about 130 px, so
+        """Move the cobweb length by one.  The slider spans 2..1000 in about 130 px, so
         a step near its low end is a fraction of a pixel: the keys are the only way to
         land on 2 or 3."""
         sl_w.set_val(max(sl_w.valmin, min(sl_w.valmax, int(round(sl_w.val)) + delta)))

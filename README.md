@@ -220,9 +220,11 @@ reading, argument across and value up — so `f_s(A(x)) = A(g_λ(x))` can be rea
 `(x, A(x))`, then a horizontal one at that height to the tent graph, which meets it at
 `f_s(A(x))`, the value `A` takes at the image point. In the cobweb view there is one such
 connection at each of the first few orbit points — A carrying the `g_λ`-orbit onto the `f_s`-orbit
-— and the length of the cobweb has its own slider (2–200, or the `[` and `]` keys to step it by
-one — the slider spans 198 values in about 130 pixels, so the keys are how you land on 2 or 3); in the iterates view there is a single one, at
-a generic `x`, drawn only at `n = 1` where the panels really show `g_λ` and `f_s`. Nothing is drawn
+— and the length of the cobweb has its own slider (2–1000, or the `[` and `]` keys to step it by
+one — the slider spans a thousand values in about 130 pixels, so the keys are how you land on 2 or
+3); in the iterates view there is a single one, at a generic `x`, drawn at every `n`, since
+`f_s^n(A(x)) = A(g^n(x))` follows from the functional equation and the same segments then run
+against the graphs of `g^n` and `f_s^n`. Nothing is drawn
 with `A` off, and the residual `max|f_s(A(x)) − A(g_λ(x))|` is printed under the slider. Two checkboxes switch the iterates view (on at start, at `n = 1`) and the `A` panel (off
 at start); with `A` off a slider event costs 48 ms rather than 60. Drag the slider to move `λ`,
 and **zoom or pan the λ axis** — both act on λ alone: the toolbar's rectangle applies only its
