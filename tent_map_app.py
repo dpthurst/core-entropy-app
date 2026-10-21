@@ -33,8 +33,9 @@ the n-th iterates themselves, titled with their lap counts, which the two maps s
 (the + and - keys, or the up and down arrows, step n one at a time);
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
 points on its graph.  A sits directly above g and the tent map sits to its right with its
-argument on the vertical axis, so the identity f_s(A(x)) = A(g(x)) can be read off the
-picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
+argument on the vertical axis -- the one panel that is so drawn, and only while A is on
+show; with A off it goes back to the usual reading, argument across and value up -- so the
+identity f_s(A(x)) = A(g(x)) can be read off the picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
 height to the tent graph, which meets it at f_s(A(x)) -- the value A takes at the image
 point.  In the cobweb view there is one such connection at each of the first few points of
 the orbit, and the length of the cobweb is set by its own slider (2..200) or by the [ and ]
@@ -312,7 +313,8 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_g.set_title(r"$g_\lambda$", fontsize=9, pad=3)
 
     ax_t.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
-    ax_t.axhline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
+    tline_h, = ax_t.plot([0.5, 0.5], [0.0, 1.02], color="0.87", lw=0.7, ls="--", zorder=1)
+    tline_v, = ax_t.plot([0.0, 1.0], [0.5, 0.5], color="0.87", lw=0.7, ls="--", zorder=1)
     ax_t.set_xlabel(r"$f_s(y)$", fontsize=9)
     ax_t.set_ylabel(r"$y$", fontsize=9)
     ax_t.set_title(r"$f_s$, argument up", fontsize=9, pad=3)
@@ -426,38 +428,60 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         return lam, h, "%.0f ms" % (1e3 * (time.perf_counter() - t0))
 
     def draw_maps():
-        """The two map panels: cobweb of the critical orbit, or the n-th iterates."""
+        """The two map panels.
+
+        The f_s panel has two orientations.  With A on show its argument goes on the
+        vertical axis, which is what lets a horizontal line at height A(x) meet the graph
+        at f_s(A(x)) and so makes the commuting square readable; with A off there is no
+        such need, so it goes back to the usual reading, argument across and value up.
+        The axis labels follow whichever is in use, as do the middle line and the cobweb.
+        """
         lam, s = cur["lam"], cur["s"]
         n = int(round(sl_n.val))
-        if cb.get_status()[0]:
+        iterates = cb.get_status()[0]
+        transposed = ax_A.get_visible()
+
+        if iterates:
             gl = lam * xs * (1.0 - xs)
             for _ in range(n - 1):
                 gl = lam * gl * (1.0 - gl)
             tl = tent(xs, s)
             for _ in range(n - 1):
                 tl = tent(tl, s)
-            gline.set_ydata(gl)
-            tline.set_xdata(tl)          # the tent panel has its argument on y
             cw_g.set_data([], [])
             cw_t.set_data([], [])
+        else:
+            gl = lam * xs * (1.0 - xs)
+            tl = tent(xs, s)
+            steps = int(round(sl_w.val))
+            cw_g.set_data(*cobweb(lambda y: lam * y * (1.0 - y), 0.5, steps))
+            tx, ty = cobweb(lambda y: tent(y, s), 0.5, steps)
+            cw_t.set_data((ty, tx) if transposed else (tx, ty))
+
+        gline.set_ydata(gl)
+        if transposed:
+            tline.set_data(tl, xs)
+        else:
+            tline.set_data(xs, tl)
+
+        # the middle line: y = 1/2 is a vertical position when the argument is up
+        tline_v.set_visible(transposed)
+        tline_h.set_visible(not transposed)
+
+        f = (r"$f_s^{%d}(y)$" % n) if iterates else r"$f_s(y)$"
+        ax_t.set_xlabel(f if transposed else r"$y$", fontsize=9)
+        ax_t.set_ylabel(r"$y$" if transposed else f, fontsize=9)
+
+        if iterates:
             lg = lap_count(lam, s, n, "g")
             lt = lap_count(lam, s, n, "t")
             ax_g.set_title(r"$g_\lambda^{%d}$, $\ell_{%d}=%d$" % (n, n, lg), fontsize=9)
             ax_t.set_title(r"$f_s^{%d}$, $\ell_{%d}=%d$" % (n, n, lt), fontsize=9)
             ax_g.set_ylabel(r"$g_\lambda^{%d}(x)$" % n, fontsize=9)
-            ax_t.set_ylabel(r"$f_s^{%d}(y)$" % n, fontsize=9)
         else:
-            gline.set_ydata(lam * xs * (1.0 - xs))
-            tline.set_xdata(tent(xs, s))     # argument on y, value across
-            steps = int(round(sl_w.val))
-            cx, cy = cobweb(lambda y: lam * y * (1.0 - y), 0.5, steps)
-            cw_g.set_data(cx, cy)
-            tx, ty = cobweb(lambda y: tent(y, s), 0.5, steps)
-            cw_t.set_data(ty, tx)            # transposed with the panel
             ax_g.set_title(r"$g_\lambda$", fontsize=9)
-            ax_t.set_title(r"$f_s$, argument up", fontsize=9)
+            ax_t.set_title(r"$f_s$, argument up" if transposed else r"$f_s$", fontsize=9)
             ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
-            ax_t.set_ylabel(r"$f_s(y)$", fontsize=9)
 
     def update(_=None):
         lam, h, timing = h_of(float(sl.val))
