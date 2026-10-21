@@ -32,7 +32,12 @@ cobweb of the critical orbit -- or, with the "iterates" toggle and its n, the gr
 the n-th iterates themselves, titled with their lap counts, which the two maps share
 (the + and - keys, or the up and down arrows, step n one at a time);
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
-points on its graph and the residual max|f_s(A(x)) - A(g(x))| in the readout.  Two
+points on its graph.  A sits directly above g and the tent map sits to its right with its
+argument on the vertical axis, so the identity f_s(A(x)) = A(g(x)) can be read off the
+picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
+height to the tent graph, which meets it at f_s(A(x)) -- the value A takes at the image
+point.  The two numbers are in the readout, with the residual, and the segments are hidden
+when the panels show something other than g and f_s themselves (n > 1, or A off).  Two
 checkboxes switch the iterates view (on at start, at n = 1) and the A panel (off at
 start); with A off a slider event costs 48 ms rather than 60.  A red vertical line marks
 the current lambda.
@@ -224,11 +229,15 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_h = fig.add_axes([0.045, 0.175, 0.415, 0.745])
     ax_b = ax_h.twinx()
     ax_s = fig.add_axes([0.045, 0.085, 0.415, 0.026])
-    ax_g = fig.add_axes([0.525, 0.600, 0.200, 0.290])
-    ax_t = fig.add_axes([0.775, 0.600, 0.200, 0.290])
-    ax_A = fig.add_axes([0.525, 0.180, 0.200, 0.290])
-    ax_cb = fig.add_axes([0.775, 0.395, 0.130, 0.055])
-    ax_n = fig.add_axes([0.775, 0.300, 0.130, 0.025])
+    # The three right-hand panels are placed so that the commuting square can be drawn
+    # with straight segments: A directly above g (so a vertical line is the same x), and
+    # the tent map to A's right with its argument on the vertical axis (so a horizontal
+    # line at height A(x) meets the graph at f_s(A(x)) = A(g(x))).
+    ax_g = fig.add_axes([0.525, 0.170, 0.200, 0.290])
+    ax_A = fig.add_axes([0.525, 0.495, 0.200, 0.290])
+    ax_t = fig.add_axes([0.775, 0.495, 0.200, 0.290])
+    ax_cb = fig.add_axes([0.775, 0.330, 0.130, 0.060])
+    ax_n = fig.add_axes([0.775, 0.230, 0.130, 0.025])
 
     # ---- the bifurcation diagram, behind the entropy curve
     lo, hi = xlim
@@ -279,35 +288,75 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     vline = ax_h.axvline(lam0, color=RED, lw=0.9, alpha=0.75, zorder=7)
     mark, = ax_h.plot([lam0], [h0], "o", ms=7, mfc=RED, mec="white", mew=1.0, zorder=8)
 
-    # ---- g_lambda and the tent map, with cobwebs or iterates
+    # ---- g_lambda below, and the tent map to the right with its argument on the
+    #      vertical axis, so the two panels share a vertical scale with A
     xs = np.linspace(0.0, 1.0, 1201)
-    for a in (ax_g, ax_t):
-        a.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
-        a.axvline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
+    for a in (ax_g, ax_A, ax_t):
         a.set_xlim(0.0, 1.0)
         a.set_ylim(0.0, 1.02)
         a.set_aspect("equal", adjustable="box")
-        a.set_xlabel(r"$x$", fontsize=9)
         a.tick_params(labelsize=8)
+    ax_g.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
+    ax_g.axvline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
+    ax_g.set_xlabel(r"$x$", fontsize=9)
     gline, = ax_g.plot(xs, lam0 * xs * (1.0 - xs), color=BLUE, lw=1.4, zorder=3)
-    tline, = ax_t.plot(xs, tent(xs, np.exp(h0)), color=GREEN, lw=1.4, zorder=3)
     cw_g, = ax_g.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
-    cw_t, = ax_t.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
     ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
-    ax_t.set_ylabel(r"$f_s(y)$", fontsize=9)
+
+    ax_t.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
+    ax_t.axhline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
+    ax_t.set_xlabel(r"$f_s(y)$", fontsize=9)
+    ax_t.set_ylabel(r"$y$", fontsize=9)
+    tline, = ax_t.plot(tent(xs, np.exp(h0)), xs, color=GREEN, lw=1.4, zorder=3)
+    cw_t, = ax_t.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
 
     # ---- the semi-conjugacy A
     xg = np.linspace(0.0, 1.0, 241)
     aline, = ax_A.plot([], [], color="#7a4b16", lw=1.4, zorder=3)
     adots, = ax_A.plot([], [], "o", ms=3.2, mfc=ORANGE, mec="white", mew=0.4, zorder=4)
     ax_A.plot([0.0, 1.0], [0.0, 1.0], color="0.85", lw=0.7, ls=":", zorder=1)
-    ax_A.set_xlim(0.0, 1.0)
-    ax_A.set_ylim(0.0, 1.02)
-    ax_A.set_aspect("equal", adjustable="box")
     ax_A.set_xlabel(r"$x$", fontsize=9)
     ax_A.set_ylabel(r"$A(x)$", fontsize=9)
-    ax_A.tick_params(labelsize=8)
-    ax_A.set_title(r"$A$: $f_s\circ A=A\circ g_\lambda$", fontsize=9)
+    ax_A.set_title(r"$A$", fontsize=9)
+
+    # ---- the commuting square: up from g, across to the tent map
+    # For any x, A(g(x)) = f_s(A(x)).  The vertical segment is a single x read off two
+    # graphs; the horizontal one is the value A(x) fed to f_s, and where it meets the
+    # tent graph -- drawn with its argument up -- is f_s(A(x)), the same number as A at
+    # the image point.
+    from matplotlib.patches import ConnectionPatch
+
+    # a generic x, not the critical point: at x = 1/2 the horizontal would land on the
+    # tent's peak itself, which reads as a curiosity rather than the identity
+    X0 = 0.3
+    up = ConnectionPatch((X0, 0.0), (X0, 0.0), coordsA="data", axesA=ax_g,
+                         coordsB="data", axesB=ax_A, color=RED, lw=1.0, zorder=6)
+    across = ConnectionPatch((0.0, 0.0), (0.0, 0.0), coordsA="data", axesA=ax_A,
+                             coordsB="data", axesB=ax_t, color=RED, lw=1.0, zorder=6)
+    for c in (up, across):
+        fig.add_artist(c)
+    pt_g, = ax_g.plot([X0], [0.0], "o", ms=4.5, mfc=RED, mec="white", mew=0.6, zorder=7)
+    pt_A, = ax_A.plot([X0], [0.0], "o", ms=4.5, mfc=RED, mec="white", mew=0.6, zorder=7)
+    pt_t, = ax_t.plot([0.0], [0.0], "o", ms=4.5, mfc=RED, mec="white", mew=0.6, zorder=7)
+    ax_g.axvline(X0, color=RED, lw=0.7, alpha=0.45, zorder=2)
+
+    def place_square(lam, ax_drawn):
+        """Put the two segments where the identity says they belong, at x = X0."""
+        s = cur["s"]
+        gx = lam * X0 * (1.0 - X0)
+        ax_ = float(semiconjugacy([X0], lam, s)[0])
+        fx = float(tent(ax_, s))
+        pt_g.set_data([X0], [gx])
+        pt_A.set_data([X0], [ax_])
+        pt_t.set_data([fx], [ax_])
+        up.xy1 = (X0, gx)
+        up.xy2 = (X0, ax_)
+        across.xy1 = (X0, ax_)
+        across.xy2 = (fx, ax_)
+        live = ax_drawn and ax_A.get_visible()
+        for art in (up, across, pt_g, pt_A, pt_t):
+            art.set_visible(live)
+        return gx, ax_, fx
 
     # ---- the widgets
     sl = Slider(ax_s, r"$\lambda$", LAM_LO, LAM_HI, valinit=lam0, valstep=0.0005,
@@ -379,8 +428,8 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             cw_g.set_data(cx, cy)
             tx, ty = cobweb(lambda y: tent(y, s), 0.5, 60)
             cw_t.set_data(tx, ty)
-            ax_g.set_title(r"$g_\lambda$: critical orbit", fontsize=9)
-            ax_t.set_title(r"$f_s$: the same orbit", fontsize=9)
+            ax_g.set_title(r"$g_\lambda$", fontsize=9)
+            ax_t.set_title(r"$f_s$, argument up", fontsize=9)
             ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
             ax_t.set_ylabel(r"$f_s(y)$", fontsize=9)
 
@@ -392,13 +441,16 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         mark.set_data([lam], [h])
         vline.set_xdata([lam, lam])
         draw_maps()
+        plain = not cb.get_status()[0] or int(round(sl_n.val)) == 1
+        gx, ax_, fx = place_square(lam, plain)
         if ax_A.get_visible():
             o = critical_orbit(lam)
             a = semiconjugacy(xg, lam, s)
             aline.set_data(xg, a)
             adots.set_data(o, semiconjugacy(o, lam, s))
             err = np.abs(semiconjugacy(lam * xg * (1.0 - xg), lam, s) - tent(a, s)).max()
-            second = f"max |f_s(A(x)) - A(g_lambda(x))| = {err:.1e}  over {xg.size} points"
+            second = (f"x = {X0}:  A(x) = {ax_:.6f}  f_s(A(x)) = {fx:.6f}  "
+                      f"residual {err:.1e} over {xg.size} points")
         else:
             second = "A hidden"
         info.set_text(f"lambda = {lam:.5f}    c = {c:.6f}      "
@@ -498,8 +550,9 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     cb.on_clicked(on_check)
     fig.canvas.mpl_connect("key_press_event", on_key)
-    sl_n.on_changed(lambda _v: (draw_maps(), fig.canvas.draw_idle())
-                    if cb.get_status()[0] else None)
+    # a change of n changes whether the commuting square applies, so update() rather
+    # than just draw_maps()
+    sl_n.on_changed(lambda _v: update() if cb.get_status()[0] else None)
 
     sl.on_changed(update)
     set_slider_range(lo, hi)
