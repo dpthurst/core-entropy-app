@@ -565,7 +565,11 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             aline.set_data(xg, a)
             adots.set_data(o, semiconjugacy(o, lam, s))
             err = np.abs(semiconjugacy(lam * xg * (1.0 - xg), lam, s) - tent(a, s)).max()
-            if shown:
+            ax_A.set_title(r"$A$" if h > 1e-12 else r"$A$, with $h=0$", fontsize=9, pad=3)
+            if h <= 1e-12:
+                second = ("h = 0 here, so f_s has slope 1 and A is constant "
+                          f"(residual {err:.1e})")
+            elif shown:
                 gx0, ax0, fx0 = shown[0]
                 # name the iterate the panels are actually showing
                 k = int(round(sl_n.val)) if cobweb_view is False else 1
@@ -681,6 +685,10 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             step_steps(+1)
         elif event.key in ("[", "shift+down"):
             step_steps(-1)
+        elif event.key == "0":
+            tb = getattr(fig.canvas, "toolbar", None)
+            if tb is not None and hasattr(tb, "home"):
+                tb.home()
 
     def on_check(_label):
         ax_A.set_visible(cb.get_status()[1])
