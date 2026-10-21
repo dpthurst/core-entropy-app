@@ -223,45 +223,33 @@ def lap_count(lam, s, n, which="g"):
 
 
 def tent_itinerary(s, n=ITIN_LEN, tol=1e-6):
-    """The itinerary of the tent critical point, exactly where the orbit is periodic.
+    """The itinerary of the tent critical point, and its period where it has one.
+
+    Returns (text, p).  p is the period when the critical point is periodic -- at s = tau
+    and, more generally, on every hyperbolic component, where it is the period of the
+    component's centre -- and 0 otherwise.  When p > 0 the block is repeated to n symbols,
+    so every '*' in the text is exact rather than a numerical near-return.
 
     At s = tau the critical point has period 3 -- f(1/2) = tau/2, f(tau/2) = 1/(2tau),
-    f(1/(2tau)) = 1/2, using tau^2 = tau + 1 -- so the sequence is R L * repeated.  On
-    any hyperbolic component the tent critical point is periodic with the period of the
-    component's centre, and the same extension is applied; see below.
-    """
-    s = float(s)
-    p = tent_period(s, n=n, tol=tol)
-    if p == 3 and abs(s - TAU) < 1e-12:
-        return ("RL*" * (n // 3 + 1))[:n]
-    raw = itinerary(lambda y: tent(y, s), n=n, tol=tol)
-    # The same happens on every hyperbolic component: the tent critical point is then
-    # periodic, with the period of the component's centre, so its itinerary is one block
-    # repeated and every '*' in it is exact.  The numerical orbit shows the block several
-    # times before the error in s is amplified past it, so a repetition that ends in a
-    # return is taken as the true period and extended; a generic parameter has no such
-    # repetition and is left alone.
-    if p:
-        block = raw[:p]
-        return (block * (n // p + 1))[:n]
-    return raw
+    f(1/(2tau)) = 1/2, using tau^2 = tau + 1.  Iterating the float instead would not do:
+    s = exp(h) carries the grid's error of 4e-13, and the offset at the k-th return grows
+    like s^{kp}, so the returns are lost after a dozen of them.  The same holds on every
+    hyperbolic component, and the numerical orbit shows the block several times before the
+    error is amplified past it, so a repetition of the first p symbols that ends in a
+    return is taken as the true period; a generic parameter has no such repetition and is
+    left alone.
 
-
-def tent_period(s, n=ITIN_LEN, tol=1e-6):
-    """The period of the tent critical orbit if it is periodic, else 0.
-
-    A repetition of the first p symbols that ends in a return is taken as the true period;
-    see tent_itinerary.
+    One orbit of n steps is computed, and the period is read off it.
     """
     s = float(s)
     if abs(s - TAU) < 1e-12:
-        return 3
+        return ("RL*" * (n // 3 + 1))[:n], 3
     raw = itinerary(lambda y: tent(y, s), n=n, tol=tol)
     for p in range(2, n // 3 + 1):
         block = raw[:p]
         if block.endswith("*") and raw[:3 * p] == block * 3:
-            return p
-    return 0
+            return (block * (n // p + 1))[:n], p
+    return raw, 0
 
 
 def itinerary(f, x0=0.5, n=ITIN_LEN, tol=1e-6):
@@ -654,8 +642,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
                       + (f"    [{timing}]" if exact else "")
                       + "\n" + second)
         it_g = itinerary(lambda y: lam * y * (1.0 - y))
-        it_t = tent_itinerary(s)
-        p_t = tent_period(s)
+        it_t, p_t = tent_itinerary(s)
         orbits.set_text(f"g_λ: {it_g}\nf_s: {it_t}"
                         + (f"   exact, period {p_t}" if p_t else "")
                         + ("" if it_g == it_t else "\nthey differ"))
