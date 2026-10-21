@@ -37,8 +37,11 @@ argument on the vertical axis, so the identity f_s(A(x)) = A(g(x)) can be read o
 picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
 height to the tent graph, which meets it at f_s(A(x)) -- the value A takes at the image
 point.  In the cobweb view there is one such connection at each of the first few points of
-the orbit, and the length of the cobweb is set by its own slider; showing one per point
-would be a mess, and a few is enough to see A carrying the g-orbit onto the f_s-orbit.  In
+the orbit, and the length of the cobweb is set by its own slider (2..200) or by the [ and ]
+keys, which step it by one -- the slider spans those 198 values in about 130 pixels, so near
+its low end a mouse step is a fraction of a pixel and the keys are the only way to land on 2
+or 3.  Showing a connection at every point would be a mess, and a few is enough to see A
+carrying the g-orbit onto the f_s-orbit.  In
 the iterates view there is a single one, at a generic x, and it is drawn only at n = 1,
 where the panels really do show g and f_s; nothing is drawn with A switched off.  Two
 checkboxes switch the iterates view (on at start, at n = 1) and the A panel (off at
@@ -388,7 +391,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         lab.set_fontsize(8)
     ax_A.set_visible(cb.get_status()[1])   # the checkbox's opening state is the panel's
 
-    sl_w = Slider(ax_w, "cobweb steps", 5, 200, valinit=COBWEB_STEPS, valstep=1,
+    sl_w = Slider(ax_w, "steps  ([ ])", 2, 200, valinit=COBWEB_STEPS, valstep=1,
                   valfmt="%d", color=ORANGE, handle_style={"size": 0.86})
     sl_w.label.set_fontsize(8)
     sl_w.valtext.set_fontsize(8)
@@ -577,11 +580,21 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         """Move n by one, clamped to 1..10; the slider follows."""
         sl_n.set_val(max(1, min(10, int(round(sl_n.val)) + delta)))
 
+    def step_steps(delta):
+        """Move the cobweb length by one.  The slider spans 2..200 in about 130 px, so
+        a step near its low end is a fraction of a pixel: the keys are the only way to
+        land on 2 or 3."""
+        sl_w.set_val(max(sl_w.valmin, min(sl_w.valmax, int(round(sl_w.val)) + delta)))
+
     def on_key(event):
         if event.key in ("+", "=", "up"):
             step_n(+1)
         elif event.key in ("-", "_", "down"):
             step_n(-1)
+        elif event.key in ("]", "shift+up"):
+            step_steps(+1)
+        elif event.key in ("[", "shift+down"):
+            step_steps(-1)
 
     def on_check(_label):
         ax_A.set_visible(cb.get_status()[1])
