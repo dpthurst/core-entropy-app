@@ -137,7 +137,7 @@ because the critical point is fixed ($c=0$) and the map is conjugate to $z\mapst
 an interval; $h(1+\sqrt5)=0$, the centre of the period-$2$ component, the basilica ($c=-1$),
 where the
 critical point has period $2$; $h=0$ on the whole period-doubling cascade (the sequence of
-period doublings $2,4,8,\dots$) up to the Feigenbaum parameter $\lambda_\infty\approx3.5699457$,
+period doublings $2,4,8,\dots$) up to the Feigenbaum parameter $\lambda_\infty\approx3.5699457$ \cite{Feig},
 where an attracting cycle always
 captures the critical orbit; and $h(4)=\log2$, the Chebyshev case $c=-2$ (the map
 $z\mapsto z^2-2$), where $g_4$ is
@@ -532,7 +532,7 @@ $\Lambda(g_\lambda^n(J))=0$ for every $n\ge0$, because $g_\lambda^n(J)$ is a uni
 on which $g_\lambda^n$ is monotone, each of which is collapsed by Lemma~7.3 of \cite{MT}.  The
 question is therefore which intervals can be collapsed.
 
-An interval $J$ is a \emph{homterval} if every iterate $g_\lambda^n$ is monotone on it,
+An interval $J$ is a \emph{homterval} \cite{dMvS} if every iterate $g_\lambda^n$ is monotone on it,
 equivalently if no iterate carries a point of $J$ to the critical point $\tfrac12$.  All points
 of a homterval have the same itinerary, so $A$ is constant on it.  For the quadratic family the
 homtervals are exactly the intervals in the basins of the attracting and neutral (parabolic)
@@ -561,6 +561,16 @@ countable set of slopes, namely the growth numbers of the periodic and preperiod
 (eventually periodic) kneading
 sequences; on the corresponding level sets of $h$ the collapse \eqref{eq:ident} therefore takes
 place unless $g_\lambda$'s critical orbit is preperiodic with exactly the same pattern.
+
+Milnor and Thurston prove only that $A$ is continuous, monotone and onto, and they remark that
+it need not be a homeomorphism: a whole lap may be collapsed to a point (their Figure~7.5,
+where the right half of the interval is lost).  Nor is it unique: \S7.8 of \cite{MT} uses a
+partial kneading determinant to build a second semiconjugacy from the same $f$, onto a
+piecewise-linear map of smaller slope, obtained by collapsing more.  They do not
+characterise the case in which $A$ is injective.  The criterion below is elementary given the
+standard facts about homtervals and wandering intervals, and we have not found it stated in
+\cite{MT}; it is recorded here because it is what decides whether the lap counts of
+\S\ref{sec:validation} are shared by the two maps.
 
 \begin{proposition}\label{prop:conj}
 For $s=e^{h(\lambda)}>1$ the following are equivalent:
@@ -937,6 +947,8 @@ Ergebnisse der Mathematik 25, Springer, 1993.
 \emph{Comm. Math. Phys.} 70 (1979), 133--160.
 \bibitem{Sing} D.~Singer, Stable orbits and bifurcation of maps of the interval,
 \emph{SIAM J. Appl. Math.} 35 (1978), 260--267.
+\bibitem{Feig} M.~J. Feigenbaum, Quantitative universality for a class of nonlinear
+transformations, \emph{J. Statist. Phys.} 19 (1978), 25--52.
 \bibitem{MT} J.~Milnor and W.~Thurston, On iterated maps of the interval, in
 \emph{Dynamical Systems} (College Park, 1986--87), Lecture Notes in Math. 1342,
 Springer, 1988, 465--563.
