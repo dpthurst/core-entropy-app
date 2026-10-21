@@ -92,12 +92,16 @@ PAGE = r"""<!DOCTYPE html>
 <p class="sub">
   Top: the core entropy <code>h(λ)</code> of <code>g_λ(x) = λx(1−x)</code>, computed from the
   Milnor–Thurston kneading determinant, with the bifurcation diagram of the same parameters
-  behind it as a greyscale density (read on the right-hand axis).  Below: the cobweb of the
-  critical orbit for <code>g_λ</code> and for the tent map <code>f_s</code> of slope
-  <code>s = e^{h(λ)} = 1/t₀</code>, and the map <code>A</code> of Theorem 7.4 of
-  Milnor–Thurston, which satisfies <code>f_s(A(x)) = A(g_λ(x))</code> — <code>g_λ</code> is
-  topologically semi-conjugate to the piecewise-linear model <code>f_s</code>.  The arrow
-  does not reverse, and <code>A</code> need not be injective.  Drag the slider.
+  behind it as a greyscale density (read on the right-hand axis).  The dashed line is the
+  Feigenbaum parameter, the red one the current <code>λ</code>; zoom and pan act on
+  <code>λ</code> alone.  Below: the cobweb of the critical orbit for <code>g_λ</code> and for
+  the tent map <code>f_s</code> of slope <code>s = e^{h(λ)} = 1/t₀</code> — or, with
+  <i>plot the iterates</i>, the graphs of <code>g_λ^n</code> and <code>f_s^n</code> for
+  <code>n</code> up to 20, titled with their lap counts — and the map <code>A</code> of
+  Theorem 7.4 of Milnor–Thurston, which satisfies <code>f_s(A(x)) = A(g_λ(x))</code>: the
+  itinerary of <code>x</code>, read through <code>f_s</code>'s inverse branches, lands on the
+  itinerary of <code>g_λ(x)</code> read the same way.  The arrow does not reverse, and
+  <code>A</code> need not be injective.
 </p>
 
 <div id="entropy"></div>
