@@ -210,7 +210,17 @@ function idxOf(lam){
   return (lam - LAM[lo] <= LAM[hi] - lam) ? lo : hi;
 }
 const hAt = lam => H[idxOf(lam)];
-const sAt = lam => Math.exp(hAt(lam));
+const TAU = (1 + Math.sqrt(5))/2, LTAU = Math.log(TAU);
+// on the period-3 window h is exactly log tau, which the grid carries only to 4e-13
+const sAt = lam => Math.abs(hAt(lam) - LTAU) < 1e-9 ? TAU : Math.exp(hAt(lam));
+
+// at s = tau the tent critical point is periodic of period 3 (f(1/2) = tau/2,
+// f(tau/2) = 1/(2tau), f(1/(2tau)) = 1/2), so its itinerary is R L * repeated; iterating
+// the float loses the returns after about ten of them
+function tentItinerary(s, n, tol){
+  if (Math.abs(s - TAU) < 1e-12) return ('RL*'.repeat(Math.ceil(n/3))).slice(0, n);
+  return itinerary(y => tent(y, s), n, tol);
+}
 
 function orbit(f, n, x0){
   const xs = [x0];
@@ -505,7 +515,7 @@ let curLam = 3.7;
 function setLambda(lam){
   lam = Math.max(2, Math.min(4, lam));   // the whole family; below lambda_inf, h = 0
                                           // and the model is the tent map of slope 1
-  const h = hAt(lam), s = Math.exp(h);
+  const h = hAt(lam), s = sAt(lam);
   curLam = lam;
   Plotly.restyle(gdE, {x: [[lam]], y: [[h]]}, [2]);
 
@@ -540,23 +550,23 @@ function setLambda(lam){
   document.getElementById('v-s').textContent = s.toFixed(6);
   document.getElementById('v-err').textContent = err.toExponential(1);
   document.getElementById('v-seqL').textContent = 'g_λ : ' + itinerary(x => g(x, lam), NSYM, 1e-6);
-  document.getElementById('v-seqT').textContent = 'f_s : ' + itinerary(y => tent(y, s), NSYM, 1e-6);
+  document.getElementById('v-seqT').textContent = 'f_s : ' + tentItinerary(s, NSYM, 1e-6);
 }
 
 document.getElementById('slider').addEventListener('input', e => setLambda(parseFloat(e.target.value)));
 iterBox.addEventListener('change', e => {
   nWrap.style.display = e.target.checked ? '' : 'none';
   document.getElementById('fwrap').style.display = e.target.checked ? 'none' : '';
-  drawMaps(curLam, Math.exp(hAt(curLam)));
+  drawMaps(curLam, sAt(curLam));
 });
 function stepN(d){
   nSlider.value = Math.max(1, Math.min(20, parseInt(nSlider.value, 10) + d));
   nLabel.textContent = nSlider.value;
-  if (iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+  if (iterBox.checked) drawMaps(curLam, sAt(curLam));
 }
 nSlider.addEventListener('input', () => {
   nLabel.textContent = nSlider.value;
-  if (iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+  if (iterBox.checked) drawMaps(curLam, sAt(curLam));
 });
 document.getElementById('nminus').addEventListener('click', () => stepN(-1));
 document.getElementById('nplus').addEventListener('click', () => stepN(+1));
@@ -576,7 +586,7 @@ document.addEventListener('keydown', e => {
 });
 fillSlider.addEventListener('input', () => {
   fillLabel.textContent = fillSlider.value;
-  if (!iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+  if (!iterBox.checked) drawMaps(curLam, sAt(curLam));
 });
 document.getElementById('ashow').addEventListener('change', e => {
   document.getElementById('semi').style.display = e.target.checked ? '' : 'none';
@@ -605,7 +615,7 @@ gdE.on('plotly_relayout', () => {
 drawBifurcation();
 setLambda(parseFloat(document.getElementById('slider').value));
 syncSliderToView();
-drawMaps(curLam, Math.exp(hAt(curLam)));
+drawMaps(curLam, sAt(curLam));
 """
 
 

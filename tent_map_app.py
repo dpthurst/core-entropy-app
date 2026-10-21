@@ -40,7 +40,10 @@ and Milnor-Thurston's semi-conjugacy A, with the images of the first seven criti
 points on its graph.  Under the panels are the itineraries of the two critical orbits, 48
 symbols each, L and R for the two sides of 1/2 and * for a return to it: they agree where A is
 injective and differ where it collapses an interval, and at lambda = 3.83 they differ at once,
-since the tent map's critical point is periodic there and the logistic one is not.  A sits directly above g and the tent map sits to its right with its
+since the tent map's critical point is periodic there and the logistic one is not.  On the
+period-3 window the entropy is exactly log tau, so the tent itinerary is the exact sequence
+RL*RL*..., written down rather than iterated: s = exp(h) would carry the grid's error of 4e-13,
+and the offset at the k-th return grows like tau^{3k}.  A sits directly above g and the tent map sits to its right with its
 argument on the vertical axis -- the one panel that is so drawn, and only while A is on
 show; with A off it goes back to the usual reading, argument across and value up -- so the
 identity f_s(A(x)) = A(g(x)) can be read off the picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
@@ -96,6 +99,8 @@ BIF_NLAM, BIF_NROWS, BIF_TRANSIENT, BIF_KEEP = 800, 420, 1200, 700
 BIF_GAMMA, BIF_FLOOR = 0.35, 0.6  # ink = floor + (1-floor)*(count/top)**gamma
 A_STEPS, A_POINTS = 64, 241
 ITIN_LEN = 48               # symbols shown for each critical orbit
+TAU = (1.0 + 5.0 ** 0.5) / 2.0
+LTAU = float(np.log(TAU))   # the entropy of the whole period-3 window
 COBWEB_STEPS, COBWEB_MAX, ORBIT_DOTS = 60, 1000, 7
 N_MAX = 20               # the iterates slider goes this high
 LAP_TOL = 1e-14          # merge tolerance for preimages of 1/2, see lap_count
@@ -213,6 +218,21 @@ def lap_count(lam, s, n, which="g"):
         if len(allp) > LAP_CAP:      # near lambda = 4 the count runs to 2^n
             return None
     return len([p for p in allp if 0.0 < p < 1.0]) + 1
+
+
+def tent_itinerary(s, n=ITIN_LEN, tol=1e-6):
+    """The itinerary of the tent critical point, which is exact when s = tau.
+
+    At s = tau the critical point is periodic of period 3: f(1/2) = tau/2,
+    f(tau/2) = 1/(2tau) and f(1/(2tau)) = 1/2, using tau^2 = tau + 1.  So the sequence
+    is R L * repeated.  Iterating the float instead loses the returns after a dozen of
+    them, since the offset at the k-th return grows like tau^{3k} times the error in s,
+    and s = exp(h) carries the grid's error of 4e-13.  On the whole period-3 window the
+    entropy is exactly log tau, so the value is known rather than computed.
+    """
+    if abs(float(s) - TAU) < 1e-12:
+        return ("RL*" * (n // 3 + 1))[:n]
+    return itinerary(lambda y: tent(y, s), n=n, tol=tol)
 
 
 def itinerary(f, x0=0.5, n=ITIN_LEN, tol=1e-6):
@@ -556,7 +576,9 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     def update(_=None):
         lam, h, timing = h_of(float(sl.val))
-        s = float(np.exp(h))
+        # on the period-3 window h is exactly log tau, and the grid carries it only to
+        # 4e-13; using the exact value keeps the tent orbit from drifting off it
+        s = TAU if abs(h - LTAU) < 1e-9 else float(np.exp(h))
         cur.update(lam=lam, h=h, s=s)
         c = lam / 2.0 - lam ** 2 / 4.0
         _orbit[:] = critical_orbit(lam, NSQ + 1)
@@ -603,7 +625,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
                       + (f"    [{timing}]" if exact else "")
                       + "\n" + second)
         it_g = itinerary(lambda y: lam * y * (1.0 - y))
-        it_t = itinerary(lambda y: tent(y, s))
+        it_t = tent_itinerary(s)
         orbits.set_text(f"g_λ: {it_g}\nf_s: {it_t}"
                         + ("" if it_g == it_t else "\nthey differ"))
         fig.canvas.draw_idle()
