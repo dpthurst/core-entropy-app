@@ -88,6 +88,15 @@ PAGE = r"""<!DOCTYPE html>
                border:1px solid #c8ccd2; background:#f6f7f9; color:#222; cursor:pointer; }
   button.btn:hover { background:#eceef1; }
   button.step { padding:1px 6px; min-width:22px; }
+  /* the entropy plot's margins are l:56, r:46, so the slider lines up with its axes */
+  #lamctrl, #lamticks { padding-left:56px; padding-right:46px; }
+  #lamctrl { margin-top:2px; }
+  .help { background:#f6f8fa; border-left:3px solid #1c5f9e; border-radius:0 4px 4px 0;
+          padding:8px 14px 9px; margin:0 0 12px; max-width:1100px;
+          font-size:12.5px; line-height:1.55; color:#333; }
+  .help .hd { font-weight:600; color:#111; margin-bottom:2px; }
+  .help ul { margin:0; padding-left:18px; }
+  .help li { margin:1px 0; }
 </style>
 </head>
 <body>
@@ -105,18 +114,32 @@ PAGE = r"""<!DOCTYPE html>
   Theorem 7.4 of Milnor–Thurston, which satisfies <code>f_s(A(x)) = A(g_λ(x))</code>: the
   itinerary of <code>x</code>, read through <code>f_s</code>'s inverse branches, lands on the
   itinerary of <code>g_λ(x)</code> read the same way.  The arrow does not reverse, and
-  <code>A</code> need not be injective.  Drag the slider, or use the arrow buttons and the
-  <code>+</code> and <code>&minus;</code> keys for the number of iterates.  After zooming,
-  double-click the plot, or press the home button in its mode bar, or use <i>reset zoom</i>.
+  <code>A</code> need not be injective.
 </p>
+
+<div class="help">
+  <div class="hd">Using it</div>
+  <ul>
+    <li>Drag the <code>λ</code> slider, just under the plot, to move through the family.  Its two
+        ends are the ends of the visible range, so it always spans what you are looking at.</li>
+    <li>Zoom by dragging a box on the <code>λ</code> axis.  Only <code>λ</code> zooms: the entropy
+        axis keeps its scale, and so do the three map panels.</li>
+    <li>To come back, double-click the plot, press the home button in its mode bar, or use
+        <i>reset zoom</i>.</li>
+    <li><b>+</b> and <b>&minus;</b>, or the buttons beside the slider, or the arrow keys on the
+        slider itself, change the number of iterates, from 1 to 20.</li>
+    <li>The checkboxes below the maps switch the bifurcation diagram, the iterates view (in which
+        case the cobweb-length slider appears in its place) and the <code>A</code> panel.</li>
+  </ul>
+</div>
 
 <div id="entropy"></div>
 
-<div class="ctrl">
-  <input type="range" id="slider" min="2" max="4" step="0.0002" value="3.7">
+<div class="ctrl" id="lamctrl">
+  <input type="range" id="slider" min="2" max="4" step="0.001" value="3.7">
   <button type="button" class="btn" id="resetzoom">reset zoom</button>
 </div>
-<div class="ticks"><span>2</span><span>λ</span><span>4</span></div>
+<div class="ticks" id="lamticks"><span id="tick0">2</span><span>λ</span><span id="tick1">4</span></div>
 
 <div class="row">
   <div id="logi"></div>
@@ -385,6 +408,33 @@ const fillSteps = () => parseInt(fillSlider.value, 10);
 const cbBif = document.getElementById('bif');
 let bifTimer = null;
 
+const lamSlider = document.getElementById('slider');
+const tick0 = document.getElementById('tick0');
+const tick1 = document.getElementById('tick1');
+let syncing = false;
+
+function syncSliderToView(){
+  if (syncing) return;
+  const r = visibleRange();
+  const lo = Math.max(2, r[0]), hi = Math.min(4, r[1]);
+  if (!(hi - lo > 1e-6)) return;
+  syncing = true;
+  lamSlider.min = lo.toFixed(5);
+  lamSlider.max = hi.toFixed(5);
+  lamSlider.step = ((hi - lo)/2000).toFixed(8);
+  tick0.textContent = lo.toFixed(4);
+  tick1.textContent = hi.toFixed(4);
+  let v = parseFloat(lamSlider.value);
+  if (v < lo || v > hi){
+    v = Math.min(hi, Math.max(lo, v));
+    lamSlider.value = v;
+    syncing = false;
+    setLambda(v);            // keep lambda inside the visible range
+    return;
+  }
+  syncing = false;
+}
+
 function visibleRange(){
   const r = gdE.layout.xaxis.range;
   return (r && isFinite(r[0]) && isFinite(r[1]) && r[1] > r[0]) ? r : [2, 4];
@@ -523,6 +573,7 @@ document.getElementById('ashow').addEventListener('change', e => {
 });
 document.getElementById('resetzoom').addEventListener('click', () => {
   Plotly.relayout(gdE, {'xaxis.autorange': true});
+  setTimeout(syncSliderToView, 0);
   [gdL, gdT, gdH].forEach(gd =>
     Plotly.relayout(gd, {'xaxis.autorange': true, 'yaxis.autorange': true}));
 });
@@ -531,6 +582,7 @@ cbBif.addEventListener('change', e => {
   Plotly.restyle(gdE, {visible: [e.target.checked]}, [0]);
 });
 gdE.on('plotly_relayout', () => {
+  syncSliderToView();
   if (!cbBif.checked) return;
   clearTimeout(bifTimer);
   bifTimer = setTimeout(drawBifurcation, 140);
@@ -538,6 +590,7 @@ gdE.on('plotly_relayout', () => {
 
 drawBifurcation();
 setLambda(parseFloat(document.getElementById('slider').value));
+syncSliderToView();
 drawMaps(curLam, Math.exp(hAt(curLam)));
 """
 
