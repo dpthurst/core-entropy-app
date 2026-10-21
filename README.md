@@ -214,8 +214,8 @@ read on the right-hand axis and a red line at the current `λ`; on the right `g_
 **iterates** toggle, the graphs of the `n`-th iterates, titled with their lap counts, which the
 two maps share (`+` and `−`, or the arrow keys, step `n` one at a time) — and Milnor–Thurston's **semi-conjugacy** `A`, with the images of the first seven
 critical points on its graph and the residual `max|f_s(A(x)) − A(g_λ(x))|` printed under the
-slider. Two checkboxes switch the iterates view and the `A` panel; with `A` off a slider event
-costs 48 ms rather than 60. Drag the slider to move `λ`,
+slider. Two checkboxes switch the iterates view (on at start, at `n = 1`) and the `A` panel (off
+at start); with `A` off a slider event costs 48 ms rather than 60. Drag the slider to move `λ`,
 and **zoom or pan the λ axis** — both act on λ alone: the toolbar's rectangle applies only its
 width (the band is drawn at full height to say so) and a pan ignores the vertical component, so the
 entropy axis stays put for comparison; the window opens with the zoom tool selected, the bifurcation diagram is recomputed for the visible

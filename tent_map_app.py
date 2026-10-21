@@ -33,8 +33,9 @@ the n-th iterates themselves, titled with their lap counts, which the two maps s
 (the + and - keys, or the up and down arrows, step n one at a time);
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
 points on its graph and the residual max|f_s(A(x)) - A(g(x))| in the readout.  Two
-checkboxes switch the iterates view and the A panel; with A off a slider event costs
-48 ms rather than 60.  A red vertical line marks the current lambda.
+checkboxes switch the iterates view (on at start, at n = 1) and the A panel (off at
+start); with A off a slider event costs 48 ms rather than 60.  A red vertical line marks
+the current lambda.
 
 By default h is read off the 28 696-parameter grid, which is instant; with --exact
 it is computed at the slider's own lambda by core_entropy.py, at about 10 ms above
@@ -71,7 +72,7 @@ LAM_LO, LAM_HI = 2.0, 4.0
 # twice the panel's pixels (more is invisible, and the image is redrawn on every slider
 # event), and A is truncated at 64 foldings, which leaves a residual of 1e-11 or better.
 BIF_NLAM, BIF_NROWS, BIF_TRANSIENT, BIF_KEEP = 800, 420, 1200, 700
-BIF_GAMMA, BIF_FLOOR = 0.5, 0.5   # ink = floor + (1-floor)*(count/top)**gamma
+BIF_GAMMA, BIF_FLOOR = 0.35, 0.6  # ink = floor + (1-floor)*(count/top)**gamma
 A_STEPS, A_POINTS = 64, 241
 COBWEB_STEPS, ORBIT_DOTS = 60, 7
 Y_PIN = (-0.02, 0.70)    # the entropy axis does not move: only lambda is zoomed
@@ -209,12 +210,16 @@ def ink(z, gamma=BIF_GAMMA, floor=BIF_FLOOR):
 
 
 def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
+    import matplotlib.patheffects as pe
     import matplotlib.pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap
     from matplotlib.widgets import CheckButtons, Slider
 
-    ink = LinearSegmentedColormap.from_list("ink", ["#ffffff", "#97a1ab"])
+    ink = LinearSegmentedColormap.from_list("ink", ["#ffffff", "#5a6570"])
     fig = plt.figure(figsize=(12.2, 7.4))
+    manager = getattr(fig.canvas, "manager", None)
+    if manager is not None:
+        manager.set_window_title("Core entropy, bifurcation diagram and tent map")
 
     ax_h = fig.add_axes([0.045, 0.175, 0.415, 0.745])
     ax_b = ax_h.twinx()
@@ -256,7 +261,8 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             pin["busy"] = False
 
     # ---- the entropy curve, a marker and a vertical line at lambda
-    ax_h.plot(lams, hs, color=BLUE, lw=1.3, zorder=5)
+    ax_h.plot(lams, hs, color=BLUE, lw=1.3, zorder=5,
+              path_effects=[pe.withStroke(linewidth=2.6, foreground="white")])
     for x in (ce.LAM_INF, ce.LAM_P3):
         ax_h.axvline(x, color="0.35", lw=0.8, ls="--", zorder=6)
     ax_h.axhline(LOG2, color="0.45", lw=0.8, ls=":", zorder=6)
@@ -312,12 +318,13 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     # drawing on would render the figure twice per drag, the first time stale.
     sl.drawon = False
 
-    cb = CheckButtons(ax_cb, ["iterates", "A"], [False, True])
+    cb = CheckButtons(ax_cb, ["iterates", "A"], [True, False])
     ax_cb.set_title("view", fontsize=8)
     for lab in cb.labels:
         lab.set_fontsize(8)
+    ax_A.set_visible(cb.get_status()[1])   # the checkbox's opening state is the panel's
 
-    sl_n = Slider(ax_n, r"$n$  (+/-)", 1, 10, valinit=4, valstep=1, valfmt="%d",
+    sl_n = Slider(ax_n, r"$n$  (+/-)", 1, 10, valinit=1, valstep=1, valfmt="%d",
                   color=GREEN, handle_style={"size": 0.86})
     sl_n.label.set_fontsize(9)
     sl_n.valtext.set_fontsize(9)
