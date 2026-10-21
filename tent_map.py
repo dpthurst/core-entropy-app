@@ -84,6 +84,10 @@ PAGE = r"""<!DOCTYPE html>
   .kv .v { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
   .seq { word-break:break-all; line-height:1.45; font-size:12.5px; }
   .chk { font-size:12.5px; color:#333; white-space:nowrap; }
+  button.btn { font:inherit; font-size:12.5px; padding:1px 8px; border-radius:4px;
+               border:1px solid #c8ccd2; background:#f6f7f9; color:#222; cursor:pointer; }
+  button.btn:hover { background:#eceef1; }
+  button.step { padding:1px 6px; min-width:22px; }
 </style>
 </head>
 <body>
@@ -101,10 +105,19 @@ PAGE = r"""<!DOCTYPE html>
   Theorem 7.4 of Milnor–Thurston, which satisfies <code>f_s(A(x)) = A(g_λ(x))</code>: the
   itinerary of <code>x</code>, read through <code>f_s</code>'s inverse branches, lands on the
   itinerary of <code>g_λ(x)</code> read the same way.  The arrow does not reverse, and
-  <code>A</code> need not be injective.
+  <code>A</code> need not be injective.  Drag the slider, or use the arrow buttons and the
+  <code>+</code> and <code>&minus;</code> keys for the number of iterates.  After zooming,
+  double-click the plot, or press the home button in its mode bar, or use <i>reset zoom</i>.
 </p>
 
 <div id="entropy"></div>
+
+<div class="ctrl">
+  <input type="range" id="slider" min="2" max="4" step="0.0002" value="3.7">
+  <button type="button" class="btn" id="resetzoom">reset zoom</button>
+</div>
+<div class="ticks"><span>2</span><span>λ</span><span>4</span></div>
+
 <div class="row">
   <div id="logi"></div>
   <div id="tentp"></div>
@@ -112,20 +125,19 @@ PAGE = r"""<!DOCTYPE html>
 </div>
 
 <div class="ctrl">
-  <input type="range" id="slider" min="2" max="4" step="0.0002" value="3.7">
   <label class="chk"><input type="checkbox" id="bif" checked> bifurcation diagram</label>
   <label class="chk"><input type="checkbox" id="iter" checked> plot the iterates
     <span class="mono">g<sup>n</sup>, f<sub>s</sub><sup>n</sup></span></label>
   <span class="chk" id="nwrap">n =
+    <button type="button" class="btn step" id="nminus" title="one fewer iterate (the - key)">&minus;</button>
     <input type="range" id="nslider" min="1" max="20" step="1" value="1" style="width:90px;vertical-align:middle">
+    <button type="button" class="btn step" id="nplus" title="one more iterate (the + key)">+</button>
     <span class="mono" id="nlabel">1</span></span>
   <span class="chk" id="fwrap" style="display:none">cobweb steps =
     <input type="range" id="fillslider" min="2" max="1000" step="1" value="34" style="width:90px;vertical-align:middle">
     <span class="mono" id="filllabel">34</span></span>
   <label class="chk"><input type="checkbox" id="ashow" checked> A panel</label>
 </div>
-<div class="ticks"><span>2</span><span>λ</span><span>4</span></div>
-
 <div class="info">
   <div class="kv">
     <span class="k">λ</span><span class="v" id="v-lam"></span>
@@ -294,8 +306,8 @@ function lapsTent(s, n){
 // ------------------------------------------------ plots
 const font = {family: '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
               size: 11, color: '#222'};
-const cfg = {responsive: true, displaylogo: false,
-             modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d']};
+const cfg = {responsive: true, displaylogo: false, doubleClick: 'reset',
+             modeBarButtonsToRemove: ['lasso2d', 'select2d']};
 const grey = '#b9c0c7';
 
 const gdE = document.getElementById('entropy');
@@ -477,9 +489,29 @@ iterBox.addEventListener('change', e => {
   document.getElementById('fwrap').style.display = e.target.checked ? 'none' : '';
   drawMaps(curLam, Math.exp(hAt(curLam)));
 });
+function stepN(d){
+  nSlider.value = Math.max(1, Math.min(20, parseInt(nSlider.value, 10) + d));
+  nLabel.textContent = nSlider.value;
+  if (iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+}
 nSlider.addEventListener('input', () => {
   nLabel.textContent = nSlider.value;
   if (iterBox.checked) drawMaps(curLam, Math.exp(hAt(curLam)));
+});
+document.getElementById('nminus').addEventListener('click', () => stepN(-1));
+document.getElementById('nplus').addEventListener('click', () => stepN(+1));
+
+// the + and - keys do what the buttons do.  Sliders and checkboxes keep the keys:
+// after dragging the slider it still has the focus, and swallowing them there would
+// make the shortcuts look broken.
+document.addEventListener('keydown', e => {
+  const el = e.target || {};
+  const tag = el.tagName || '';
+  const type = (el.type || '').toLowerCase();
+  if (tag === 'TEXTAREA') return;
+  if (tag === 'INPUT' && type !== 'range' && type !== 'checkbox') return;
+  if (e.key === '+' || e.key === '=') { stepN(+1); e.preventDefault(); }
+  else if (e.key === '-' || e.key === '_') { stepN(-1); e.preventDefault(); }
 });
 fillSlider.addEventListener('input', () => {
   fillLabel.textContent = fillSlider.value;
@@ -488,6 +520,11 @@ fillSlider.addEventListener('input', () => {
 document.getElementById('ashow').addEventListener('change', e => {
   document.getElementById('semi').style.display = e.target.checked ? '' : 'none';
   Plotly.Plots.resize(gdL); Plotly.Plots.resize(gdT);
+});
+document.getElementById('resetzoom').addEventListener('click', () => {
+  Plotly.relayout(gdE, {'xaxis.autorange': true});
+  [gdL, gdT, gdH].forEach(gd =>
+    Plotly.relayout(gd, {'xaxis.autorange': true, 'yaxis.autorange': true}));
 });
 cbBif.addEventListener('change', e => {
   if (e.target.checked) drawBifurcation();
