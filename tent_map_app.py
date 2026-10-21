@@ -32,7 +32,9 @@ each with the cobweb of the critical orbit.
 Right, three panels above the slider: g_lambda and the tent map f_s, each with the
 cobweb of the critical orbit -- or, with the "iterates" toggle and its n, the graphs of
 the n-th iterates themselves, titled with their lap counts, which the two maps share
-(the + and - keys, or the up and down arrows, step n one at a time);
+(the + and - keys, or the up and down arrows, step n one at a time, and the curves are
+drawn thinner as n grows -- 1.1 pt at n = 1, 0.4 pt at n = 10, where there are 200 laps
+across the panel);
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
 points on its graph.  A sits directly above g and the tent map sits to its right with its
 argument on the vertical axis -- the one panel that is so drawn, and only while A is on
@@ -247,8 +249,8 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_A = fig.add_axes([0.525, 0.520, 0.200, 0.270])
     ax_t = fig.add_axes([0.775, 0.520, 0.200, 0.270])
     ax_cb = fig.add_axes([0.775, 0.335, 0.150, 0.058])
-    ax_n = fig.add_axes([0.775, 0.255, 0.130, 0.025])
-    ax_w = fig.add_axes([0.775, 0.185, 0.130, 0.025])
+    ax_n = fig.add_axes([0.775, 0.255, 0.150, 0.028])
+    ax_w = fig.add_axes([0.775, 0.185, 0.150, 0.028])
 
     # ---- the bifurcation diagram, behind the entropy curve
     lo, hi = xlim
@@ -298,7 +300,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     # ---- g_lambda below, and the tent map to the right with its argument on the
     #      vertical axis, so the two panels share a vertical scale with A
-    xs = np.linspace(0.0, 1.0, 1201)
+    xs = np.linspace(0.0, 1.0, 2401)   # about 12 per lap at n = 10
     for a in (ax_g, ax_A, ax_t):
         a.set_xlim(0.0, 1.0)
         a.set_ylim(0.0, 1.02)
@@ -465,6 +467,11 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             tx, ty = cobweb(lambda y: tent(y, s), 0.5, steps)
             cw_t.set_data((ty, tx) if transposed else (tx, ty))
 
+        # A curve with l_n laps has to be drawn thinner to be legible: at n = 10 there
+        # are 200 of them across the panel, and a 1.4 pt line merges into a band.
+        lw = max(0.4, 1.2 - 0.08 * n) if iterates else 1.4
+        gline.set_linewidth(lw)
+        tline.set_linewidth(lw)
         gline.set_ydata(gl)
         tline_v.set_visible(transposed)
         tline_h.set_visible(not transposed)
@@ -616,10 +623,15 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         land on 2 or 3."""
         sl_w.set_val(max(sl_w.valmin, min(sl_w.valmax, int(round(sl_w.val)) + delta)))
 
+    # "+" is shift+equals on most layouts, so matplotlib reports it as "shift+="; the
+    # bare "=" and "+" come from other layouts and from the numeric keypad.
+    UP_KEYS = ("+", "=", "shift+=", "up", "kp_add", "add")
+    DOWN_KEYS = ("-", "_", "shift+-", "down", "kp_subtract", "subtract")
+
     def on_key(event):
-        if event.key in ("+", "=", "up"):
+        if event.key in UP_KEYS:
             step_n(+1)
-        elif event.key in ("-", "_", "down"):
+        elif event.key in DOWN_KEYS:
             step_n(-1)
         elif event.key in ("]", "shift+up"):
             step_steps(+1)
