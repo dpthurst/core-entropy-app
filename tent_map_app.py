@@ -15,7 +15,9 @@ numpy is matplotlib.
     python3 tent_map_app.py --save zoom.png --xlim 3.56 3.60
 
 Left: h(lambda), with the bifurcation diagram of the same parameters behind it as
-a greyscale density read on the right-hand axis.  Zooming or panning that axis
+a greyscale density read on the right-hand axis and a dashed line at the Feigenbaum
+accumulation.  The map panels carry a dashed line at the critical point, x = 1/2 on g and
+y = 1/2 on f_s.  Zooming or panning that axis
 recomputes the diagram for the visible lambda range, which is what makes the small
 scales readable, and rescales the slider beneath it to the same window -- so after
 zooming, the slider's two ends are the ends of the visible range and every pixel of
@@ -281,8 +283,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     # ---- the entropy curve, a marker and a vertical line at lambda
     ax_h.plot(lams, hs, color=BLUE, lw=1.3, zorder=5,
               path_effects=[pe.withStroke(linewidth=2.6, foreground="white")])
-    for x in (ce.LAM_INF, ce.LAM_P3):
-        ax_h.axvline(x, color="0.35", lw=0.8, ls="--", zorder=6)
+    ax_h.axvline(ce.LAM_INF, color="0.35", lw=0.8, ls="--", zorder=6)
     ax_h.axhline(LOG2, color="0.45", lw=0.8, ls=":", zorder=6)
     ax_h.set_xlim(lo, hi)
     ax_h.set_ylim(-0.02, 0.70)
@@ -291,8 +292,6 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_h.set_title(r"core entropy and the bifurcation diagram", fontsize=10)
     ax_h.text(ce.LAM_INF - 0.02, 0.655, r"$\lambda_\infty$", ha="right", va="center",
               fontsize=9, color="0.35", zorder=6, clip_on=True)
-    ax_h.text(ce.LAM_P3 + 0.02, 0.655, "period 3", va="center", fontsize=9,
-              color="0.35", zorder=6, clip_on=True)
     h0 = ce.h_at(lams, hs, lam0)
     vline = ax_h.axvline(lam0, color=RED, lw=0.9, alpha=0.75, zorder=7)
     mark, = ax_h.plot([lam0], [h0], "o", ms=7, mfc=RED, mec="white", mew=1.0, zorder=8)
@@ -306,6 +305,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         a.set_aspect("equal", adjustable="box")
         a.tick_params(labelsize=8)
     ax_g.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
+    ax_g.axvline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
     ax_g.set_xlabel(r"$x$", fontsize=9)
     gline, = ax_g.plot(xs, lam0 * xs * (1.0 - xs), color=BLUE, lw=1.4, zorder=3)
     cw_g, = ax_g.plot([], [], color=ORANGE, lw=0.35, alpha=0.85, zorder=4)
@@ -313,6 +313,10 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     ax_g.set_title(r"$g_\lambda$", fontsize=9, pad=3)
 
     ax_t.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
+    # the critical point y = 1/2, a vertical line when the argument is across and a
+    # horizontal one when it is up
+    tline_h, = ax_t.plot([0.5, 0.5], [0.0, 1.02], color="0.87", lw=0.7, ls="--", zorder=1)
+    tline_v, = ax_t.plot([0.0, 1.0], [0.5, 0.5], color="0.87", lw=0.7, ls="--", zorder=1)
     ax_t.set_xlabel(r"$f_s(y)$", fontsize=9)
     ax_t.set_ylabel(r"$y$", fontsize=9)
     ax_t.set_title(r"$f_s$, argument up", fontsize=9, pad=3)
@@ -462,6 +466,8 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             cw_t.set_data((ty, tx) if transposed else (tx, ty))
 
         gline.set_ydata(gl)
+        tline_v.set_visible(transposed)
+        tline_h.set_visible(not transposed)
         if transposed:
             tline.set_data(tl, xs)
         else:
