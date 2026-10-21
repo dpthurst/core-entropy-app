@@ -478,6 +478,31 @@ for any $u\in[0,1]$, the error after $n$ steps being at most $s^{-n}$.
 That is the algorithm: iterate $g_\lambda$ from $x$ recording the symbols, then push any seed
 through the corresponding affine maps in reverse order.  It costs $O(n)$ per point and never
 touches the preimage tree, which is what makes it robust where the obvious alternative fails.
+
+Figure~\ref{fig:square} draws the functional equation as a commuting square.  Panel~(a) is the
+logistic map and panel~(b) the map $A$, one directly above the other with the same abscissa, so
+that the vertical segment is a single $x$ read off both graphs, from $(x,g_\lambda(x))$ up to
+$(x,A(x))$.  Panel~(c) is the tent map with its argument on the vertical axis, the same as the
+ordinate of panels~(a) and~(b), so the horizontal segment at height $A(x)$ meets it at
+$f_s(A(x))$ --- and that is $A$ at the image point $g_\lambda(x)$, by Theorem~\ref{thm:model}.  At
+$\lambda=3.7$ and $x=\tfrac12$ the horizontal runs from $A(\tfrac12)=\tfrac12$ to
+$f_s(\tfrac12)=s/2=0.7324$, which is $A(0.9250\ldots)=A(g_\lambda(\tfrac12))$; the second
+connection, at $x=0.9250\ldots$, does the same one step along the orbit, from $0.7324$ to
+$0.3920$.  So the picture is the statement that $A$ carries the orbit of the critical point of
+$g_\lambda$ to that of $f_s$, and one connection is already the whole of it.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.86\textwidth]{fig_square}
+  \caption{The commuting square $f_s\circ A=A\circ g_\lambda$, at $\lambda=3.7$ and
+  $s=e^{h(\lambda)}=1.4648$.  (a)~$g_\lambda$, with a few steps of the critical orbit; (b)~the
+  semi-conjugacy $A$, directly above it so that a vertical line is one $x$ read off both
+  graphs; (c)~the tent map with its argument on the vertical axis, so that a horizontal line at
+  height $A(x)$ meets it at $f_s(A(x))$.  The two connections are drawn at $x=\tfrac12$ and at
+  $x=g_\lambda(\tfrac12)=0.925$, coloured differently to keep them apart; each ends on all
+  three graphs.  (d)~the square itself.}
+  \label{fig:square}
+\end{figure}
 Pairing the turning points of $g_\lambda^n$ with those of $f_s^n$ --- that is, matching the
 two trees level by level --- only works while the trees have the same size, and at
 $\lambda=3.84$ they do not: the critical point of $f_s$ is there periodic of period $3$,
@@ -493,17 +518,6 @@ implementation takes $n=64$ and checks itself against the functional equation, e
 $\max_x|f_s(A(x))-A(g_\lambda(x))|$ on the $241$ points $x=i/240$; at
 $\lambda=3.7,\,3.84,\,3.86,\,4$ that maximum is $5.7\times10^{-12}$, $1.3\times10^{-14}$,
 $1.0\times10^{-14}$ and $2.2\times10^{-16}$.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.95\textwidth]{fig_model}
-  \caption{The three objects at $\lambda=3.7$.  (a)~$g_\lambda$, with the cobweb of the
-  critical orbit.  (b)~the tent map $f_s$ of slope $s=e^{h(\lambda)}=1.4648$, with its own
-  cobweb.  (c)~the map $A$ of Theorem~\ref{thm:model}, on which the iterates of the critical
-  orbit of $f_s$ (abscissae) sit at the corresponding iterates of $g_\lambda$ (ordinates).
-  The dotted diagonal is $y=x$ in all three panels.}
-  \label{fig:model}
-\end{figure}
 
 \subsection{When the semi-conjugacy is a conjugacy}\label{sec:conjugacy}
 

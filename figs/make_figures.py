@@ -767,6 +767,124 @@ def real_limit_set(lam, per=None, n=400000):
     return [(lam * (0.5 - edges[i + 1]), lam * (0.5 - edges[i])) for i in range(0, len(edges), 2)]
 
 
+def fig_square():
+    """The commuting square of the semi-conjugacy, drawn to be read off with two segments.
+
+    A sits above g and the tent map to A's right with its argument on the vertical axis, so
+    that a vertical line is one x read off both graphs and a horizontal at height A(x) meets
+    the tent graph at f_s(A(x)) = A(g(x)).
+    """
+    lam0 = 3.7
+    s0 = float(np.exp(np.interp(lam0, lam, h)))
+
+    def A_of(x, n=64):
+        y = x
+        w = []
+        for _ in range(n):
+            w.append(1 if y < 0.5 else -1)
+            y = g(y, lam0)
+        u = 0.5
+        for c in reversed(w):
+            u = u / s0 if c > 0 else 1 - u / s0
+        return u
+
+    def tent(y):
+        return s0 * y if y < 0.5 else s0 * (1 - y)
+
+    fig, axs = plt.subplots(2, 2, figsize=(6.0, 4.3),
+                            gridspec_kw={"wspace": 0.30, "hspace": 0.42})
+    ax_A, ax_t = axs[0]
+    ax_g, ax_key = axs[1]
+    for a in (ax_g, ax_A, ax_t):
+        a.set_xlim(0, 1)
+        a.set_ylim(0, 1.02)
+        a.set_aspect("equal", adjustable="box")
+        a.tick_params(labelsize=7)
+        a.spines[["top", "right"]].set_visible(False)
+
+    # (a) the map, with a few steps of the critical orbit
+    a = ax_g
+    x = np.linspace(0, 1, 400)
+    a.plot(x, g(x, lam0), color=BLUE, lw=1.0)
+    a.plot([0, 1], [0, 1], color=GREY, lw=0.6, ls=":")
+    orb = [0.5]
+    for _ in range(4):
+        orb.append(g(orb[-1], lam0))
+    px, py = [], []
+    for z in orb[:4]:
+        w = g(z, lam0)
+        px += [z, z, w]
+        py += [z, w, w]
+    a.plot(px, py, color=RED, lw=0.5, alpha=0.55)
+    a.set_title(r"(a)  $g_\lambda$", fontsize=8)
+    a.set_xlabel(r"$x$", fontsize=8)
+    a.set_ylabel(r"$g_\lambda(x)$", fontsize=8)
+
+    # (b) A, directly above it
+    a = ax_A
+    xs = np.linspace(0, 1, 241)
+    a.plot(xs, [A_of(v) for v in xs], color="#7a4b16", lw=1.0)
+    a.plot([0, 1], [0, 1], color=GREY, lw=0.6, ls=":")
+    a.set_title(r"(b)  $A$", fontsize=8)
+    a.set_ylabel(r"$A(x)$", fontsize=8)
+    a.tick_params(labelbottom=False)
+
+    # (c) the tent map, argument up
+    a = ax_t
+    yy = np.linspace(0, 1, 400)
+    a.plot([tent(v) for v in yy], yy, color="#2f6b4f", lw=1.0)
+    a.plot([0, 1], [0, 1], color=GREY, lw=0.6, ls=":")
+    px, py = [], []
+    for z in orb[:4]:
+        w = tent(z)
+        px += [w, w, tent(w)]
+        py += [z, w, w]
+    a.plot(px, py, color=RED, lw=0.5, alpha=0.55)
+    a.set_title(r"(c)  $f_s$, argument up", fontsize=8)
+    a.set_xlabel(r"$f_s(y)$", fontsize=8)
+    a.set_ylabel(r"$y$", fontsize=8)
+
+    # the two segments, at two points of the orbit
+    from matplotlib.patches import ConnectionPatch
+    from matplotlib.patheffects import withStroke
+    for k, col in enumerate(("#c1272d", "#e08a1e")):
+        xk = orb[k]
+        gx, ax_ = g(xk, lam0), A_of(xk)
+        fx = tent(ax_)
+        up = ConnectionPatch((xk, gx), (xk, ax_), coordsA="data", axesA=ax_g,
+                             coordsB="data", axesB=ax_A, color=col, lw=1.0, zorder=6)
+        across = ConnectionPatch((xk, ax_), (fx, ax_), coordsA="data", axesA=ax_A,
+                                 coordsB="data", axesB=ax_t, color=col, lw=1.0, zorder=6)
+        fig.add_artist(up)
+        fig.add_artist(across)
+        for a, (px_, py_) in ((ax_g, (xk, gx)), (ax_A, (xk, ax_)), (ax_t, (fx, ax_))):
+            a.plot([px_], [py_], "o", ms=3.4, mfc=col, mec="white", mew=0.5, zorder=7)
+
+    # (d) the square itself, as text
+    a = ax_key
+    a.set_axis_off()
+    a.set_xlim(0, 1)
+    a.set_ylim(0, 1)
+    kw = dict(ha="center", va="center", fontsize=8.5)
+    a.text(0.13, 0.83, r"$x$", **kw)
+    a.text(0.83, 0.83, r"$g_\lambda(x)$", **kw)
+    a.text(0.10, 0.17, r"$A(x)$", **kw)
+    a.text(0.86, 0.17, r"$f_s(A(x))$", **kw)
+    arrow = dict(arrowstyle="->", color="0.35", lw=0.8, shrinkA=2, shrinkB=2)
+    a.annotate("", xy=(0.70, 0.83), xytext=(0.26, 0.83), arrowprops=arrow)
+    a.text(0.48, 0.90, r"$g_\lambda$", **kw)
+    a.annotate("", xy=(0.78, 0.26), xytext=(0.78, 0.74), arrowprops=arrow)
+    a.text(0.88, 0.50, r"$A$", **kw)
+    a.annotate("", xy=(0.13, 0.74), xytext=(0.13, 0.26), arrowprops=arrow)
+    a.text(0.23, 0.50, r"$A$", **kw)
+    a.annotate("", xy=(0.70, 0.17), xytext=(0.26, 0.17), arrowprops=arrow)
+    a.text(0.48, 0.07, r"$f_s$", **kw)
+    a.text(0.5, 0.36, r"$=$", fontsize=12, ha="center", va="center", color="0.35")
+    a.set_title(r"(d)", fontsize=8)
+
+    fig.savefig("figs/fig_square.pdf", bbox_inches="tight")
+
+
 def fig_julia(path="figs/fig_julia.pdf"):
     cases = [(3.582229835820, 12, "(a)  four bands"), (3.853675276839, 9, "(b)  three bands"),
              (3.678573510428, None, "(c)  the merger")]
@@ -803,6 +921,7 @@ if __name__ == "__main__":
     fig_bands()
     fig_laps_period()
     fig_julia()
+    fig_square()
     print("wrote figs/fig_output.pdf, fig_kneading.pdf, fig_laps.pdf, fig_model.pdf,")
     print("      fig_determinant.pdf, fig_lapgrowth.pdf, fig_plateau.pdf, fig_bands.pdf,")
     print("      fig_laps_period.pdf, fig_julia.pdf")
