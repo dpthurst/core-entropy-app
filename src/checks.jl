@@ -88,7 +88,62 @@ function run_checks()
     @printf("   h(2.0) = %.1e,  h(4.0) = %.12f,  log 2 = %.12f\n", hs[1], hs[end], LOG2)
 
     println()
+    println("4. the critical itinerary is an admissible kneading sequence")
+    println("   a kneading sequence must dominate every shift of itself in the kneading")
+    println("   order: at the first difference, 0 < 1 when the number of 1s before it is")
+    println("   even and 1 < 0 when it is odd; parameters where the orbit returns are skipped")
+    tested = 0
+    violations = 0
+    firstbad = (NaN, 0)
+    for λ in range(3.58, 4.0; length = 400)
+        s = critical_itinerary(λ)
+        occursin('*', s) && continue
+        tested += 1
+        for k in 2:length(s)
+            if !kneading_ge(s, s[k:end])
+                violations += 1
+                isnan(firstbad[1]) && (firstbad = (λ, k - 1))
+                break
+            end
+        end
+    end
+    ok &= violations == 0
+    @printf("   %d parameters tested, %d violations", tested, violations)
+    isnan(firstbad[1]) || @printf("   (first at λ = %.6f, shift %d)", firstbad[1], firstbad[2])
+    println()
+
+    println()
     println(ok ? "all checks passed." : "SOME CHECKS FAILED.")
     return ok
+end
+
+
+"""
+The itinerary of the critical point: '0' left of 1/2, '1' right, '*' on a return.
+"""
+function critical_itinerary(λ::Float64, n::Int = 48; tol::Float64 = 1e-6)
+    out = Vector{Char}(undef, 0)
+    x = 0.5
+    for _ in 1:n
+        x = λ * x * (1 - x)
+        push!(out, abs(x - 0.5) < tol ? '*' : (x < 0.5 ? '0' : '1'))
+    end
+    return String(out)
+end
+
+"""
+    kneading_ge(u, v) -> Bool
+
+Whether u ≥ v in the kneading order: at the first place they differ, 0 < 1 when the
+number of 1s in u before that place is even, and 1 < 0 when it is odd.
+"""
+function kneading_ge(u::AbstractString, v::AbstractString)
+    for i in 1:min(length(u), length(v))
+        a, b = u[i], v[i]
+        a == b && continue
+        even = iseven(count(==('1'), u[1:i-1]))
+        return a != (even ? '0' : '1')
+    end
+    return true
 end
 
