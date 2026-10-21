@@ -36,8 +36,11 @@ points on its graph.  A sits directly above g and the tent map sits to its right
 argument on the vertical axis, so the identity f_s(A(x)) = A(g(x)) can be read off the
 picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
 height to the tent graph, which meets it at f_s(A(x)) -- the value A takes at the image
-point.  The two numbers are in the readout, with the residual, and the segments are hidden
-when the panels show something other than g and f_s themselves (n > 1, or A off).  Two
+point.  In the cobweb view there is one such connection at each of the first few points of
+the orbit, and the length of the cobweb is set by its own slider; showing one per point
+would be a mess, and a few is enough to see A carrying the g-orbit onto the f_s-orbit.  In
+the iterates view there is a single one, at a generic x, and it is drawn only at n = 1,
+where the panels really do show g and f_s; nothing is drawn with A switched off.  Two
 checkboxes switch the iterates view (on at start, at n = 1) and the A panel (off at
 start); with A off a slider event costs 48 ms rather than 60.  A red vertical line marks
 the current lambda.
@@ -233,11 +236,12 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     # with straight segments: A directly above g (so a vertical line is the same x), and
     # the tent map to A's right with its argument on the vertical axis (so a horizontal
     # line at height A(x) meets the graph at f_s(A(x)) = A(g(x))).
-    ax_g = fig.add_axes([0.525, 0.170, 0.200, 0.290])
-    ax_A = fig.add_axes([0.525, 0.495, 0.200, 0.290])
-    ax_t = fig.add_axes([0.775, 0.495, 0.200, 0.290])
-    ax_cb = fig.add_axes([0.775, 0.330, 0.130, 0.060])
-    ax_n = fig.add_axes([0.775, 0.230, 0.130, 0.025])
+    ax_g = fig.add_axes([0.525, 0.165, 0.200, 0.270])
+    ax_A = fig.add_axes([0.525, 0.520, 0.200, 0.270])
+    ax_t = fig.add_axes([0.775, 0.520, 0.200, 0.270])
+    ax_cb = fig.add_axes([0.775, 0.395, 0.130, 0.060])
+    ax_n = fig.add_axes([0.775, 0.315, 0.130, 0.025])
+    ax_w = fig.add_axes([0.775, 0.245, 0.130, 0.025])
 
     # ---- the bifurcation diagram, behind the entropy curve
     lo, hi = xlim
@@ -302,11 +306,13 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     gline, = ax_g.plot(xs, lam0 * xs * (1.0 - xs), color=BLUE, lw=1.4, zorder=3)
     cw_g, = ax_g.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
     ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
+    ax_g.set_title(r"$g_\lambda$", fontsize=9, pad=3)
 
     ax_t.plot([0.0, 1.0], [0.0, 1.0], color="0.78", lw=0.7, ls=":", zorder=1)
     ax_t.axhline(0.5, color="0.87", lw=0.7, ls="--", zorder=1)
     ax_t.set_xlabel(r"$f_s(y)$", fontsize=9)
     ax_t.set_ylabel(r"$y$", fontsize=9)
+    ax_t.set_title(r"$f_s$, argument up", fontsize=9, pad=3)
     tline, = ax_t.plot(tent(xs, np.exp(h0)), xs, color=GREEN, lw=1.4, zorder=3)
     cw_t, = ax_t.plot([], [], color=ORANGE, lw=0.7, alpha=0.9, zorder=4)
 
@@ -315,47 +321,56 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     aline, = ax_A.plot([], [], color="#7a4b16", lw=1.4, zorder=3)
     adots, = ax_A.plot([], [], "o", ms=3.2, mfc=ORANGE, mec="white", mew=0.4, zorder=4)
     ax_A.plot([0.0, 1.0], [0.0, 1.0], color="0.85", lw=0.7, ls=":", zorder=1)
-    ax_A.set_xlabel(r"$x$", fontsize=9)
     ax_A.set_ylabel(r"$A(x)$", fontsize=9)
-    ax_A.set_title(r"$A$", fontsize=9)
+    ax_A.set_title(r"$A$", fontsize=9, pad=3)
+    ax_A.tick_params(labelbottom=False)   # g carries the shared x axis below it
 
     # ---- the commuting square: up from g, across to the tent map
     # For any x, A(g(x)) = f_s(A(x)).  The vertical segment is a single x read off two
     # graphs; the horizontal one is the value A(x) fed to f_s, and where it meets the
     # tent graph -- drawn with its argument up -- is f_s(A(x)), the same number as A at
-    # the image point.
+    # the image point.  In the cobweb view this is shown at a few points of the orbit,
+    # which is what carries the g-orbit onto the f_s-orbit; one per point would be a mess.
     from matplotlib.patches import ConnectionPatch
 
-    # a generic x, not the critical point: at x = 1/2 the horizontal would land on the
-    # tent's peak itself, which reads as a curiosity rather than the identity
-    X0 = 0.3
-    up = ConnectionPatch((X0, 0.0), (X0, 0.0), coordsA="data", axesA=ax_g,
-                         coordsB="data", axesB=ax_A, color=RED, lw=1.0, zorder=6)
-    across = ConnectionPatch((0.0, 0.0), (0.0, 0.0), coordsA="data", axesA=ax_A,
-                             coordsB="data", axesB=ax_t, color=RED, lw=1.0, zorder=6)
-    for c in (up, across):
-        fig.add_artist(c)
-    pt_g, = ax_g.plot([X0], [0.0], "o", ms=4.5, mfc=RED, mec="white", mew=0.6, zorder=7)
-    pt_A, = ax_A.plot([X0], [0.0], "o", ms=4.5, mfc=RED, mec="white", mew=0.6, zorder=7)
-    pt_t, = ax_t.plot([0.0], [0.0], "o", ms=4.5, mfc=RED, mec="white", mew=0.6, zorder=7)
-    ax_g.axvline(X0, color=RED, lw=0.7, alpha=0.45, zorder=2)
+    X0 = 0.3            # the point used when the plain graphs are on show
+    NSQ = 4             # how many orbit points get a connection in the cobweb view
+    squares = []
+    for k in range(NSQ):
+        # a red family, distinct from the orange cobweb it is drawn over
+        col = (0.76, 0.05 + 0.10 * k, 0.16, 1.0 - 0.18 * k)
+        up = ConnectionPatch((X0, 0.0), (X0, 0.0), coordsA="data", axesA=ax_g,
+                             coordsB="data", axesB=ax_A, color=col, lw=0.9, zorder=6)
+        across = ConnectionPatch((0.0, 0.0), (0.0, 0.0), coordsA="data", axesA=ax_A,
+                                 coordsB="data", axesB=ax_t, color=col, lw=0.9, zorder=6)
+        fig.add_artist(up)
+        fig.add_artist(across)
+        pg, = ax_g.plot([X0], [0.0], "o", ms=3.6, mfc=col, mec="white", mew=0.5, zorder=7)
+        pa, = ax_A.plot([X0], [0.0], "o", ms=3.6, mfc=col, mec="white", mew=0.5, zorder=7)
+        pt, = ax_t.plot([0.0], [0.0], "o", ms=3.6, mfc=col, mec="white", mew=0.5, zorder=7)
+        squares.append({"up": up, "across": across, "arts": (up, across, pg, pa, pt),
+                        "pg": pg, "pa": pa, "pt": pt})
 
-    def place_square(lam, ax_drawn):
-        """Put the two segments where the identity says they belong, at x = X0."""
-        s = cur["s"]
-        gx = lam * X0 * (1.0 - X0)
-        ax_ = float(semiconjugacy([X0], lam, s)[0])
+    def hide_squares():
+        for sq in squares:
+            for art in sq["arts"]:
+                art.set_visible(False)
+
+    def place_square(k, x0, lam):
+        """Put one connection at x0: up from g, across from A to the tent graph."""
+        s, sq = cur["s"], squares[k]
+        gx = lam * x0 * (1.0 - x0)
+        ax_ = float(semiconjugacy([x0], lam, s)[0])
         fx = float(tent(ax_, s))
-        pt_g.set_data([X0], [gx])
-        pt_A.set_data([X0], [ax_])
-        pt_t.set_data([fx], [ax_])
-        up.xy1 = (X0, gx)
-        up.xy2 = (X0, ax_)
-        across.xy1 = (X0, ax_)
-        across.xy2 = (fx, ax_)
-        live = ax_drawn and ax_A.get_visible()
-        for art in (up, across, pt_g, pt_A, pt_t):
-            art.set_visible(live)
+        sq["pg"].set_data([x0], [gx])
+        sq["pa"].set_data([x0], [ax_])
+        sq["pt"].set_data([fx], [ax_])
+        sq["up"].xy1 = (x0, gx)
+        sq["up"].xy2 = (x0, ax_)
+        sq["across"].xy1 = (x0, ax_)
+        sq["across"].xy2 = (fx, ax_)
+        for art in sq["arts"]:
+            art.set_visible(True)
         return gx, ax_, fx
 
     # ---- the widgets
@@ -373,6 +388,12 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         lab.set_fontsize(8)
     ax_A.set_visible(cb.get_status()[1])   # the checkbox's opening state is the panel's
 
+    sl_w = Slider(ax_w, "cobweb steps", 5, 200, valinit=COBWEB_STEPS, valstep=1,
+                  valfmt="%d", color=ORANGE, handle_style={"size": 0.86})
+    sl_w.label.set_fontsize(8)
+    sl_w.valtext.set_fontsize(8)
+    sl_w.drawon = False
+
     sl_n = Slider(ax_n, r"$n$  (+/-)", 1, 10, valinit=1, valstep=1, valfmt="%d",
                   color=GREEN, handle_style={"size": 0.86})
     sl_n.label.set_fontsize(9)
@@ -383,6 +404,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     cache = {}
     cur = {"lam": lam0, "h": h0, "s": float(np.exp(h0))}
+    _orbit = [0.5] * (NSQ + 1)
     state = {"range": (lo, hi)}
     busy = {"on": False}
 
@@ -412,7 +434,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             for _ in range(n - 1):
                 tl = tent(tl, s)
             gline.set_ydata(gl)
-            tline.set_ydata(tl)
+            tline.set_xdata(tl)          # the tent panel has its argument on y
             cw_g.set_data([], [])
             cw_t.set_data([], [])
             lg = lap_count(lam, s, n, "g")
@@ -423,11 +445,12 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             ax_t.set_ylabel(r"$f_s^{%d}(y)$" % n, fontsize=9)
         else:
             gline.set_ydata(lam * xs * (1.0 - xs))
-            tline.set_ydata(tent(xs, s))
-            cx, cy = cobweb(lambda y: lam * y * (1.0 - y), 0.5, 60)
+            tline.set_xdata(tent(xs, s))     # argument on y, value across
+            steps = int(round(sl_w.val))
+            cx, cy = cobweb(lambda y: lam * y * (1.0 - y), 0.5, steps)
             cw_g.set_data(cx, cy)
-            tx, ty = cobweb(lambda y: tent(y, s), 0.5, 60)
-            cw_t.set_data(tx, ty)
+            tx, ty = cobweb(lambda y: tent(y, s), 0.5, steps)
+            cw_t.set_data(ty, tx)            # transposed with the panel
             ax_g.set_title(r"$g_\lambda$", fontsize=9)
             ax_t.set_title(r"$f_s$, argument up", fontsize=9)
             ax_g.set_ylabel(r"$g_\lambda(x)$", fontsize=9)
@@ -438,19 +461,35 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         s = float(np.exp(h))
         cur.update(lam=lam, h=h, s=s)
         c = lam / 2.0 - lam ** 2 / 4.0
+        _orbit[:] = critical_orbit(lam, NSQ + 1)
         mark.set_data([lam], [h])
         vline.set_xdata([lam, lam])
         draw_maps()
-        plain = not cb.get_status()[0] or int(round(sl_n.val)) == 1
-        gx, ax_, fx = place_square(lam, plain)
+        # The connections are drawn only when the panels really show g and f_s: in the
+        # cobweb view at a few points of the orbit, in the iterates view at n = 1 only.
+        hide_squares()
+        cobweb_view = not cb.get_status()[0]
+        plain = cobweb_view or int(round(sl_n.val)) == 1
+        shown = []
+        if plain and ax_A.get_visible():
+            if cobweb_view:
+                steps = int(round(sl_w.val))
+                for k in range(min(NSQ, steps - 1)):
+                    shown.append(place_square(k, 0.5 if k == 0 else _orbit[k], lam))
+            else:
+                shown.append(place_square(0, X0, lam))
         if ax_A.get_visible():
             o = critical_orbit(lam)
             a = semiconjugacy(xg, lam, s)
             aline.set_data(xg, a)
             adots.set_data(o, semiconjugacy(o, lam, s))
             err = np.abs(semiconjugacy(lam * xg * (1.0 - xg), lam, s) - tent(a, s)).max()
-            second = (f"x = {X0}:  A(x) = {ax_:.6f}  f_s(A(x)) = {fx:.6f}  "
-                      f"residual {err:.1e} over {xg.size} points")
+            if shown:
+                gx0, ax0, fx0 = shown[0]
+                second = (f"A(x) = {ax0:.6f}  f_s(A(x)) = {fx0:.6f}  "
+                          f"residual {err:.1e} over {xg.size} points")
+            else:
+                second = f"residual {err:.1e} over {xg.size} points"
         else:
             second = "A hidden"
         info.set_text(f"lambda = {lam:.5f}    c = {c:.6f}      "
@@ -553,11 +592,12 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     # a change of n changes whether the commuting square applies, so update() rather
     # than just draw_maps()
     sl_n.on_changed(lambda _v: update() if cb.get_status()[0] else None)
+    sl_w.on_changed(lambda _v: update() if not cb.get_status()[0] else None)
 
     sl.on_changed(update)
     set_slider_range(lo, hi)
     update()
-    return fig, {"slider": sl, "iterates": cb, "n": sl_n, "info": info,
+    return fig, {"slider": sl, "iterates": cb, "n": sl_n, "steps": sl_w, "info": info,
                  "axes": {"h": ax_h, "b": ax_b, "g": ax_g, "t": ax_t, "A": ax_A},
                  "lines": {"g": gline, "t": tline, "mark": mark, "vline": vline,
                            "A": aline, "Adots": adots},
