@@ -503,7 +503,8 @@ function drawMaps(lam, s){
 let curLam = 3.7;
 
 function setLambda(lam){
-  lam = Math.max(3.6, Math.min(4, lam));
+  lam = Math.max(2, Math.min(4, lam));   // the whole family; below lambda_inf, h = 0
+                                          // and the model is the tent map of slope 1
   const h = hAt(lam), s = Math.exp(h);
   curLam = lam;
   Plotly.restyle(gdE, {x: [[lam]], y: [[h]]}, [2]);
@@ -520,6 +521,11 @@ function setLambda(lam){
   }
   const oy = orbL.slice(0, 7).map(x => A_of(x, lam, s, 64));
   Plotly.restyle(gdH, {x: [gx, orbL.slice(0, 7)], y: [gy, oy]}, [1, 2]);
+  // below the Feigenbaum parameter h = 0: the model has slope 1 and A collapses to a
+  // point (A = 1/2 is a semi-conjugacy, with residual 0, but a degenerate one)
+  Plotly.relayout(gdH, {title: {text: h > 1e-12
+    ? 'Milnor–Thurston A:  f_s ∘ A = A ∘ g_λ'
+    : 'Milnor–Thurston A:  h = 0 here, so f_s has slope 1 and A is constant'}});
 
   Plotly.relayout(gdE, {shapes: [
     {type: 'line', x0: 3.5699456718, x1: 3.5699456718, yref: 'paper', y0: 0, y1: 1,
