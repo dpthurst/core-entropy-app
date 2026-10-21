@@ -217,9 +217,24 @@ const sAt = lam => Math.abs(hAt(lam) - LTAU) < 1e-9 ? TAU : Math.exp(hAt(lam));
 // at s = tau the tent critical point is periodic of period 3 (f(1/2) = tau/2,
 // f(tau/2) = 1/(2tau), f(1/(2tau)) = 1/2), so its itinerary is R L * repeated; iterating
 // the float loses the returns after about ten of them
+// on any hyperbolic component the tent critical point is periodic with the period of the
+// component's centre, so the itinerary is one block repeated and its '*'s are exact; the
+// numerical orbit shows the block several times before the error in s is amplified past it,
+// so a repetition ending in a return is taken as the period and extended
+function tentPeriod(s, n, tol){
+  if (Math.abs(s - TAU) < 1e-12) return 3;
+  const raw = itinerary(y => tent(y, s), n, tol);
+  for (let p = 2; 3*p <= n; p++){
+    const block = raw.slice(0, p);
+    if (block.endsWith('*') && raw.slice(0, 3*p) === block.repeat(3)) return p;
+  }
+  return 0;
+}
 function tentItinerary(s, n, tol){
   if (Math.abs(s - TAU) < 1e-12) return ('RL*'.repeat(Math.ceil(n/3))).slice(0, n);
-  return itinerary(y => tent(y, s), n, tol);
+  const p = tentPeriod(s, n, tol);
+  if (!p) return itinerary(y => tent(y, s), n, tol);
+  return itinerary(y => tent(y, s), n, tol).slice(0, p).repeat(Math.ceil(n/p)).slice(0, n);
 }
 
 function orbit(f, n, x0){
@@ -550,7 +565,9 @@ function setLambda(lam){
   document.getElementById('v-s').textContent = s.toFixed(6);
   document.getElementById('v-err').textContent = err.toExponential(1);
   document.getElementById('v-seqL').textContent = 'g_λ : ' + itinerary(x => g(x, lam), NSYM, 1e-6);
-  document.getElementById('v-seqT').textContent = 'f_s : ' + tentItinerary(s, NSYM, 1e-6);
+  const pT = tentPeriod(s, NSYM, 1e-6);
+  document.getElementById('v-seqT').textContent = 'f_s : ' + tentItinerary(s, NSYM, 1e-6)
+    + (pT ? '   exact, period ' + pT : '');
 }
 
 document.getElementById('slider').addEventListener('input', e => setLambda(parseFloat(e.target.value)));

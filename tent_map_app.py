@@ -40,10 +40,12 @@ and Milnor-Thurston's semi-conjugacy A, with the images of the first seven criti
 points on its graph.  Under the panels are the itineraries of the two critical orbits, 48
 symbols each, L and R for the two sides of 1/2 and * for a return to it: they agree where A is
 injective and differ where it collapses an interval, and at lambda = 3.83 they differ at once,
-since the tent map's critical point is periodic there and the logistic one is not.  On the
-period-3 window the entropy is exactly log tau, so the tent itinerary is the exact sequence
-RL*RL*..., written down rather than iterated: s = exp(h) would carry the grid's error of 4e-13,
-and the offset at the k-th return grows like tau^{3k}.  A sits directly above g and the tent map sits to its right with its
+since the tent map's critical point is periodic there and the logistic one is not.  On any
+hyperbolic component the tent critical point is periodic, with the period of the component's
+centre, so its itinerary is one block repeated and every '*' in it is exact; those are marked
+"exact, period p" and the block is written out rather than iterated.  Iterating would not do:
+s = exp(h) carries the grid's error of 4e-13, and the offset at the k-th return grows like
+s^{kp}.  A sits directly above g and the tent map sits to its right with its
 argument on the vertical axis -- the one panel that is so drawn, and only while A is on
 show; with A off it goes back to the usual reading, argument across and value up -- so the
 identity f_s(A(x)) = A(g(x)) can be read off the picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
@@ -221,18 +223,45 @@ def lap_count(lam, s, n, which="g"):
 
 
 def tent_itinerary(s, n=ITIN_LEN, tol=1e-6):
-    """The itinerary of the tent critical point, which is exact when s = tau.
+    """The itinerary of the tent critical point, exactly where the orbit is periodic.
 
-    At s = tau the critical point is periodic of period 3: f(1/2) = tau/2,
-    f(tau/2) = 1/(2tau) and f(1/(2tau)) = 1/2, using tau^2 = tau + 1.  So the sequence
-    is R L * repeated.  Iterating the float instead loses the returns after a dozen of
-    them, since the offset at the k-th return grows like tau^{3k} times the error in s,
-    and s = exp(h) carries the grid's error of 4e-13.  On the whole period-3 window the
-    entropy is exactly log tau, so the value is known rather than computed.
+    At s = tau the critical point has period 3 -- f(1/2) = tau/2, f(tau/2) = 1/(2tau),
+    f(1/(2tau)) = 1/2, using tau^2 = tau + 1 -- so the sequence is R L * repeated.  On
+    any hyperbolic component the tent critical point is periodic with the period of the
+    component's centre, and the same extension is applied; see below.
     """
-    if abs(float(s) - TAU) < 1e-12:
+    s = float(s)
+    p = tent_period(s, n=n, tol=tol)
+    if p == 3 and abs(s - TAU) < 1e-12:
         return ("RL*" * (n // 3 + 1))[:n]
-    return itinerary(lambda y: tent(y, s), n=n, tol=tol)
+    raw = itinerary(lambda y: tent(y, s), n=n, tol=tol)
+    # The same happens on every hyperbolic component: the tent critical point is then
+    # periodic, with the period of the component's centre, so its itinerary is one block
+    # repeated and every '*' in it is exact.  The numerical orbit shows the block several
+    # times before the error in s is amplified past it, so a repetition that ends in a
+    # return is taken as the true period and extended; a generic parameter has no such
+    # repetition and is left alone.
+    if p:
+        block = raw[:p]
+        return (block * (n // p + 1))[:n]
+    return raw
+
+
+def tent_period(s, n=ITIN_LEN, tol=1e-6):
+    """The period of the tent critical orbit if it is periodic, else 0.
+
+    A repetition of the first p symbols that ends in a return is taken as the true period;
+    see tent_itinerary.
+    """
+    s = float(s)
+    if abs(s - TAU) < 1e-12:
+        return 3
+    raw = itinerary(lambda y: tent(y, s), n=n, tol=tol)
+    for p in range(2, n // 3 + 1):
+        block = raw[:p]
+        if block.endswith("*") and raw[:3 * p] == block * 3:
+            return p
+    return 0
 
 
 def itinerary(f, x0=0.5, n=ITIN_LEN, tol=1e-6):
@@ -626,7 +655,9 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
                       + "\n" + second)
         it_g = itinerary(lambda y: lam * y * (1.0 - y))
         it_t = tent_itinerary(s)
+        p_t = tent_period(s)
         orbits.set_text(f"g_λ: {it_g}\nf_s: {it_t}"
+                        + (f"   exact, period {p_t}" if p_t else "")
                         + ("" if it_g == it_t else "\nthey differ"))
         fig.canvas.draw_idle()
 
