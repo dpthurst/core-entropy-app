@@ -33,8 +33,9 @@ Right, three panels above the slider: g_lambda and the tent map f_s, each with t
 cobweb of the critical orbit -- or, with the "iterates" toggle and its n, the graphs of
 the n-th iterates themselves, titled with their lap counts, which the two maps share
 (the + and - keys, or the up and down arrows, step n one at a time, and the curves are
-drawn thinner as n grows -- 1.1 pt at n = 1, 0.4 pt at n = 10, where there are 200 laps
-across the panel);
+drawn thinner as n grows -- 1.1 pt at n = 1, 0.4 pt from n = 10 on -- and sampled by their
+lap count, 2401 points at n = 1 rising to 40001 at n = 15, so that a curve with thousands of
+laps is drawn rather than aliased);
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
 points on its graph.  A sits directly above g and the tent map sits to its right with its
 argument on the vertical axis -- the one panel that is so drawn, and only while A is on
@@ -92,6 +93,9 @@ BIF_NLAM, BIF_NROWS, BIF_TRANSIENT, BIF_KEEP = 800, 420, 1200, 700
 BIF_GAMMA, BIF_FLOOR = 0.35, 0.6  # ink = floor + (1-floor)*(count/top)**gamma
 A_STEPS, A_POINTS = 64, 241
 COBWEB_STEPS, COBWEB_MAX, ORBIT_DOTS = 60, 1000, 7
+N_MAX = 20               # the iterates slider goes this high
+LAP_TOL = 1e-14          # merge tolerance for preimages of 1/2, see lap_count
+LAP_CAP = 120_000        # stop counting above this many turning points
 Y_PIN = (-0.02, 0.70)    # the entropy axis does not move: only lambda is zoomed
 
 
@@ -178,7 +182,23 @@ def lap_count(lam, s, n, which="g"):
     That is the lap number of the n-th iterate, counted from the tree rather than off a
     grid, so it does not depend on a plotting resolution.
     """
-    dedupe = lambda v: list(np.sort(np.unique(np.round(v, 9))))
+    def dedupe(v):
+        """Sort and drop numerically coincident points, keeping a gap of LAP_TOL.
+
+        The tolerance has to stay below the smallest gap between distinct preimages,
+        which falls like lambda^-k: rounding to 9 decimals merged real preimages from
+        n = 17, and at n = 20 it reported 9396 laps at lambda = 3.7 where the exact
+        count is 9422.
+        """
+        a = np.sort(np.asarray(v, dtype=float))
+        if a.size == 0:
+            return []
+        keep = [float(a[0])]
+        for z in a[1:]:
+            if z - keep[-1] > LAP_TOL:
+                keep.append(float(z))
+        return keep
+
     S, allp = [0.5], [0.5]
     for _ in range(max(n - 1, 0)):
         nxt = []
@@ -186,6 +206,8 @@ def lap_count(lam, s, n, which="g"):
             nxt += preimages_g(y, lam) if which == "g" else preimages_tent(y, s)
         S = dedupe(nxt)
         allp = dedupe(allp + S)
+        if len(allp) > LAP_CAP:      # near lambda = 4 the count runs to 2^n
+            return None
     return len([p for p in allp if 0.0 < p < 1.0]) + 1
 
 
@@ -408,7 +430,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     sl_w.valtext.set_fontsize(8)
     sl_w.drawon = False
 
-    sl_n = Slider(ax_n, r"$n$  (+/-)", 1, 10, valinit=1, valstep=1, valfmt="%d",
+    sl_n = Slider(ax_n, r"$n$  (+/-)", 1, N_MAX, valinit=1, valstep=1, valfmt="%d",
                   color=GREEN, handle_style={"size": 0.86})
     sl_n.label.set_fontsize(9)
     sl_n.valtext.set_fontsize(9)
@@ -436,6 +458,17 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         cache[key] = h
         return lam, h, "%.0f ms" % (1e3 * (time.perf_counter() - t0))
 
+    lap_cache = {}
+
+    def laps(lam, s, n):
+        """The two lap counts, cached: they cost up to a few hundred milliseconds."""
+        key = (round(lam, 9), round(s, 9), n)
+        if key not in lap_cache:
+            lap_cache[key] = (lap_count(lam, s, n, "g"), lap_count(lam, s, n, "t"))
+            if len(lap_cache) > 400:
+                lap_cache.clear()
+        return lap_cache[key]
+
     def draw_maps():
         """The two map panels.
 
@@ -451,15 +484,21 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         transposed = ax_A.get_visible()
 
         if iterates:
-            gl = lam * xs * (1.0 - xs)
+            # sample by the number of laps: at n = 20 there are thousands, and a fixed
+            # grid of 2401 points would alias the curve into noise
+            lg, lt = laps(lam, s, n)
+            m = int(min(40001, max(2401, 30 * (lg or LAP_CAP))))
+            xg = np.linspace(0.0, 1.0, m)
+            gl = lam * xg * (1.0 - xg)
             for _ in range(n - 1):
                 gl = lam * gl * (1.0 - gl)
-            tl = tent(xs, s)
+            tl = tent(xg, s)
             for _ in range(n - 1):
                 tl = tent(tl, s)
             cw_g.set_data([], [])
             cw_t.set_data([], [])
         else:
+            xg = xs
             gl = lam * xs * (1.0 - xs)
             tl = tent(xs, s)
             steps = int(round(sl_w.val))
@@ -472,23 +511,23 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         lw = max(0.4, 1.2 - 0.08 * n) if iterates else 1.4
         gline.set_linewidth(lw)
         tline.set_linewidth(lw)
-        gline.set_ydata(gl)
+        gline.set_data(xg, gl)
         tline_v.set_visible(transposed)
         tline_h.set_visible(not transposed)
         if transposed:
-            tline.set_data(tl, xs)
+            tline.set_data(tl, xg)
         else:
-            tline.set_data(xs, tl)
+            tline.set_data(xg, tl)
 
         f = (r"$f_s^{%d}(y)$" % n) if iterates else r"$f_s(y)$"
         ax_t.set_xlabel(f if transposed else r"$y$", fontsize=9)
         ax_t.set_ylabel(r"$y$" if transposed else f, fontsize=9)
 
         if iterates:
-            lg = lap_count(lam, s, n, "g")
-            lt = lap_count(lam, s, n, "t")
-            ax_g.set_title(r"$g_\lambda^{%d}$, $\ell_{%d}=%d$" % (n, n, lg), fontsize=9)
-            ax_t.set_title(r"$f_s^{%d}$, $\ell_{%d}=%d$" % (n, n, lt), fontsize=9)
+            ax_g.set_title(r"$g_\lambda^{%d}$, $\ell_{%d}=%s$"
+                           % (n, n, lg if lg else r"{>}%d" % LAP_CAP), fontsize=9)
+            ax_t.set_title(r"$f_s^{%d}$, $\ell_{%d}=%s$"
+                           % (n, n, lt if lt else r"{>}%d" % LAP_CAP), fontsize=9)
             ax_g.set_ylabel(r"$g_\lambda^{%d}(x)$" % n, fontsize=9)
         else:
             ax_g.set_title(r"$g_\lambda$", fontsize=9)
@@ -615,7 +654,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
         lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
     def step_n(delta):
         """Move n by one, clamped to 1..10; the slider follows."""
-        sl_n.set_val(max(1, min(10, int(round(sl_n.val)) + delta)))
+        sl_n.set_val(max(1, min(N_MAX, int(round(sl_n.val)) + delta)))
 
     def step_steps(delta):
         """Move the cobweb length by one.  The slider spans 2..1000 in about 130 px, so
