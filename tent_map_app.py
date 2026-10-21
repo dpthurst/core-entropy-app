@@ -37,7 +37,10 @@ drawn thinner as n grows -- 1.1 pt at n = 1, 0.4 pt from n = 10 on -- and sample
 lap count, 2401 points at n = 1 rising to 40001 at n = 15, so that a curve with thousands of
 laps is drawn rather than aliased);
 and Milnor-Thurston's semi-conjugacy A, with the images of the first seven critical
-points on its graph.  A sits directly above g and the tent map sits to its right with its
+points on its graph.  Under the panels are the itineraries of the two critical orbits, 48
+symbols each, L and R for the two sides of 1/2 and * for a return to it: they agree where A is
+injective and differ where it collapses an interval, and at lambda = 3.83 they differ at once,
+since the tent map's critical point is periodic there and the logistic one is not.  A sits directly above g and the tent map sits to its right with its
 argument on the vertical axis -- the one panel that is so drawn, and only while A is on
 show; with A off it goes back to the usual reading, argument across and value up -- so the
 identity f_s(A(x)) = A(g(x)) can be read off the picture: a vertical segment from (x, g(x)) up to (x, A(x)), then a horizontal one at that
@@ -92,6 +95,7 @@ LAM_LO, LAM_HI = 2.0, 4.0
 BIF_NLAM, BIF_NROWS, BIF_TRANSIENT, BIF_KEEP = 800, 420, 1200, 700
 BIF_GAMMA, BIF_FLOOR = 0.35, 0.6  # ink = floor + (1-floor)*(count/top)**gamma
 A_STEPS, A_POINTS = 64, 241
+ITIN_LEN = 48               # symbols shown for each critical orbit
 COBWEB_STEPS, COBWEB_MAX, ORBIT_DOTS = 60, 1000, 7
 N_MAX = 20               # the iterates slider goes this high
 LAP_TOL = 1e-14          # merge tolerance for preimages of 1/2, see lap_count
@@ -209,6 +213,19 @@ def lap_count(lam, s, n, which="g"):
         if len(allp) > LAP_CAP:      # near lambda = 4 the count runs to 2^n
             return None
     return len([p for p in allp if 0.0 < p < 1.0]) + 1
+
+
+def itinerary(f, x0=0.5, n=ITIN_LEN, tol=1e-6):
+    """The itinerary of x0 under f: L and R for the two sides of 1/2, * on a return.
+
+    Both critical orbits have one; they agree where A is injective and differ where
+    it collapses an interval.
+    """
+    out, x = [], x0
+    for _ in range(n):
+        x = f(x)
+        out.append("*" if abs(x - 0.5) < tol else ("L" if x < 0.5 else "R"))
+    return "".join(out)
 
 
 def semiconjugacy(x, lam, s, n=A_STEPS):
@@ -439,6 +456,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
     sl_n.drawon = False
 
     info = fig.text(0.045, 0.010, "", fontsize=9.0, va="bottom", family="monospace")
+    orbits = fig.text(0.600, 0.010, "", fontsize=9.0, va="bottom", family="monospace")
 
     cache = {}
     cur = {"lam": lam0, "h": h0, "s": float(np.exp(h0))}
@@ -584,6 +602,10 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
                       f"h = {h:.6f}  h/log2 = {h / LOG2:.4f}  s = {s:.6f}"
                       + (f"    [{timing}]" if exact else "")
                       + "\n" + second)
+        it_g = itinerary(lambda y: lam * y * (1.0 - y))
+        it_t = itinerary(lambda y: tent(y, s))
+        orbits.set_text(f"g_λ: {it_g}\nf_s: {it_t}"
+                        + ("" if it_g == it_t else "\nthey differ"))
         fig.canvas.draw_idle()
 
     def set_slider_range(lo_, hi_):

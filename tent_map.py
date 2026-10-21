@@ -405,7 +405,7 @@ Plotly.newPlot(gdH, trH, panel('Milnor–Thurston A:  f_s ∘ A = A ∘ g_λ',
                                'x  (interval of g_λ)', 'A(x)  (tent coordinate)'), cfg);
 
 // ------------------------------------------------ update everything
-const NSYM = 15, NG = 240;
+const NSYM = 48, NG = 240;   // symbols shown for each critical orbit
 const fillSlider = document.getElementById('fillslider');
 const fillLabel = document.getElementById('filllabel');
 const fillSteps = () => parseInt(fillSlider.value, 10);
