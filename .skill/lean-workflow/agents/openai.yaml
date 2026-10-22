@@ -1,4 +1,0 @@
-interface:
-  display_name: "Lean Proofs"
-  short_description: "Write, find, and repair Lean proofs"
-  default_prompt: "Use $lean-workflow to develop and validate this Lean proof in the existing project."

@@ -22,3 +22,6 @@ __pycache__/
 
 # files attached through the platform, kept in the workspace but out of the repository
 attachments/
+
+# skill folders copied in by the agent tooling: kept on disk, not in the repository
+.skill/
