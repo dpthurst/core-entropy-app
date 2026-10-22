@@ -35,7 +35,9 @@
 
 \begin{center}
   {\Large\bfseries Computing the core entropy of real quadratic polynomials}\\[3pt]
-  {\small notes accompanying the code in \texttt{src/CoreEntropy.jl}}
+  {\small Dylan Thurston, Boston College}\\[2pt]
+  {\small notes accompanying the code in \texttt{src/CoreEntropy.jl};
+   interactive versions at \url{https://dpthurst.github.io/core-entropy-app/}}
 \end{center}
 \vspace{2pt}
 
@@ -945,6 +947,32 @@ assumption is stated in \S\ref{sec:error} and never failed.  Nothing in the meth
 special to the logistic family except the bound $h\le\log2$ that places the zero above
 $\tfrac12$: any unimodal family with a computable kneading sequence can be treated the same
 way, once the orbit and its signs are supplied.
+
+\section*{Authorship}
+
+The mathematics was directed by the author.  The questions worth asking, the standard the
+answers had to meet, and the decisions about what belongs in these notes are his; so, in
+particular, are the corrections that changed the shape of the argument --- that the golden
+ratio here should be $\tau$ and not $\varphi$, that the continuity of $h$ is
+Milnor--Thurston's and not Tiozzo's, that the critical itinerary in the period-$3$ window
+ought to be exact and not merely correct to a dozen places, and that $c=-1.7549\ldots$ has
+the name \emph{airplane}.
+
+Everything else was done by an artificial agent: DeepSeek V4.1~Flash, working in the SAIR
+Open Math OS (\url{https://www.openmathmodel.org/}), whose commits in the repository are
+signed \texttt{Reed}.  It wrote the code in \texttt{src/} and the three front ends, carried
+out the numerical work behind every table and figure, drafted the prose, and searched the
+literature for the references.  It also found, on re-reading rather than by being told, five
+wrong digits in a table of band endpoints, a claim that the derivative of the determinant at
+its smallest zero is of order one --- false exactly where the entropy is small --- and a merge
+tolerance that had been shortening the lap counts since $n=21$ --- a defect that had, embarrassingly, made one of the validation
+thresholds pass for the wrong reason.
+
+The division is therefore not the usual one between an author and a tool.  The agent proposed
+and the author disposed, repeatedly and in both directions: several of the agent's corrections
+came from a question the author asked that exposed them, and several of the author's came from
+reading a picture the agent had drawn and checked numerically.  Responsibility for what is
+claimed rests with the author.
 
 \begin{thebibliography}{9}\footnotesize\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
 \bibitem{dMvS} W.~de Melo and S.~van Strien, \emph{One-dimensional dynamics},
