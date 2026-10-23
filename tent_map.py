@@ -71,11 +71,18 @@ PAGE = r"""<!DOCTYPE html>
   code, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
   code { background:#f2f3f5; padding:1px 4px; border-radius:3px; font-size:12.5px; }
   #entropy { width:100%; height:330px; }
-  /* the entropy plot and the map figure sit side by side, so that the three diagrams and
-     the curve can be read at once; they stack when the window is too narrow for both */
-  .main { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; }
-  .main .left { flex:1 1 38%; min-width:340px; }
-  .main .right { flex:1.4 1 50%; min-width:420px; }
+  /* the entropy plot and the map figure side by side, with the readout under the entropy
+     plot; stacked — below 900 px of window — the readout goes under both figures, so that
+     no text sits between the images */
+  .main { display:grid; gap:20px; align-content:start; align-items:start;
+          grid-template-columns:38% 1fr;
+          grid-template-areas:"left right" "readout right"; }
+  .main .left { grid-area:left; }
+  .main .right { grid-area:right; }
+  .main .readout { grid-area:readout; }
+  @media (max-width: 900px) {
+    .main { grid-template-columns:1fr; grid-template-areas:"left" "right" "readout"; }
+  }
   #maps { width:100%; height:560px; }
   .ctrl { display:flex; gap:18px; align-items:center; margin:6px 0 2px; }
   .ctrl input[type=range] { flex:1 1 auto; accent-color:#1c5f9e; }
@@ -159,17 +166,17 @@ PAGE = r"""<!DOCTYPE html>
       <input type="range" id="slider" min="2" max="4" step="0.001" value="3.7">
     </div>
     <div class="ticks" id="lamticks"><span id="tick0">2</span><span>λ</span><span id="tick1">4</span></div>
-    <div class="kv">
-      <span class="k">λ</span><span class="v" id="v-lam"></span>
-      <span class="k">h(λ)</span><span class="v" id="v-h"></span>
-      <span class="k">c = λ/2 − λ²/4</span><span class="v" id="v-c"></span>
-      <span class="k">s = e^{h(λ)}</span><span class="v" id="v-s"></span>
-      <span class="k">h(λ)/log 2</span><span class="v" id="v-hr"></span>
-      <span class="k">max |f_s(A) − A(g_λ)|</span><span class="v" id="v-err"></span>
-    </div>
   </div>
   <div class="right">
     <div id="maps"></div>
+  </div>
+  <div class="kv readout">
+    <span class="k">λ</span><span class="v" id="v-lam"></span>
+    <span class="k">h(λ)</span><span class="v" id="v-h"></span>
+    <span class="k">c = λ/2 − λ²/4</span><span class="v" id="v-c"></span>
+    <span class="k">s = e^{h(λ)}</span><span class="v" id="v-s"></span>
+    <span class="k">h(λ)/log 2</span><span class="v" id="v-hr"></span>
+    <span class="k">max |f_s(A) − A(g_λ)|</span><span class="v" id="v-err"></span>
   </div>
 </div>
 

@@ -191,7 +191,8 @@ evaluation gives `D(1/τ) = 0` to the precision of `τ` itself.
 `λ` axis: the entropy plot on the left, the three map panels beside it on the right, so that the
 curve and the diagrams can be read together — they stack only when the window is too narrow for
 both.  The λ slider and the readout of `λ`, `h`, `c`, `s` and the residual sit under the entropy
-plot; the toggles and the itineraries run the full width beneath.
+plot, and under both figures when the columns stack; the toggles and the itineraries run the full
+width beneath.
 
 - the core entropy `h(λ)`, computed by `core_entropy.py`, with the **bifurcation diagram**
   of the same parameters behind it as a greyscale density on the right-hand axis — togglable,
