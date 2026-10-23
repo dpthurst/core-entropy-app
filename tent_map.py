@@ -70,10 +70,13 @@ PAGE = r"""<!DOCTYPE html>
   p.sub { color:#555; font-size:13px; line-height:1.5; margin:0 0 10px; max-width:1100px; }
   code, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
   code { background:#f2f3f5; padding:1px 4px; border-radius:3px; font-size:12.5px; }
-  #entropy { width:100%; height:300px; }
-  .mapsrow { display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; margin-top:4px; }
-  #maps { flex:0 1 720px; min-width:360px; height:580px; }
-  .mapsrow .kv { flex:0 1 280px; }
+  #entropy { width:100%; height:330px; }
+  /* the entropy plot and the map figure sit side by side, so that the three diagrams and
+     the curve can be read at once; they stack when the window is too narrow for both */
+  .main { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; }
+  .main .left { flex:1 1 38%; min-width:340px; }
+  .main .right { flex:1.4 1 50%; min-width:420px; }
+  #maps { width:100%; height:560px; }
   .ctrl { display:flex; gap:18px; align-items:center; margin:6px 0 2px; }
   .ctrl input[type=range] { flex:1 1 auto; accent-color:#1c5f9e; }
   .ticks { display:flex; justify-content:space-between; color:#888; font-size:11px; margin:0 0 8px; }
@@ -107,12 +110,12 @@ PAGE = r"""<!DOCTYPE html>
 
 <h1>Core entropy, bifurcation diagram, and the semi-conjugate tent map</h1>
 <p class="sub">
-  Top: the core entropy <code>h(λ)</code> of <code>g_λ(x) = λx(1−x)</code>, computed from the
-  Milnor–Thurston kneading determinant, with the bifurcation diagram of the same parameters
-  behind it as a greyscale density (read on the right-hand axis).  The dashed line is the
-  Feigenbaum parameter, the red one the current <code>λ</code>; zoom and pan act on
-  <code>λ</code> alone.  Below: the cobweb of the critical orbit for <code>g_λ</code> and for
-  the tent map <code>f_s</code> of slope <code>s = e^{h(λ)} = 1/t₀</code> — or, with
+  On the left: the core entropy <code>h(λ)</code> of <code>g_λ(x) = λx(1−x)</code>, computed
+  from the Milnor–Thurston kneading determinant, with the bifurcation diagram of the same
+  parameters behind it as a greyscale density (read on the right-hand axis).  The dashed line
+  is the Feigenbaum parameter, the red one the current <code>λ</code>; zoom and pan act on
+  <code>λ</code> alone.  On the right: the cobweb of the critical orbit for <code>g_λ</code>
+  and for the tent map <code>f_s</code> of slope <code>s = e^{h(λ)} = 1/t₀</code> — or, with
   <i>plot the iterates</i>, the graphs of <code>g_λ^n</code> and <code>f_s^n</code> for
   <code>n</code> up to 20, titled with their lap counts — and the map <code>A</code> of
   Theorem 7.4 of Milnor–Thurston, which satisfies <code>f_s(A(x)) = A(g_λ(x))</code>: the
@@ -127,14 +130,18 @@ PAGE = r"""<!DOCTYPE html>
 <div class="help">
   <div class="hd">Using it</div>
   <ul>
-    <li>Drag the <code>λ</code> slider, just under the plot, to move through the family.  Its two
-        ends are the ends of the visible range, so it always spans what you are looking at.</li>
+    <li>Drag the <code>λ</code> slider, just under the entropy plot, to move through the
+        family.  Its two ends are the ends of the visible range, so it always spans what you
+        are looking at.</li>
     <li>Zoom by dragging a box on the <code>λ</code> axis.  Only <code>λ</code> zooms: the entropy
         axis keeps its scale, and so do the three map panels.</li>
-    <li>To come back, double-click the plot, press the home button in its mode bar, or use
-        <i>reset zoom</i> (below the maps), or press <b>0</b>.</li>
-    <li><b>+</b> and <b>&minus;</b>, or the buttons beside the slider, or the arrow keys on the
-        slider itself, change the number of iterates, from 1 to 20.</li>
+    <li>To come back, double-click the entropy plot, press the home button in its mode bar, or
+        use <i>reset zoom</i> under the maps, or press <b>0</b>.</li>
+    <li><b>+</b> and <b>&minus;</b> — or the arrows on a slider that has the focus — step
+        whichever of the two is on show, <code>n</code> in the iterates view and the cobweb
+        length in the cobweb view; only one of them is ever on show, so the same keys serve
+        both.  The buttons beside each slider do the same.  <b>[</b> and <b>]</b> step the
+        cobweb length by one as well, at any time in the cobweb view.</li>
     <li>The checkboxes below the maps switch the bifurcation diagram, the iterates view (in which
         case the cobweb-length slider appears in its place) and the <code>A</code> panel.</li>
     <li>The red segments carry one point of the orbit across to <code>f_s</code> through
@@ -145,22 +152,24 @@ PAGE = r"""<!DOCTYPE html>
   </ul>
 </div>
 
-<div id="entropy"></div>
-
-<div class="ctrl" id="lamctrl">
-  <input type="range" id="slider" min="2" max="4" step="0.001" value="3.7">
-</div>
-<div class="ticks" id="lamticks"><span id="tick0">2</span><span>λ</span><span id="tick1">4</span></div>
-
-<div class="mapsrow">
-  <div id="maps"></div>
-  <div class="kv">
-    <span class="k">λ</span><span class="v" id="v-lam"></span>
-    <span class="k">h(λ)</span><span class="v" id="v-h"></span>
-    <span class="k">c = λ/2 − λ²/4</span><span class="v" id="v-c"></span>
-    <span class="k">s = e^{h(λ)}</span><span class="v" id="v-s"></span>
-    <span class="k">h(λ)/log 2</span><span class="v" id="v-hr"></span>
-    <span class="k">max |f_s(A) − A(g_λ)|</span><span class="v" id="v-err"></span>
+<div class="main">
+  <div class="left">
+    <div id="entropy"></div>
+    <div class="ctrl" id="lamctrl">
+      <input type="range" id="slider" min="2" max="4" step="0.001" value="3.7">
+    </div>
+    <div class="ticks" id="lamticks"><span id="tick0">2</span><span>λ</span><span id="tick1">4</span></div>
+    <div class="kv">
+      <span class="k">λ</span><span class="v" id="v-lam"></span>
+      <span class="k">h(λ)</span><span class="v" id="v-h"></span>
+      <span class="k">c = λ/2 − λ²/4</span><span class="v" id="v-c"></span>
+      <span class="k">s = e^{h(λ)}</span><span class="v" id="v-s"></span>
+      <span class="k">h(λ)/log 2</span><span class="v" id="v-hr"></span>
+      <span class="k">max |f_s(A) − A(g_λ)|</span><span class="v" id="v-err"></span>
+    </div>
+  </div>
+  <div class="right">
+    <div id="maps"></div>
   </div>
 </div>
 
@@ -174,7 +183,9 @@ PAGE = r"""<!DOCTYPE html>
     <button type="button" class="btn step" id="nplus" title="one more iterate (the + key)">+</button>
     <span class="mono" id="nlabel">1</span></span>
   <span class="chk" id="fwrap" style="display:none">cobweb steps =
+    <button type="button" class="btn step" id="fminus" title="one fewer step (the - key)">&minus;</button>
     <input type="range" id="fillslider" min="2" max="1000" step="1" value="34" style="width:90px;vertical-align:middle">
+    <button type="button" class="btn step" id="fplus" title="one more step (the + key)">+</button>
     <span class="mono" id="filllabel">34</span></span>
   <label class="chk"><input type="checkbox" id="ashow" checked> A panel</label>
   <button type="button" class="btn" id="resetzoom" title="back to the whole family (the 0 key)">reset zoom</button>
@@ -687,6 +698,17 @@ nSlider.addEventListener('input', () => {
 });
 document.getElementById('nminus').addEventListener('click', () => stepN(-1));
 document.getElementById('nplus').addEventListener('click', () => stepN(+1));
+function stepCobweb(d){
+  fillSlider.value = Math.max(2, Math.min(1000, parseInt(fillSlider.value, 10) + d));
+  fillLabel.textContent = fillSlider.value;
+  if (!iterBox.checked) drawMaps(curLam, sAt(curLam), hAt(curLam));
+}
+function stepBy(d){
+  // only one of the two sliders is ever on show, so the same keys serve both
+  if (iterBox.checked) stepN(d); else stepCobweb(d);
+}
+document.getElementById('fminus').addEventListener('click', () => stepCobweb(-1));
+document.getElementById('fplus').addEventListener('click', () => stepCobweb(+1));
 
 // the + and - keys do what the buttons do.  Sliders and checkboxes keep the keys:
 // after dragging the slider it still has the focus, and swallowing them there would
@@ -697,8 +719,10 @@ document.addEventListener('keydown', e => {
   const type = (el.type || '').toLowerCase();
   if (tag === 'TEXTAREA') return;
   if (tag === 'INPUT' && type !== 'range' && type !== 'checkbox') return;
-  if (e.key === '+' || e.key === '=') { stepN(+1); e.preventDefault(); }
-  else if (e.key === '-' || e.key === '_') { stepN(-1); e.preventDefault(); }
+  if (e.key === '+' || e.key === '=') { stepBy(+1); e.preventDefault(); }
+  else if (e.key === '-' || e.key === '_') { stepBy(-1); e.preventDefault(); }
+  else if (e.key === '[' && !iterBox.checked) { stepCobweb(-1); e.preventDefault(); }
+  else if (e.key === ']' && !iterBox.checked) { stepCobweb(+1); e.preventDefault(); }
   else if (e.key === '0') { resetZoom(); e.preventDefault(); }
 });
 fillSlider.addEventListener('input', () => {

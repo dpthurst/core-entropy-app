@@ -188,7 +188,10 @@ evaluation gives `D(1/τ) = 0` to the precision of `τ` itself.
 ## The integrated page
 
 `tent_map.py` (Python, numpy only) writes `tent_map.html`, which puts the whole story on one
-`λ` axis:
+`λ` axis: the entropy plot on the left, the three map panels beside it on the right, so that the
+curve and the diagrams can be read together — they stack only when the window is too narrow for
+both.  The λ slider and the readout of `λ`, `h`, `c`, `s` and the residual sit under the entropy
+plot; the toggles and the itineraries run the full width beneath.
 
 - the core entropy `h(λ)`, computed by `core_entropy.py`, with the **bifurcation diagram**
   of the same parameters behind it as a greyscale density on the right-hand axis — togglable,
@@ -198,7 +201,9 @@ evaluation gives `D(1/τ) = 0` to the precision of `τ` itself.
   the graphs of `g_λ^n` and `f_s^n` themselves for `n = 1…20`.  The `n`-th iterate has
   `ℓ_n = 1 +` its turning points monotone pieces, so watching the count climb — 4, 14, 38,
   90 at `λ = 3.7`, the same for both maps — is the most concrete picture of the quantity
-  whose growth rate is the entropy;
+  whose growth rate is the entropy.  The cobweb length has a slider of its own (2–1000), and
+  `+`/`−` step whichever of that and `n` is on show, one unit at a time; `[` and `]` also step
+  the cobweb length;
 - the map `A` of Theorem 7.4 of Milnor–Thurston, which satisfies `f_s(A(x)) = A(g_λ(x))`:
   `g_λ` is topologically semi-conjugate to the piecewise-linear model `f_s`.  The arrow does
   not reverse — a tent map has no attracting cycle, while `g_λ` may have one — and `A` need
