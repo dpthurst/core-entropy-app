@@ -71,9 +71,9 @@ PAGE = r"""<!DOCTYPE html>
   code, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
   code { background:#f2f3f5; padding:1px 4px; border-radius:3px; font-size:12.5px; }
   #entropy { width:100%; height:300px; }
-  .row { display:flex; gap:16px; align-items:flex-start; margin-top:4px; }
-  .row > div { flex:1 1 0; min-width:0; }
-  #logi, #tentp, #semi { height:300px; }
+  .mapsrow { display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; margin-top:4px; }
+  #maps { flex:0 1 720px; min-width:360px; height:580px; }
+  .mapsrow .kv { flex:0 1 280px; }
   .ctrl { display:flex; gap:18px; align-items:center; margin:6px 0 2px; }
   .ctrl input[type=range] { flex:1 1 auto; accent-color:#1c5f9e; }
   .ticks { display:flex; justify-content:space-between; color:#888; font-size:11px; margin:0 0 8px; }
@@ -118,7 +118,10 @@ PAGE = r"""<!DOCTYPE html>
   Theorem 7.4 of Milnor–Thurston, which satisfies <code>f_s(A(x)) = A(g_λ(x))</code>: the
   itinerary of <code>x</code>, read through <code>f_s</code>'s inverse branches, lands on the
   itinerary of <code>g_λ(x)</code> read the same way.  The arrow does not reverse, and
-  <code>A</code> need not be injective.
+  <code>A</code> need not be injective.  <code>A</code> sits directly above <code>g_λ</code>
+  and the tent map to <code>A</code>'s right with its argument up the panel, so the identity
+  reads as a rectangle: up from the graph of <code>g_λ</code> to <code>A</code> at the same
+  <code>x</code>, then across to the graph of <code>f_s</code>.
 </p>
 
 <div class="help">
@@ -134,6 +137,11 @@ PAGE = r"""<!DOCTYPE html>
         slider itself, change the number of iterates, from 1 to 20.</li>
     <li>The checkboxes below the maps switch the bifurcation diagram, the iterates view (in which
         case the cobweb-length slider appears in its place) and the <code>A</code> panel.</li>
+    <li>The red segments carry one point of the orbit across to <code>f_s</code> through
+        <code>A</code>: up from the graph of <code>g_λ</code> to <code>A</code> at the same
+        <code>x</code>, then across to the graph of <code>f_s</code>, whose argument runs up the
+        panel.  They are drawn at one point (<code>x = 0.3</code>) in the iterates view, and at
+        the first few points of the critical orbit in the cobweb view.</li>
   </ul>
 </div>
 
@@ -144,10 +152,16 @@ PAGE = r"""<!DOCTYPE html>
 </div>
 <div class="ticks" id="lamticks"><span id="tick0">2</span><span>λ</span><span id="tick1">4</span></div>
 
-<div class="row">
-  <div id="logi"></div>
-  <div id="tentp"></div>
-  <div id="semi"></div>
+<div class="mapsrow">
+  <div id="maps"></div>
+  <div class="kv">
+    <span class="k">λ</span><span class="v" id="v-lam"></span>
+    <span class="k">h(λ)</span><span class="v" id="v-h"></span>
+    <span class="k">c = λ/2 − λ²/4</span><span class="v" id="v-c"></span>
+    <span class="k">s = e^{h(λ)}</span><span class="v" id="v-s"></span>
+    <span class="k">h(λ)/log 2</span><span class="v" id="v-hr"></span>
+    <span class="k">max |f_s(A) − A(g_λ)|</span><span class="v" id="v-err"></span>
+  </div>
 </div>
 
 <div class="ctrl">
@@ -166,14 +180,6 @@ PAGE = r"""<!DOCTYPE html>
   <button type="button" class="btn" id="resetzoom" title="back to the whole family (the 0 key)">reset zoom</button>
 </div>
 <div class="info">
-  <div class="kv">
-    <span class="k">λ</span><span class="v" id="v-lam"></span>
-    <span class="k">h(λ)</span><span class="v" id="v-h"></span>
-    <span class="k">c = λ/2 − λ²/4</span><span class="v" id="v-c"></span>
-    <span class="k">s = e^{h(λ)}</span><span class="v" id="v-s"></span>
-    <span class="k">h(λ)/log 2</span><span class="v" id="v-hr"></span>
-    <span class="k">max |f_s(A) − A(g_λ)|</span><span class="v" id="v-err"></span>
-  </div>
   <div>
     <div><b>itineraries of the critical orbits</b></div>
     <div class="seq mono" id="v-seqL"></div>
@@ -360,9 +366,7 @@ const cfg = {responsive: true, displaylogo: false, doubleClick: 'reset',
 const grey = '#b9c0c7';
 
 const gdE = document.getElementById('entropy');
-const gdL = document.getElementById('logi');
-const gdT = document.getElementById('tentp');
-const gdH = document.getElementById('semi');
+const gdM = document.getElementById('maps');
 
 const layoutE = {
   margin: {l: 56, r: 46, t: 24, b: 34},
@@ -392,39 +396,78 @@ const trE = [
    marker: {size: 10, color: '#c1272d', line: {color: '#fff', width: 1.2}}, hoverinfo: 'skip'}
 ];
 
-function panel(title, xt, yt, colour){
-  return {margin: {l: 44, r: 12, t: 28, b: 32},
-          xaxis: {title: {text: xt, font: {size: 11}}, range: [-0.02, 1.04],
-                  gridcolor: '#eef1f3', tickfont: {size: 10}},
-          yaxis: {title: {text: yt, font: {size: 11}}, range: [-0.02, 1.04],
-                  gridcolor: '#eef1f3', tickfont: {size: 10}},
-          title: {text: title, font: {size: 11}}, showlegend: false, font: font,
-          paper_bgcolor: '#fff', plot_bgcolor: '#fff'};
+// ---- the three map panels: one figure, arranged as in the stand-alone window
+// A sits directly above g_λ on a shared x, and the tent map is to A's right with its
+// argument on the vertical axis.  A horizontal line at height A(x) then meets the graph
+// of f_s at f_s(A(x)), so the commuting square f_s ∘ A = A ∘ g_λ reads as two straight
+// segments.  They can be drawn only because the three panels are one figure: separate
+// Plotly divs cannot carry a segment across a panel boundary, which is why this used
+// to be three of them.
+const MAPR = [-0.02, 1.04];
+const DOM_A = {x: [0.000, 0.460], y: [0.535, 1.000]};
+const DOM_G = {x: [0.000, 0.460], y: [0.000, 0.465]};
+const DOM_T = {x: [0.545, 1.000], y: [0.535, 1.000]};
+const NSQ = 4;       // how many orbit points get a square in the cobweb view
+const X0 = 0.3;      // the point used when the plain graphs are on show
+
+function axmap(dom, title, anchor){
+  return {domain: dom, range: MAPR, anchor: anchor, title: {text: title, font: {size: 11}},
+          gridcolor: '#eef1f3', tickfont: {size: 10}, fixedrange: true,
+          zeroline: false, showline: true, linecolor: '#c8ccd2', linewidth: 0.8};
 }
-const trL = [
-  {x: [0,1], y: [0,1], mode: 'lines', line: {color: grey, width: 1, dash: 'dot'}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'lines', line: {color: '#1c5f9e', width: 1.6}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'lines', line: {color: '#c0392b', width: 0.35}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'markers', marker: {size: 4, color: '#c0392b'}, hoverinfo: 'skip'}
-];
-const trT = [
-  {x: [0,1], y: [0,1], mode: 'lines', line: {color: grey, width: 1, dash: 'dot'}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'lines', line: {color: '#2f6b4f', width: 1.6}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'lines', line: {color: '#c0392b', width: 0.35}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'markers', marker: {size: 4, color: '#c0392b'}, hoverinfo: 'skip'}
-];
-const trH = [
-  {x: [0,1], y: [0,1], mode: 'lines', line: {color: grey, width: 1, dash: 'dot'}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'lines', line: {color: '#333', width: 1.2}, hoverinfo: 'skip'},
-  {x: [], y: [], mode: 'markers', marker: {size: 6, color: '#c0392b', line: {color: '#fff', width: 1}},
-   hoverinfo: 'skip'}
+function titleAnn(text, dom){
+  return {text: text, xref: 'paper', yref: 'paper', x: dom.x[0], y: dom.y[1] + 0.008,
+          xanchor: 'left', yanchor: 'bottom', showarrow: false, font: {size: 11},
+          bgcolor: 'rgba(255,255,255,0.75)'};
+}
+const layoutM = {
+  margin: {l: 52, r: 14, t: 34, b: 44},
+  dragmode: false,
+  // every axis is anchored to the axis of its own panel: without this each one defaults
+  // to x/y, and the labels of the second and third panels are drawn against the first
+  xaxis:  axmap(DOM_A.x, '', 'y'),
+  yaxis:  axmap(DOM_A.y, 'A(x)', 'x'),
+  xaxis2: axmap(DOM_G.x, 'x', 'y2'),
+  yaxis2: axmap(DOM_G.y, 'g_λ(x)', 'x2'),
+  xaxis3: axmap(DOM_T.x, 'f_s(y)', 'y3'),
+  yaxis3: axmap(DOM_T.y, 'y', 'x3'),
+  annotations: [titleAnn('A', DOM_A), titleAnn('g_λ', DOM_G),
+                titleAnn('f_s, argument up', DOM_T)],
+  shapes: [],
+  showlegend: false, font: font, paper_bgcolor: '#fff', plot_bgcolor: '#fff'
+};
+layoutM.xaxis.showticklabels = false;         // g_λ below carries the shared x axis
+
+// the traces, and their indices, in this order
+const A_DIAG = 0, A_CURVE = 1, A_DOTS = 2, A_SQ = 3,
+      G_DIAG = 4, G_CURVE = 5, G_CW = 6, G_DOTS = 7, G_SQ = 8,
+      T_DIAG = 9, T_CURVE = 10, T_CW = 11, T_DOTS = 12, T_SQ = 13;
+const diag = (ax, ay) => ({x: [0, 1], y: [0, 1], xaxis: ax, yaxis: ay, mode: 'lines',
+                           line: {color: grey, width: 1, dash: 'dot'}, hoverinfo: 'skip'});
+const tLine = (ax, ay, colour, width) =>
+  ({x: [], y: [], xaxis: ax, yaxis: ay, mode: 'lines',
+    line: {color: colour, width: width}, hoverinfo: 'skip'});
+const tDots = (ax, ay, colour, size) =>
+  ({x: [], y: [], xaxis: ax, yaxis: ay, mode: 'markers',
+    marker: {size: size, color: colour, line: {color: '#fff', width: 0.6}}, hoverinfo: 'skip'});
+const trM = [
+  diag('x', 'y'), tLine('x', 'y', '#7a4b16', 1.4), tDots('x', 'y', '#e08a1e', 4),
+  tDots('x', 'y', '#c1272d', 4.5),
+  diag('x2', 'y2'), tLine('x2', 'y2', '#1c5f9e', 1.6), tLine('x2', 'y2', '#e08a1e', 0.35),
+  tDots('x2', 'y2', '#e08a1e', 4), tDots('x2', 'y2', '#c1272d', 4.5),
+  diag('x3', 'y3'), tLine('x3', 'y3', '#2f6b4f', 1.6), tLine('x3', 'y3', '#e08a1e', 0.35),
+  tDots('x3', 'y3', '#e08a1e', 4), tDots('x3', 'y3', '#c1272d', 4.5)
 ];
 
 Plotly.newPlot(gdE, trE, layoutE, cfg);
-Plotly.newPlot(gdL, trL, panel('g_λ on its interval', 'x', 'g_λ(x)'), cfg);
-Plotly.newPlot(gdT, trT, panel('the tent map f_s', 'y', 'f_s(y)'), cfg);
-Plotly.newPlot(gdH, trH, panel('Milnor–Thurston A:  f_s ∘ A = A ∘ g_λ',
-                               'x  (interval of g_λ)', 'A(x)  (tent coordinate)'), cfg);
+Plotly.newPlot(gdM, trM, layoutM, cfg);
+
+// a value as a fraction of the plot area: the axis domains and the paper coordinates
+// of the segments both measure that same rectangle
+const fracU = (v, dom) =>
+  dom.x[0] + (v - MAPR[0]) / (MAPR[1] - MAPR[0]) * (dom.x[1] - dom.x[0]);
+const fracV = (v, dom) =>
+  dom.y[0] + (v - MAPR[0]) / (MAPR[1] - MAPR[0]) * (dom.y[1] - dom.y[0]);
 
 // ------------------------------------------------ update everything
 const NSYM = 48, NG = 240;   // symbols shown for each critical orbit
@@ -472,54 +515,130 @@ function drawBifurcation(){
 }
 
 const iterBox = document.getElementById('iter');
+const aBox = document.getElementById('ashow');
 const nSlider = document.getElementById('nslider');
 const nLabel  = document.getElementById('nlabel');
 const nWrap   = document.getElementById('nwrap');
+const ORBIT_DOTS = 7;        // orbit points dotted in each panel
+let lastLW = null;           // the iterate curve's line width, set only when it changes
 
-// either the cobweb of the critical orbit, or the graph of the n-th iterate
-// itself, which is what shows the lap count exploding
-function drawMaps(lam, s){
-  const orbL = orbit(x => g(x, lam), fillSteps(), 0.5);
-  if (iterBox.checked){
-    const n = Math.max(1, Math.min(20, parseInt(nSlider.value, 10)));
+// Either the cobweb of the critical orbit, or the graph of the n-th iterate itself,
+// which is what shows the lap count exploding.  The tent panel turns its argument up
+// exactly when A is on show, as in the stand-alone window; with A off there is nothing
+// to join it to, so it goes back to the usual reading.  Everything the figure shows is
+// set here, in one restyle and one relayout, so a drag costs two redraws of one figure
+// instead of six of three.
+function drawMaps(lam, s, h){
+  const aOn = aBox.checked, iterates = iterBox.checked;
+  const n = Math.max(1, Math.min(20, parseInt(nSlider.value, 10)));
+  const steps = fillSteps();
+  const orbG = orbit(x => g(x, lam), Math.max(steps, ORBIT_DOTS), 0.5);
+  const orbT = orbit(y => tent(y, s), ORBIT_DOTS, 0.5);
+  nLabel.textContent = n;
+
+  let gx, gy, tx, ty, cwG = {x: [], y: []}, cwT = {x: [], y: []}, lw = 1.6;
+  let lgTxt = '', ltTxt = '';
+  if (iterates){
     const lG = lapsG(lam, n), lT = lapsTent(s, n);
     // sample by the number of laps: a fixed grid aliases a curve with thousands of them
-    const M = Math.min(40001, Math.max(2401, 30*(lG || LAP_CAP))), xs = [], yl = [], yt = [];
+    const M = Math.min(40001, Math.max(2401, 30*(lG || LAP_CAP))), xs = [], yg = [], yf = [];
     for (let i = 0; i <= M; i++){
       const x = i/M;
       let a = x, b = x;
       for (let k = 0; k < n; k++){ a = g(a, lam); b = tent(b, s); }
-      xs.push(x); yl.push(a); yt.push(b);
+      xs.push(x); yg.push(a); yf.push(b);
     }
-    const lw = Math.max(0.5, 1.6 - 0.1*n);
-    Plotly.restyle(gdL, {line: {width: lw}}, [1]);
-    Plotly.restyle(gdT, {line: {width: lw}}, [1]);
-    Plotly.restyle(gdL, {x: [xs, [], []], y: [yl, [], []]}, [1, 2, 3]);
-    Plotly.restyle(gdT, {x: [xs, [], []], y: [yt, [], []]}, [1, 2, 3]);
-    const lgTxt = lG === null ? '&gt;' + LAP_CAP : lG;
-    const ltTxt = lT === null ? '&gt;' + LAP_CAP : lT;
-    Plotly.relayout(gdL, {title: {text: 'g_λ^' + n + '   with ℓ_' + n + ' = ' + lgTxt},
-                          'xaxis.title.text': 'x', 'yaxis.title.text': 'g_λ^' + n + '(x)'});
-    Plotly.relayout(gdT, {title: {text: 'f_s^' + n + '   with ℓ_' + n + ' = ' + ltTxt},
-                          'xaxis.title.text': 'y', 'yaxis.title.text': 'f_s^' + n + '(y)'});
-    nLabel.textContent = n;
+    lw = Math.max(0.5, 1.6 - 0.1*n);
+    lgTxt = lG === null ? '>' + LAP_CAP : lG;
+    ltTxt = lT === null ? '>' + LAP_CAP : lT;
+    gx = xs; gy = yg;
+    if (aOn) { tx = yf; ty = xs; } else { tx = xs; ty = yf; }
   } else {
-    Plotly.restyle(gdL, {line: {width: 1.6}}, [1]);
-    Plotly.restyle(gdT, {line: {width: 1.6}}, [1]);
-    const cwL = cobweb(x => g(x, lam), fillSteps(), 0.5);
-    const cwT = cobweb(y => tent(y, s), fillSteps(), 0.5);
-    const orbT = orbit(y => tent(y, s), fillSteps(), 0.5);
-    const xs = [], ys = [];
-    for (let i = 0; i <= 220; i++){ const x = i/220; xs.push(x); ys.push(g(x, lam)); }
-    Plotly.restyle(gdL, {x: [xs, cwL.x, orbL.slice(0, 7)], y: [ys, cwL.y, orbL.slice(0, 7)]}, [1, 2, 3]);
-    Plotly.restyle(gdT, {x: [[0, 0.5, 1], cwT.x, orbT.slice(0, 7)],
-                         y: [[0, s/2, 0], cwT.y, orbT.slice(0, 7)]}, [1, 2, 3]);
-    Plotly.relayout(gdL, {title: {text: 'g_λ on its interval'},
-                          'xaxis.title.text': 'x', 'yaxis.title.text': 'g_λ(x)'});
-    Plotly.relayout(gdT, {title: {text: 'the tent map f_s'},
-                          'xaxis.title.text': 'y', 'yaxis.title.text': 'f_s(y)'});
+    const xs = [];
+    for (let i = 0; i <= 220; i++) xs.push(i/220);
+    gx = xs; gy = xs.map(x => g(x, lam));
+    // the tent map is piecewise linear, so three points are exact
+    if (aOn) { tx = [0, s/2, 0]; ty = [0, 0.5, 1]; }
+    else     { tx = [0, 0.5, 1]; ty = [0, s/2, 0]; }
+    cwG = cobweb(x => g(x, lam), steps, 0.5);
+    const ct = cobweb(y => tent(y, s), steps, 0.5);
+    cwT = aOn ? {x: ct.y, y: ct.x} : ct;      // transposed with the panel
   }
-  return orbL;
+  const orbTv = orbT.map(y => tent(y, s));
+  const td = aOn ? {x: orbTv, y: orbT} : {x: orbT, y: orbTv};
+
+  // ---- A, and the two segments of the commuting square
+  const axs = [], ays = [], adx = [], ady = [], shapes = [];
+  const dot = {ax: [], ay: [], gx: [], gy: [], tx: [], ty: []};
+  // the residual is computed whether or not A is on show: it is a fact about the pair of
+  // maps, and the readout keeps reporting it with the panel hidden
+  let err = 0;
+  for (let i = 0; i <= NG; i++){
+    const x = i/NG, a = A_of(x, lam, s, 64);
+    const e = Math.abs(A_of(g(x, lam), lam, s, 64) - tent(a, s));
+    if (e > err) err = e;
+    if (aOn){ axs.push(x); ays.push(a); }
+  }
+  if (aOn){
+    for (const x of orbG.slice(0, ORBIT_DOTS)){ adx.push(x); ady.push(A_of(x, lam, s, 64)); }
+    // One pair of segments per point shown: up from the graph of g^n, across from A to
+    // the graph of f_s^n.  The same pair is right for every n, since f_s^n(A(x)) =
+    // A(g^n(x)) follows from the functional equation.  In the cobweb view a few points
+    // of the critical orbit are used, which is what carries that orbit onto the f_s one.
+    const pts = [];
+    if (iterates){
+      let gn = X0;
+      for (let k = 0; k < n; k++) gn = g(gn, lam);
+      const a0 = A_of(X0, lam, s, 64);
+      let f0 = a0;
+      for (let k = 0; k < n; k++) f0 = tent(f0, s);
+      pts.push([X0, gn, a0, f0]);
+    } else {
+      for (let k = 0; k < Math.min(NSQ, steps - 1); k++){
+        const x0 = k === 0 ? 0.5 : orbG[k];
+        const a0 = A_of(x0, lam, s, 64);
+        pts.push([x0, g(x0, lam), a0, tent(a0, s)]);
+      }
+    }
+    pts.forEach(([x0, gn, a0, f0], k) => {
+      const col = 'rgba(193,39,45,' + (1 - 0.18*k).toFixed(2) + ')';
+      const u = fracU(x0, DOM_G), uT = fracU(f0, DOM_T);
+      const vg = fracV(gn, DOM_G), va = fracV(a0, DOM_A);
+      shapes.push({type: 'line', xref: 'paper', yref: 'paper', layer: 'below',
+                   x0: u, y0: vg, x1: u, y1: va, line: {color: col, width: 1}});
+      shapes.push({type: 'line', xref: 'paper', yref: 'paper', layer: 'below',
+                   x0: u, y0: va, x1: uT, y1: va, line: {color: col, width: 1}});
+      dot.gx.push(x0); dot.gy.push(gn);
+      dot.ax.push(x0); dot.ay.push(a0);
+      dot.tx.push(f0); dot.ty.push(a0);
+    });
+  }
+
+  const dg = aOn ? [0, 1] : [];
+  Plotly.restyle(gdM, {
+    x: [dg, axs, adx, dot.ax,  gx, cwG.x, orbG.slice(0, ORBIT_DOTS), dot.gx,
+        tx, cwT.x, td.x, dot.tx],
+    y: [dg, ays, ady, dot.ay,  gy, cwG.y, orbG.slice(0, ORBIT_DOTS), dot.gy,
+        ty, cwT.y, td.y, dot.ty]
+  }, [A_DIAG, A_CURVE, A_DOTS, A_SQ, G_CURVE, G_CW, G_DOTS, G_SQ,
+      T_CURVE, T_CW, T_DOTS, T_SQ]);
+  if (lw !== lastLW){
+    Plotly.restyle(gdM, {'line.width': [lw, lw]}, [G_CURVE, T_CURVE]);
+    lastLW = lw;
+  }
+  Plotly.relayout(gdM, {
+    shapes: shapes,
+    'annotations[0].text': aOn ? (h > 1e-12 ? 'A:  f_s ∘ A = A ∘ g_λ'
+                                             : 'A, with h = 0  (f_s has slope 1)') : '',
+    'annotations[1].text': iterates ? 'g_λ^' + n + '   ℓ_' + n + ' = ' + lgTxt : 'g_λ',
+    'annotations[2].text': iterates ? 'f_s^' + n + '   ℓ_' + n + ' = ' + ltTxt
+                                    : (aOn ? 'f_s, argument up' : 'f_s'),
+    'yaxis2.title.text': iterates ? 'g_λ^' + n + '(x)' : 'g_λ(x)',
+    'xaxis3.title.text': aOn ? 'f_s(y)' : 'y',
+    'yaxis3.title.text': aOn ? 'y' : 'f_s(y)',
+    'xaxis.visible': aOn, 'yaxis.visible': aOn
+  });
+  return err;
 }
 
 let curLam = 3.7;
@@ -531,23 +650,7 @@ function setLambda(lam){
   curLam = lam;
   Plotly.restyle(gdE, {x: [[lam]], y: [[h]]}, [2]);
 
-  const orbL = drawMaps(lam, s);
-
-  const gx = [], gy = [];
-  let err = 0;
-  for (let i = 0; i <= NG; i++){
-    const x = i/NG, a = A_of(x, lam, s, 64);
-    gx.push(x); gy.push(a);
-    const e = Math.abs(A_of(g(x, lam), lam, s, 64) - tent(a, s));
-    if (e > err) err = e;
-  }
-  const oy = orbL.slice(0, 7).map(x => A_of(x, lam, s, 64));
-  Plotly.restyle(gdH, {x: [gx, orbL.slice(0, 7)], y: [gy, oy]}, [1, 2]);
-  // below the Feigenbaum parameter h = 0: the model has slope 1 and A collapses to a
-  // point (A = 1/2 is a semi-conjugacy, with residual 0, but a degenerate one)
-  Plotly.relayout(gdH, {title: {text: h > 1e-12
-    ? 'Milnor–Thurston A:  f_s ∘ A = A ∘ g_λ'
-    : 'Milnor–Thurston A:  h = 0 here, so f_s has slope 1 and A is constant'}});
+  const err = drawMaps(lam, s, h);      // draws A, the square and the error as well
 
   Plotly.relayout(gdE, {shapes: [
     {type: 'line', x0: 3.5699456718, x1: 3.5699456718, yref: 'paper', y0: 0, y1: 1,
@@ -571,16 +674,16 @@ document.getElementById('slider').addEventListener('input', e => setLambda(parse
 iterBox.addEventListener('change', e => {
   nWrap.style.display = e.target.checked ? '' : 'none';
   document.getElementById('fwrap').style.display = e.target.checked ? 'none' : '';
-  drawMaps(curLam, sAt(curLam));
+  drawMaps(curLam, sAt(curLam), hAt(curLam));
 });
 function stepN(d){
   nSlider.value = Math.max(1, Math.min(20, parseInt(nSlider.value, 10) + d));
   nLabel.textContent = nSlider.value;
-  if (iterBox.checked) drawMaps(curLam, sAt(curLam));
+  if (iterBox.checked) drawMaps(curLam, sAt(curLam), hAt(curLam));
 }
 nSlider.addEventListener('input', () => {
   nLabel.textContent = nSlider.value;
-  if (iterBox.checked) drawMaps(curLam, sAt(curLam));
+  if (iterBox.checked) drawMaps(curLam, sAt(curLam), hAt(curLam));
 });
 document.getElementById('nminus').addEventListener('click', () => stepN(-1));
 document.getElementById('nplus').addEventListener('click', () => stepN(+1));
@@ -600,17 +703,12 @@ document.addEventListener('keydown', e => {
 });
 fillSlider.addEventListener('input', () => {
   fillLabel.textContent = fillSlider.value;
-  if (!iterBox.checked) drawMaps(curLam, sAt(curLam));
+  if (!iterBox.checked) drawMaps(curLam, sAt(curLam), hAt(curLam));
 });
-document.getElementById('ashow').addEventListener('change', e => {
-  document.getElementById('semi').style.display = e.target.checked ? '' : 'none';
-  Plotly.Plots.resize(gdL); Plotly.Plots.resize(gdT);
-});
+aBox.addEventListener('change', () => drawMaps(curLam, sAt(curLam), hAt(curLam)));
 function resetZoom(){
   Plotly.relayout(gdE, {'xaxis.autorange': true});
   setTimeout(syncSliderToView, 0);
-  [gdL, gdT, gdH].forEach(gd =>
-    Plotly.relayout(gd, {'xaxis.autorange': true, 'yaxis.autorange': true}));
 }
 document.getElementById('resetzoom').addEventListener('click', () => {
   resetZoom();
@@ -629,7 +727,6 @@ gdE.on('plotly_relayout', () => {
 drawBifurcation();
 setLambda(parseFloat(document.getElementById('slider').value));
 syncSliderToView();
-drawMaps(curLam, sAt(curLam));
 """
 
 

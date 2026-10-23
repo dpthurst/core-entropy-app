@@ -195,7 +195,7 @@ evaluation gives `D(1/τ) = 0` to the precision of `τ` itself.
   and recomputed for the visible range when you zoom;
 - the cobweb of the critical orbit for `g_λ` and for the tent map `f_s` of slope
   `s = e^{h(λ)} = 1/t₀`, with their itineraries — or, with the *plot the iterates* toggle,
-  the graphs of `g_λ^n` and `f_s^n` themselves for `n = 1…10`.  The `n`-th iterate has
+  the graphs of `g_λ^n` and `f_s^n` themselves for `n = 1…20`.  The `n`-th iterate has
   `ℓ_n = 1 +` its turning points monotone pieces, so watching the count climb — 4, 14, 38,
   90 at `λ = 3.7`, the same for both maps — is the most concrete picture of the quantity
   whose growth rate is the entropy;
@@ -203,7 +203,12 @@ evaluation gives `D(1/τ) = 0` to the precision of `τ` itself.
   `g_λ` is topologically semi-conjugate to the piecewise-linear model `f_s`.  The arrow does
   not reverse — a tent map has no attracting cycle, while `g_λ` may have one — and `A` need
   not be injective: where it collapses an interval, the two itineraries can differ.  The
-  write-up's §4.3 gives the exact criterion for `A` to be a conjugacy.
+  write-up's §4.3 gives the exact criterion for `A` to be a conjugacy.  The three map panels
+  are **one** Plotly figure, laid out as in the native window — `A` directly above `g_λ`, the
+  tent map to `A`'s right with its argument up the panel — so the identity is drawn as two
+  segments, up from `g_λ`'s graph to `A` and across to `f_s`'s graph, and the tent panel turns
+  its argument up only while `A` is on show.  Three separate Plotly divs could not carry a
+  segment across a panel boundary, which is why they were three.
 
 Everything follows the slider.  `core_entropy.py` ports `src/CoreEntropy.jl` to numpy
 (a vectorised sweep over the parameters, with the scalar adaptive-order fallback), and its
