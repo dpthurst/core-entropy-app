@@ -66,9 +66,10 @@ the current lambda.
 By default h is read off the 28 696-parameter grid, which is instant; with --exact
 it is computed at the slider's own lambda by core_entropy.py, at about 10 ms above
 lambda = 3.6 and 36 ms below, where the solver must quadruple N before it can
-report zero.  Results are cached, so revisiting a value is free.  A recomputed
-bifurcation diagram costs about 10-15 ms, and is built once per zoom rather than
-per mouse movement.
+report zero.  Results are cached, so revisiting a value is free.  The bifurcation
+diagram is rebuilt for the visible window on every zoom, as on the web page, at one
+cell per displayed pixel -- 506 x 551 here, 1012 x 1102 on a Retina window, capped at
+2000 x 1400 -- which costs 15 to 28 ms, against a 50 ms full draw it rides along with.
 
 A slider event costs one full redraw, about 60 ms here -- the four panels cost 7-13 ms
 each, the A panel 9 ms of it, and that is the floor for a pyplot window this size
@@ -94,10 +95,12 @@ LOG2 = np.log(2.0)
 BLUE, GREEN, RED, ORANGE = "#1c5f9e", "#2f6b4f", "#c1272d", "#e08a1e"
 LAM_LO, LAM_HI = 2.0, 4.0
 
-# Tuning, kept here rather than in the call signatures: the diagram's grid is about
-# twice the panel's pixels (more is invisible, and the image is redrawn on every slider
-# event), and A is truncated at 64 foldings, which leaves a residual of 1e-11 or better.
-BIF_NLAM, BIF_NROWS, BIF_TRANSIENT, BIF_KEEP = 800, 420, 1200, 700
+# Tuning, kept here rather than in the call signatures: the diagram's grid is one cell per
+# displayed pixel, capped (see bif_grid), and rebuilt on every zoom, so it is not free; A is
+# truncated at 64 foldings, which leaves a residual of 1e-11 or better.
+BIF_MAX = (2000, 1400)      # cap on the grid, in cells
+BIF_TRANSIENT, BIF_KEEP = 1500, 1200   # the web page's iterate counts: a zoomed-in window
+                                       # resolves more bands, and needs them
 BIF_GAMMA, BIF_FLOOR = 0.35, 0.6  # ink = floor + (1-floor)*(count/top)**gamma
 A_STEPS, A_POINTS = 64, 241
 ITIN_LEN = 48               # symbols shown for each critical orbit
@@ -150,12 +153,25 @@ def cobweb(f, x0, n):
     return xs, ys
 
 
-def bifurcation(lo, hi, nlam=BIF_NLAM, nrows=BIF_NROWS, transient=BIF_TRANSIENT,
+def bif_grid(bbox, dpr=1.0):
+    """The diagram's grid, in cells, for an axes bbox in points-of-the-canvas.
+
+    One cell per displayed pixel: finer is invisible, and coarser is what makes a zoomed
+    diagram look blocky.  `dpr` is the device pixel ratio, so a Retina window gets twice
+    the cells rather than half the sharpness.  The caps keep one redraw under about 20 ms.
+    """
+    nlam = int(round(bbox.width * dpr))
+    nrows = int(round(bbox.height * dpr))
+    return (max(200, min(BIF_MAX[0], nlam)), max(120, min(BIF_MAX[1], nrows)))
+
+
+def bifurcation(lo, hi, nlam=800, nrows=800, transient=BIF_TRANSIENT,
                 keep=BIF_KEEP):
     """Occupancy grid of the attracting set over the visible lambda range.
 
     Vectorised over lambda: every column is iterated at once, which is what makes a
-    recomputation on zoom cheap (about 60 ms) rather than a second or two.
+    recomputation on zoom cheap (about 10 ms at a panel-sized grid) rather than a second
+    or two.
     """
     lams = np.linspace(lo, hi, nlam)
     x = np.full(nlam, 0.5)
@@ -330,9 +346,12 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     # ---- the bifurcation diagram, behind the entropy curve
     lo, hi = xlim
-    # sized to about twice the panel's pixels: more is invisible, and the image is
-    # redrawn on every slider event, so it is not free.
-    nlam, nrows = 800, 420
+
+    def current_dpr():
+        """Live, not captured: a window dragged to a Retina screen changes it."""
+        return float(getattr(fig.canvas, "device_pixel_ratio", 1.0) or 1.0)
+
+    nlam, nrows = bif_grid(ax_b.bbox, current_dpr())
     z = bifurcation(lo, hi, nlam=nlam, nrows=nrows)
     im = ax_b.imshow(z, origin="lower", extent=[lo, hi, 0.0, 1.0], aspect="auto",
                      cmap=ink, vmin=0.0, vmax=max(1.0, float(np.percentile(z, 99.5))),
@@ -650,23 +669,39 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     def set_slider_range(lo_, hi_):
         """Rescale the slider to the visible lambda window, so its ends are the axis ends."""
+        val = min(max(float(sl.val), lo_), hi_)
         sl.valmin, sl.valmax = lo_, hi_
         sl.valstep = (hi_ - lo_) / 2000.0
         sl.ax.set_xlim(lo_, hi_)
-        sl.set_val(min(max(float(sl.val), lo_), hi_))   # clamps and repositions the handle
+        if val != float(sl.val):
+            sl.set_val(val)          # clamps and repositions the handle, and repaints
+        else:
+            # lambda has not moved, only the slider's span: reposition the handle without
+            # notifying, or a zoom would drag a whole extra redraw of the four panels
+            was, sl.eventson = sl.eventson, False
+            try:
+                sl.set_val(val)
+            finally:
+                sl.eventson = was
 
-    def redraw_bif(lo_, hi_, force=False):
+    def redraw_bif(lo_, hi_):
+        """Rebuild the diagram for the visible lambda window.
+
+        The image is rebuilt on every zoom, as the web page does, so that a narrower
+        window gets the same number of cells across it rather than a magnified version of
+        the last one.  It is skipped only when the window is the computed one to within a
+        couple of pixels, which is what one step of a wheel zoom looks like.
+        """
         lo_, hi_ = max(LAM_LO, lo_), min(LAM_HI, hi_)
-        if hi_ - lo_ < 2e-4:
-            return
+        if hi_ - lo_ < 1e-6:        # the degenerate end of the zoom, not a resolution
+            return                  # limit: the web page stops rescaling here too
         plo, phi = state["range"]
-        # Skip only when the window still lies inside the computed one and covers at
-        # least half of it: a scroll-wheel zoom arrives in many small steps and never
-        # fires a button release, so a width-only test would leave a stale, coarse
-        # image stretched over the new window.
-        if not force and lo_ >= plo and hi_ <= phi and (hi_ - lo_) > 0.55 * (phi - plo):
+        nlam_, nrows_ = bif_grid(ax_b.bbox, current_dpr())
+        cell = nlam_ / (phi - plo)                  # image columns per unit lambda
+        if (abs(lo_ - plo) * cell < 2.0 and abs(hi_ - phi) * cell < 2.0
+                and nlam_ <= im.get_array().shape[1]):
             return
-        z = bifurcation(lo_, hi_, nlam=nlam, nrows=nrows)
+        z = bifurcation(lo_, hi_, nlam=nlam_, nrows=nrows_)
         im.set_data(z)
         im.set_extent([lo_, hi_, 0.0, 1.0])
         im.set_clim(0.0, max(1.0, float(np.percentile(z, 99.5))))
@@ -686,6 +721,10 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
 
     ax_h.callbacks.connect("xlim_changed", on_xlim)
     ax_h.callbacks.connect("ylim_changed", pin_y)
+    # a resized window has more pixels across the same lambda range, so it needs its own
+    # grid; the rule above asks for one only when the panel has outgrown the image
+    fig.canvas.mpl_connect(
+        "resize_event", lambda _e: redraw_bif(*sorted(ax_h.get_xlim())))
 
     # Zoom and pan act on lambda alone.  The toolbar applies both axes, but it already
     # knows how to apply one: release_zoom passes the held key to _set_view_from_bbox as
@@ -720,9 +759,7 @@ def build(lams, hs, lam0, exact=False, xlim=(LAM_LO, LAM_HI)):
             pin_b["busy"] = False
 
     ax_b.callbacks.connect("ylim_changed", pin_y_b)
-    fig.canvas.mpl_connect(
-        "button_release_event",
-        lambda _e: redraw_bif(*sorted(ax_h.get_xlim()), force=True))
+
     def step_n(delta):
         """Move n by one, clamped to 1..10; the slider follows."""
         sl_n.set_val(max(1, min(N_MAX, int(round(sl_n.val)) + delta)))

@@ -266,7 +266,7 @@ width (the band is drawn at full height to say so) and a pan ignores the vertica
 entropy axis stays put for comparison; the window opens with the zoom tool selected, the bifurcation diagram is recomputed for the visible
 range, and the slider underneath it is rescaled to that same window, so its two ends are the ends
 of the visible range. Every visited cell of the diagram is drawn with at least half ink, so a
-window containing an attracting cycle — where the counts run from 1 to 700 — reads as well as the
+window containing an attracting cycle — where the counts run from 1 to 1200 — reads as well as the
 full range. Python and matplotlib only: no Julia, no
 browser, no plotly.
 
@@ -282,8 +282,10 @@ displays which it used — near the merging parameter the grid spacing alone mov
 `3·10⁻⁴`, and a readout at an off-grid `λ` would misreport it. `--exact` computes `h` at the
 slider's own `λ` instead and prints how long that took: about 10 ms above `λ = 3.6` and about
 36 ms below, where the solver must quadruple `N` before it can report zero. A full redraw
-costs 25 ms on top; a recomputed bifurcation diagram costs 10–15 ms and is built once per zoom,
-not per mouse movement. A slider event is one full redraw, about 60 ms, which is 16 updates a
+costs 25 ms on top. The bifurcation diagram is rebuilt on every zoom, as on the web page: one
+cell per displayed pixel — 506 × 551 for the panel here, 1012 × 1102 on a Retina window, capped
+at 2000 × 1400 — with the web page's 1500 transient and 1200 plotted iterates per column, at
+15 to 28 ms. A slider event is one full redraw, about 60 ms, which is 16 updates a
 second — the four panels cost 7–13 ms each, the `A` panel 9 ms of it.
 `Slider.set_val` draws before it notifies its observers, so the widget's own drawing is turned
 off; leaving it on drew the figure twice per event, the first time with the panels stale.
