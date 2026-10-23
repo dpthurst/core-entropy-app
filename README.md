@@ -1,13 +1,18 @@
 # Core entropy of the real quadratic family
 
+**Interactive version: <https://dpthurst.github.io/core-entropy-app/>** — the full page
+(entropy, bifurcation diagram, tent map, the semi-conjugacy `A`, the iterates) is the root
+URL; <https://dpthurst.github.io/core-entropy-app/entropy.html> is the entropy curve alone.
+Both run entirely in the browser and are rebuilt from these sources on every push to `main`.
+
 An interactive plot of the core entropy `h(λ)` of
 
 ```
 g_λ(x) = λ x (1 − x),   2 ≤ λ ≤ 4,   x ∈ [0,1]
 ```
 
-computed by a small dependency-free Julia module and drawn by two front ends:
-an interactive HTML page and a Makie window.
+computed by a small dependency-free Julia module and drawn by three front ends: the two HTML
+pages, and a matplotlib window. A Makie window is kept in the repository but deprecated.
 
 Files.  The generated ones are marked *built*: they are not in the repository, and `make`
 produces them from the sources.
